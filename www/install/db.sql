@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 24-07-2017 a las 12:52:18
+-- Tiempo de generación: 24-07-2017 a las 14:00:37
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -25,6 +25,23 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `acceso`
+--
+
+CREATE TABLE `acceso` (
+  `clave` text COLLATE utf8_bin NOT NULL COMMENT 'password',
+  `fecha` date NOT NULL COMMENT 'cuando se creó',
+  `descripcion` text COLLATE utf8_bin NOT NULL COMMENT 'Para o por qué se creó esta clave con privilegios',
+  `admin_clave` tinyint(1) NOT NULL COMMENT 'Permisos para crear y borrar claves. La clave maestra se encuentra en un php fuera de la base de datos',
+  `admin_almacen` tinyint(1) NOT NULL COMMENT 'crear, modificar y borrar almacenes y secciones',
+  `admin_objeto` tinyint(1) NOT NULL COMMENT 'crear, modificar y borrar objetos',
+  `admin_etiquetas` tinyint(1) NOT NULL COMMENT 'crear, modificar y borrar etiquetas para los objetos',
+  `admin_cantidad` tinyint(1) NOT NULL COMMENT 'cambiar cantidades de objetos en cualquier almacen'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `almacen`
 --
 
@@ -33,13 +50,6 @@ CREATE TABLE `almacen` (
   `nombre` text COLLATE utf8_bin NOT NULL,
   `descripcion` text COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
---
--- Volcado de datos para la tabla `almacen`
---
-
-INSERT INTO `almacen` (`id`, `nombre`, `descripcion`) VALUES
-(1, 'asdasda', 'fawfawfawfawf');
 
 -- --------------------------------------------------------
 
@@ -65,14 +75,6 @@ CREATE TABLE `historico_objeto` (
   `cantidad` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
---
--- Volcado de datos para la tabla `historico_objeto`
---
-
-INSERT INTO `historico_objeto` (`id_objeto`, `fecha`, `cantidad`) VALUES
-(1, '2017-07-24', 3),
-(1, '2017-07-24', 20);
-
 -- --------------------------------------------------------
 
 --
@@ -86,13 +88,6 @@ CREATE TABLE `objeto` (
   `minimo_alerta` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
---
--- Volcado de datos para la tabla `objeto`
---
-
-INSERT INTO `objeto` (`id`, `nombre`, `descripcion`, `minimo_alerta`) VALUES
-(1, 'test', 'testestset', 0);
-
 -- --------------------------------------------------------
 
 --
@@ -104,13 +99,6 @@ CREATE TABLE `objeto_seccion_almacen` (
   `id_seccion_almacen` int(11) NOT NULL,
   `cantidad` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
---
--- Volcado de datos para la tabla `objeto_seccion_almacen`
---
-
-INSERT INTO `objeto_seccion_almacen` (`id_objeto`, `id_seccion_almacen`, `cantidad`) VALUES
-(1, 2, 20);
 
 --
 -- Disparadores `objeto_seccion_almacen`
@@ -142,13 +130,6 @@ CREATE TABLE `seccion_almacen` (
   `descripcion` text COLLATE utf8_bin NOT NULL,
   `id_almacen` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
---
--- Volcado de datos para la tabla `seccion_almacen`
---
-
-INSERT INTO `seccion_almacen` (`id`, `nombre`, `descripcion`, `id_almacen`) VALUES
-(2, 'kjeofjeioj', 'iojsoefjioajfalwf', 1);
 
 --
 -- Índices para tablas volcadas

@@ -7,7 +7,7 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 </pre>
 
 
-<input type="text"/>
+<input type="text" placeholder="Búsqueda"/>
 
 <style>
 .almacen, .seccion, .objeto {
