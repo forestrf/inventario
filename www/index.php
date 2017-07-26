@@ -1,3 +1,5 @@
+<script src="js/accent-remover.js"></script>
+<script src="js/filter.js"></script>
 <script>
 crel2=function(){var c=arguments,b=c[0],g=c.length,b="string"===typeof b?document.createElement(b):b;if(1===g)return b;var a=c[1],e=2;if(a instanceof Array)for(var d=a.length,f;d;)switch(typeof(f=a[--d])){case "string":case "number":b.setAttribute(a[--d],f);break;default:b[a[--d]]=f}else--e;for(;g>e;)a=c[e++],"object"!==typeof a&&"function"!==typeof a&&(a=document.createTextNode(a)),b.appendChild(a);return b};
 
@@ -30,14 +32,15 @@ hueco para poner la clave, y quitarla si está puesta
 
 listado de almacenes, con listado de secciones, con listado de objetos. Filtrar con el cuadro de búsqueda
 
+</pre>
 
 <input id="Buscador" type="text" placeholder="Búsqueda"/>
 
 
 
-<div class="clearer"/>
+<div class="clearer"></div>
 
-<div id="inventario"/>
+<div id="inventario"></div>
 
 
 
@@ -46,25 +49,22 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 var lista = [
 	{
 		"Nombre": "Principal",
-		"Tags": [],
-		"Secciones":
+		"contenido":
 		[
 			{
-				"Nombre": "Sección 1",
-				"Tags": [],
-				"Objetos":
+				"Nombre": "Papelería",
+				"contenido":
 				[
 					{
 						"Nombre": "Carpetas colgantes",
-						"Tags": [],
+						"Tags": ["Carpetas", "colgantes"],
 						"Cantidad": 3
 					}
 				]
 			},
 			{
 				"Nombre": "Sección 2",
-				"Tags": [],
-				"Objetos":
+				"contenido":
 				[
 					{
 						"Nombre": "Disco Duro",
@@ -93,12 +93,12 @@ for (var i in lista) {
 	var almacenJson = lista[i];
 	almacenJson["DOM"] = C("div", ["class", "almacen"], C("div", ["class", "nombre"], almacenJson["Nombre"]));
 	C(inventario, almacenJson["DOM"]);
-	for (var j in almacenJson["Secciones"]) {
-		var seccionJson = almacenJson["Secciones"][j];
+	for (var j in almacenJson["contenido"]) {
+		var seccionJson = almacenJson["contenido"][j];
 		seccionJson["DOM"] = C("div", ["class", "seccion"], C("div", ["class", "nombre"], seccionJson["Nombre"]));
 		C(almacenJson["DOM"], seccionJson["DOM"]);
-		for (var k in seccionJson["Objetos"]) {
-			var objetoJson = seccionJson["Objetos"][k];
+		for (var k in seccionJson["contenido"]) {
+			var objetoJson = seccionJson["contenido"][k];
 			objetoJson["DOM"] = C("div", ["class", "objeto"],
 				C("div", ["class", "nombre"], objetoJson["Nombre"]),
 				C("div", ["class", "cantidad"], objetoJson["Cantidad"])
@@ -115,12 +115,13 @@ console.log(lista);
 // Preparar buscador
 var Buscador = document.getElementById("Buscador");
 Buscador.onkeyup = function() {
-	filterAndSort(Buscador.value);
+	FilterSearch.process(Buscador.value,
+		function(DOM) { DOM.style.display = "unset"; },
+		function(DOM) { DOM.style.display = "none"; }
+	);
 };
 
-function filterAndSort(text) {
-	console.log(text);
-}
+
 
 </script>
 <!--
