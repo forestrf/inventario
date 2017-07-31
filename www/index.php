@@ -20,6 +20,9 @@ C = crel2;
 .clearer {
 	clear: both;
 }
+.objeto.alerta {
+	color: #F00;
+}
 </style>
 
 
@@ -58,7 +61,8 @@ var lista = [
 					{
 						"Nombre": "Carpetas colgantes",
 						"Tags": ["Carpetas", "colgantes"],
-						"Cantidad": 3
+						"Cantidad": 3,
+						"Minimo": 4
 					}
 				]
 			},
@@ -74,52 +78,100 @@ var lista = [
 					{
 						"Nombre": "Lápiz",
 						"Tags": [],
-						"Cantidad": 8
+						"Cantidad": 8,
+						"Minimo": 3
 					}
 				]
 			}
 		]
 	}
 ];
-
-
-
-
-
-
-var inventario = document.getElementById("inventario");
-
-for (var i in lista) {
-	var almacenJson = lista[i];
-	almacenJson["DOM"] = C("div", ["class", "almacen"], C("div", ["class", "nombre"], almacenJson["Nombre"]));
-	C(inventario, almacenJson["DOM"]);
-	for (var j in almacenJson["contenido"]) {
-		var seccionJson = almacenJson["contenido"][j];
-		seccionJson["DOM"] = C("div", ["class", "seccion"], C("div", ["class", "nombre"], seccionJson["Nombre"]));
-		C(almacenJson["DOM"], seccionJson["DOM"]);
-		for (var k in seccionJson["contenido"]) {
-			var objetoJson = seccionJson["contenido"][k];
-			objetoJson["DOM"] = C("div", ["class", "objeto"],
-				C("div", ["class", "nombre"], objetoJson["Nombre"]),
-				C("div", ["class", "cantidad"], objetoJson["Cantidad"])
-			);
-			C(seccionJson["DOM"], objetoJson["DOM"]);
-		}
-	}
-}
-
 console.log(lista);
+
+
+
+
+
+
+// Dibujar toda la lista en el DOM
+var inventario = document.getElementById("inventario");
+C(inventario, DrawInventory(lista));
 
 
 
 // Preparar buscador
 var Buscador = document.getElementById("Buscador");
 Buscador.onkeyup = function() {
-	FilterSearch.process(Buscador.value,
+	FilterSearch.process(Buscador.value, lista,
 		function(DOM) { DOM.style.display = "unset"; },
 		function(DOM) { DOM.style.display = "none"; }
 	);
 };
+
+
+
+
+
+function DrawInventory(lista) {
+	var contenedor = C("div");
+	for (var i in lista) {
+		var almacenJson = lista[i];
+		almacenJson["DOM"] = C("div", ["class", "almacen"], C("div", ["class", "nombre"], almacenJson["Nombre"]));
+		C(contenedor, almacenJson["DOM"]);
+		for (var j in almacenJson["contenido"]) {
+			var seccionJson = almacenJson["contenido"][j];
+			seccionJson["DOM"] = C("div", ["class", "seccion"], C("div", ["class", "nombre"], seccionJson["Nombre"]));
+			C(almacenJson["DOM"], seccionJson["DOM"]);
+			for (var k in seccionJson["contenido"]) {
+				var objetoJson = seccionJson["contenido"][k];
+				var objetoClass = "objeto";
+				var hayMinimo = undefined !== objetoJson["Minimo"]
+				if (hayMinimo && objetoJson["Cantidad"] < objetoJson["Minimo"]) {
+					objetoClass += " alerta";
+				}
+				objetoJson["DOM"] = C("div", ["class", objetoClass],
+					C("div", ["class", "nombre"], objetoJson["Nombre"]),
+					C("div", ["class", "cantidad"],
+						"Cantidad: ",
+						objetoJson["DOM_CNT"] = C("span", objetoJson["Cantidad"]),
+						C("br"),
+						objetoJson["CNT"] = C("input", ["type", "text", "placeholder", "0", "size", "3"]),
+						objetoJson["ADD"] = C("button", "Aumentar"),
+						objetoJson["SUB"] = C("button", "Reducir")
+					)
+				);
+				if (hayMinimo) {
+					C(objetoJson["DOM"], 
+						C("div", ["class", "minimo"],
+							"Mínimo: " + objetoJson["Minimo"]
+						)
+					);
+				}
+				
+				// Acción botones
+				objetoJson["ADD"].onclick = (function(objetoJson) { return function() {
+					AlterQuantity(objetoJson, parseInt(objetoJson.CNT.value));
+				}})(objetoJson);
+				objetoJson["SUB"].onclick = (function(objetoJson) { return function() {
+					AlterQuantity(objetoJson, -parseInt(objetoJson.CNT.value));
+				}})(objetoJson);
+				
+				C(seccionJson["DOM"], objetoJson["DOM"]);
+			}
+		}
+	}
+	return contenedor;
+}
+
+
+
+function AlterQuantity(json, delta) {
+	json.Cantidad += delta;
+	json.DOM_CNT.innerHTML = json.Cantidad;
+	// Refrescar alerta y guardar en base de datos
+}
+
+
 
 
 

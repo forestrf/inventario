@@ -4,18 +4,18 @@ Given a search string search inside the list of inventory items and if there is 
 
 
 var FilterSearch = (function(){
-	function filterAndSort(text, callbackShow, callbackHide) {
+	function filterAndSort(text, lista, callbackShow, callbackHide) {
 		// For each word remove tildes and lower the case
 		var search = text.trim().latinize().toLowerCase().split(" ");
-		UnShowAndReturn(lista, search, callbackShow, callbackHide);
+		RecursiveSearch(lista, search, callbackShow, callbackHide);
 	}
 	
 	// Recursively find matches. callbackShow and callbackHide receive the dom element that should be hidden/showed if there is a match
-	function UnShowAndReturn(json, search, callbackShow, callbackHide) {
+	function RecursiveSearch(json, search, callbackShow, callbackHide) {
 		var somethingFound = false;
 		for (var i = 0; i < json.length; i++) {
 			var lastLevel = undefined === json[i].contenido;
-			var somethingFoundInside = !lastLevel ? UnShowAndReturn(json[i].contenido, search, callbackShow, callbackHide) : false;
+			var somethingFoundInside = !lastLevel ? RecursiveSearch(json[i].contenido, search, callbackShow, callbackHide) : false;
 			var hereFound = false;
 			if (lastLevel) {
 				hereFound = hereFound || Test(search, json[i].Nombre);
