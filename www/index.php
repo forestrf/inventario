@@ -1,5 +1,6 @@
 <script src="js/accent-remover.js"></script>
 <script src="js/filter.js"></script>
+<script src="js/ajax.js"></script>
 <script>
 crel2=function(){var c=arguments,b=c[0],g=c.length,b="string"===typeof b?document.createElement(b):b;if(1===g)return b;var a=c[1],e=2;if(a instanceof Array)for(var d=a.length,f;d;)switch(typeof(f=a[--d])){case "string":case "number":b.setAttribute(a[--d],f);break;default:b[a[--d]]=f}else--e;for(;g>e;)a=c[e++],"object"!==typeof a&&"function"!==typeof a&&(a=document.createTextNode(a)),b.appendChild(a);return b};
 
@@ -125,10 +126,8 @@ function DrawInventory(lista) {
 			for (var k in seccionJson["contenido"]) {
 				var objetoJson = seccionJson["contenido"][k];
 				var objetoClass = "objeto";
-				var hayMinimo = undefined !== objetoJson["Minimo"]
-				if (hayMinimo && objetoJson["Cantidad"] < objetoJson["Minimo"]) {
-					objetoClass += " alerta";
-				}
+				var hayMinimo = undefined !== objetoJson["Minimo"];
+				objetoClass = GetMinimoAlert(objetoJson, objetoClass);
 				objetoJson["DOM"] = C("div", ["class", objetoClass],
 					C("div", ["class", "nombre"], objetoJson["Nombre"]),
 					C("div", ["class", "cantidad"],
@@ -168,7 +167,13 @@ function DrawInventory(lista) {
 function AlterQuantity(json, delta) {
 	json.Cantidad += delta;
 	json.DOM_CNT.innerHTML = json.Cantidad;
+	json.DOM.className = GetMinimoAlert(json, json.DOM.className);
 	// Refrescar alerta y guardar en base de datos
+}
+
+function GetMinimoAlert(json, className) {
+	var hayMinimo = undefined !== json["Minimo"]
+	return hayMinimo && json["Cantidad"] < json["Minimo"] ?  className + " alerta" : className.split(" alerta").join("");
 }
 
 
