@@ -38,6 +38,7 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 
 </pre>
 
+
 <input id="Buscador" type="text" placeholder="Búsqueda"/>
 
 
@@ -50,53 +51,16 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 
 <script>
 
-var lista = [
-	{
-		"Nombre": "Principal",
-		"contenido":
-		[
-			{
-				"Nombre": "Papelería",
-				"contenido":
-				[
-					{
-						"Nombre": "Carpetas colgantes",
-						"Tags": ["Carpetas", "colgantes"],
-						"Cantidad": 3,
-						"Minimo": 4
-					}
-				]
-			},
-			{
-				"Nombre": "Sección 2",
-				"contenido":
-				[
-					{
-						"Nombre": "Disco Duro",
-						"Tags": [],
-						"Cantidad": 8
-					},
-					{
-						"Nombre": "Lápiz",
-						"Tags": [],
-						"Cantidad": 8,
-						"Minimo": 3
-					}
-				]
-			}
-		]
-	}
-];
-console.log(lista);
+
+AJAX('php/ajax.php?action=getinventario', null, function(x) {
+	lista = JSON.parse(x.responseText);
+	// Dibujar toda la lista en el DOM
+	var inventario = document.getElementById("inventario");
+	C(inventario, DrawInventory(lista));
+}, console.log);
 
 
 
-
-
-
-// Dibujar toda la lista en el DOM
-var inventario = document.getElementById("inventario");
-C(inventario, DrawInventory(lista));
 
 
 
@@ -117,11 +81,11 @@ function DrawInventory(lista) {
 	var contenedor = C("div");
 	for (var i in lista) {
 		var almacenJson = lista[i];
-		almacenJson["DOM"] = C("div", ["class", "almacen"], C("div", ["class", "nombre"], almacenJson["Nombre"]));
+		almacenJson["DOM"] = C("div", ["class", "almacen"], C("div", ["class", "nombre"], almacenJson["nombre"]));
 		C(contenedor, almacenJson["DOM"]);
 		for (var j in almacenJson["contenido"]) {
 			var seccionJson = almacenJson["contenido"][j];
-			seccionJson["DOM"] = C("div", ["class", "seccion"], C("div", ["class", "nombre"], seccionJson["Nombre"]));
+			seccionJson["DOM"] = C("div", ["class", "seccion"], C("div", ["class", "nombre"], seccionJson["nombre"]));
 			C(almacenJson["DOM"], seccionJson["DOM"]);
 			for (var k in seccionJson["contenido"]) {
 				var objetoJson = seccionJson["contenido"][k];
@@ -129,7 +93,7 @@ function DrawInventory(lista) {
 				var hayMinimo = undefined !== objetoJson["Minimo"];
 				objetoClass = GetMinimoAlert(objetoJson, objetoClass);
 				objetoJson["DOM"] = C("div", ["class", objetoClass],
-					C("div", ["class", "nombre"], objetoJson["Nombre"]),
+					C("div", ["class", "nombre"], objetoJson["nombre"]),
 					C("div", ["class", "cantidad"],
 						"Cantidad: ",
 						objetoJson["DOM_CNT"] = C("span", objetoJson["Cantidad"]),
