@@ -10,16 +10,13 @@ var FilterSearch = (function(){
 		RecursiveSearch(lista, search, callbackShow, callbackHide);
 	}
 	
-	// Recursively find matches. callbackShow and callbackHide receive the dom element that should be hidden/showed if there is a match
+	// Recursively find matches. callbackShow and callbackHide receive the dom element that should be hidden/showed if there is a match. Returns true if there is a match
 	function RecursiveSearch(json, search, callbackShow, callbackHide) {
 		var somethingFound = false;
 		for (var i = 0; i < json.length; i++) {
 			var lastLevel = undefined === json[i].contenido;
 			var somethingFoundInside = !lastLevel ? RecursiveSearch(json[i].contenido, search, callbackShow, callbackHide) : false;
-			var hereFound = false;
-			if (lastLevel) {
-				hereFound = hereFound || Test(search, json[i].Nombre);
-			}
+			var hereFound = lastLevel && Test(search, json[i].nombre);
 			if (undefined !== json[i].Tags) {
 				for (var j = 0; !hereFound && j < json[i].Tags.length; j++) {
 					hereFound = hereFound || Test(search, json[i].Tags[j]);
@@ -34,15 +31,14 @@ var FilterSearch = (function(){
 		return somethingFound;
 	}
 	
+	// True if text contains all of the strings in the search array. False otherwise
 	function Test(search, text) {
 		text = text.latinize().toLowerCase();
-		for (var i = 0; i < search.length; i++) {
-			if (text.indexOf(search[i]) != -1) {
-				return true;
-			}
-		}
+		for (var i = 0; i < search.length; i++)
+			if (text.indexOf(search[i]) == -1)
+				return false;
 		
-		return false;
+		return true;
 	}
 	
 	

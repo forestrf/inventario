@@ -53,25 +53,26 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 
 
 AJAX('php/ajax.php?action=getinventario', null, function(x) {
-	lista = JSON.parse(x.responseText);
+	var lista = JSON.parse(x.responseText);
 	// Dibujar toda la lista en el DOM
 	var inventario = document.getElementById("inventario");
 	C(inventario, DrawInventory(lista));
+	
+	// Preparar buscador
+	var Buscador = document.getElementById("Buscador");
+	Buscador.onkeyup = function() {
+		FilterSearch.process(Buscador.value, lista,
+			function(DOM) { DOM.style.display = "unset"; },
+			function(DOM) { DOM.style.display = "none"; }
+		);
+	};
+	
 }, console.log);
 
 
 
 
 
-
-// Preparar buscador
-var Buscador = document.getElementById("Buscador");
-Buscador.onkeyup = function() {
-	FilterSearch.process(Buscador.value, lista,
-		function(DOM) { DOM.style.display = "unset"; },
-		function(DOM) { DOM.style.display = "none"; }
-	);
-};
 
 
 
@@ -145,18 +146,3 @@ function GetMinimoAlert(json, className) {
 
 
 </script>
-<!--
-<div class="almacen">
-	<div class="nombre">Almacén</div>
-	
-	<div class="seccion">
-	<div class="nombre">Sección</div>
-	
-		<div class="objeto">
-			<div class="nombre">Nombre objeto</div>
-			<div class="imagen">Imagen</div>
-			<div class="cantidad">Cantidad</div>
-		</div>
-	</div>
-</div>
--->
