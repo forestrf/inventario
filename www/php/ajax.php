@@ -12,13 +12,10 @@ if (isset($_GET['action'])) {
 	
 	switch($_GET['action']) {
 		case 'getinventario':
-			$res = array();
 			$almacenes = $db->get_almacenes();
 			foreach ($almacenes as $almacen) {
-				$almacen["contenido"] = array();
 				$secciones = $db->get_secciones($almacen["id"]);
 				foreach ($secciones as $seccion) {
-					$seccion["contenido"] = array();
 					$objetos = $db->get_objetos_seccion($seccion["id"]);
 					foreach ($objetos as $objeto) {
 						$objeto["tags"] = array_map(function ($d) {return $d["nombre"];}, $db->get_tags_objeto($objeto["id"]));

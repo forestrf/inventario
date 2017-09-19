@@ -15,18 +15,18 @@ var FilterSearch = (function(){
 		var somethingFound = false;
 		for (var i = 0; i < json.length; i++) {
 			var lastLevel = undefined === json[i].contenido;
-			var somethingFoundInside = !lastLevel ? RecursiveSearch(json[i].contenido, search, callbackShow, callbackHide) : false;
-			var hereFound = lastLevel && Test(search, json[i].nombre);
-			if (undefined !== json[i].Tags) {
-				for (var j = 0; !hereFound && j < json[i].Tags.length; j++) {
-					hereFound = hereFound || Test(search, json[i].Tags[j]);
+			var somethingFoundInside = !lastLevel ? RecursiveSearch(json[i]["contenido"], search, callbackShow, callbackHide) : false;
+			var hereFound = lastLevel && Test(search, json[i]["nombre"]);
+			if (undefined !== json[i]["tags"]) {
+				for (var j = 0; !hereFound && j < json[i]["tags"].length; j++) {
+					hereFound = hereFound || Test(search, json[i]["tags"][j]);
 				}
 			}
 			somethingFound = somethingFound || somethingFoundInside || hereFound;
 			
 			// Execute callbacks
 			var callback = somethingFoundInside || hereFound ? callbackShow : callbackHide;
-			callback(json[i].DOM);
+			callback(json[i]["DOM"]);
 		}
 		return somethingFound;
 	}

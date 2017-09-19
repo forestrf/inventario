@@ -10,19 +10,32 @@ C = crel2;
 <style>
 .almacen, .seccion, .objeto {
 	float: left;
-	border: 1px solid;
+	border: 1px solid #000;
 	margin: 2px;
-	padding: 1px;
 	background-color: rgba(0, 0, 0, 0.1);
 }
+.objeto .titulo {
+	background-color: #000;
+	color: #fff;
+}
 .nombre {
-	display: block;
+	display: inline;
+}
+.descripcion {
+	margin-left: 20px;
+	display: inline;
+	font-size: 0.7em;
+	opacity: 0.7;
 }
 .clearer {
 	clear: both;
 }
 .objeto.alerta {
-	color: #F00;
+	background-color: #F00;
+	color: #fff;
+}
+.objeto > div {
+    padding: 1px 2px 1px 2px;
 }
 </style>
 
@@ -31,6 +44,8 @@ C = crel2;
 
 <pre>
 Buscador por tags, nombre, sección y almancén
+
+Clicar en un botón (como número o un tag) abre un popup que da funcionalidad (cambiar cantidad, quitar el tag, etc)
 
 hueco para poner la clave, y quitarla si está puesta
 
@@ -54,6 +69,7 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 
 AJAX('php/ajax.php?action=getinventario', null, function(x) {
 	var lista = JSON.parse(x.responseText);
+	
 	// Dibujar toda la lista en el DOM
 	var inventario = document.getElementById("inventario");
 	C(inventario, DrawInventory(lista));
@@ -82,43 +98,50 @@ function DrawInventory(lista) {
 	var contenedor = C("div");
 	for (var i in lista) {
 		var almacenJson = lista[i];
-		almacenJson["DOM"] = C("div", ["class", "almacen"], C("div", ["class", "nombre"], almacenJson["nombre"]));
+		almacenJson["DOM"] = C("div", ["class", "almacen"], C("div",
+			C("div", ["class", "nombre"], almacenJson["nombre"]),
+			C("div", ["class", "descripcion"], almacenJson["descripcion"])
+		));
 		C(contenedor, almacenJson["DOM"]);
 		for (var j in almacenJson["contenido"]) {
 			var seccionJson = almacenJson["contenido"][j];
-			seccionJson["DOM"] = C("div", ["class", "seccion"], C("div", ["class", "nombre"], seccionJson["nombre"]));
+			seccionJson["DOM"] = C("div", ["class", "seccion"], C("div",
+				C("div", ["class", "nombre"], seccionJson["nombre"]),
+				C("div", ["class", "descripcion"], seccionJson["descripcion"])
+			));
 			C(almacenJson["DOM"], seccionJson["DOM"]);
 			for (var k in seccionJson["contenido"]) {
 				var objetoJson = seccionJson["contenido"][k];
 				var objetoClass = "objeto";
-				var hayMinimo = undefined !== objetoJson["Minimo"];
+				var hayMinimo = undefined !== objetoJson["minimo_alerta"];
 				objetoClass = GetMinimoAlert(objetoJson, objetoClass);
+				var tagsDom;
 				objetoJson["DOM"] = C("div", ["class", objetoClass],
-					C("div", ["class", "nombre"], objetoJson["nombre"]),
+					C("div", ["class", "titulo"],
+						C("div", ["class", "nombre"], objetoJson["nombre"]),
+						C("div", ["class", "descripcion"], objetoJson["descripcion"])
+					),
+					C("div", ["class", "tags"], "Tags: ",
+						tagsDom = C("span", ["class", "tags-list"])
+					),
 					C("div", ["class", "cantidad"],
 						"Cantidad: ",
-						objetoJson["DOM_CNT"] = C("span", objetoJson["Cantidad"]),
-						C("br"),
-						objetoJson["CNT"] = C("input", ["type", "text", "placeholder", "0", "size", "3"]),
-						objetoJson["ADD"] = C("button", "Aumentar"),
-						objetoJson["SUB"] = C("button", "Reducir")
+						objetoJson["DOM_CNT"] = C("Button", objetoJson["cantidad"])
 					)
 				);
+				
+				for (var l = 0; l < objetoJson["tags"].length; l++) {
+					C(tagsDom, C("Button", objetoJson["tags"][j]));
+				}
+				C(tagsDom, C("Button", "+"));
+				
 				if (hayMinimo) {
 					C(objetoJson["DOM"], 
 						C("div", ["class", "minimo"],
-							"Mínimo: " + objetoJson["Minimo"]
+							"Mínimo: ", C("Button", objetoJson["minimo_alerta"])
 						)
 					);
 				}
-				
-				// Acción botones
-				objetoJson["ADD"].onclick = (function(objetoJson) { return function() {
-					AlterQuantity(objetoJson, parseInt(objetoJson.CNT.value));
-				}})(objetoJson);
-				objetoJson["SUB"].onclick = (function(objetoJson) { return function() {
-					AlterQuantity(objetoJson, -parseInt(objetoJson.CNT.value));
-				}})(objetoJson);
 				
 				C(seccionJson["DOM"], objetoJson["DOM"]);
 			}
@@ -127,18 +150,9 @@ function DrawInventory(lista) {
 	return contenedor;
 }
 
-
-
-function AlterQuantity(json, delta) {
-	json.Cantidad += delta;
-	json.DOM_CNT.innerHTML = json.Cantidad;
-	json.DOM.className = GetMinimoAlert(json, json.DOM.className);
-	// Refrescar alerta y guardar en base de datos
-}
-
 function GetMinimoAlert(json, className) {
-	var hayMinimo = undefined !== json["Minimo"]
-	return hayMinimo && json["Cantidad"] < json["Minimo"] ?  className + " alerta" : className.split(" alerta").join("");
+	var hayMinimo = undefined !== json["minimo_alerta"]
+	return hayMinimo && json["cantidad"] < json["minimo_alerta"] ?  className + " alerta" : className.split(" alerta").join("");
 }
 
 
