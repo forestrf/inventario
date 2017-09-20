@@ -10,12 +10,15 @@ var FilterSearch = (function(){
 		RecursiveSearch(lista, search, callbackShow, callbackHide);
 	}
 	
+	var levels = ["secciones", "objetos"];
+	
 	// Recursively find matches. callbackShow and callbackHide receive the dom element that should be hidden/showed if there is a match. Returns true if there is a match
-	function RecursiveSearch(json, search, callbackShow, callbackHide) {
+	function RecursiveSearch(json, search, callbackShow, callbackHide, lvl) {
+		if (lvl === undefined) lvl = 0;
 		var somethingFound = false;
 		for (var i = 0; i < json.length; i++) {
-			var lastLevel = undefined === json[i].contenido;
-			var somethingFoundInside = !lastLevel ? RecursiveSearch(json[i]["contenido"], search, callbackShow, callbackHide) : false;
+			var lastLevel = undefined === json[i][levels[lvl]];
+			var somethingFoundInside = !lastLevel ? RecursiveSearch(json[i][levels[lvl]], search, callbackShow, callbackHide, lvl + 1) : false;
 			var hereFound = lastLevel && Test(search, json[i]["nombre"]);
 			if (undefined !== json[i]["tags"]) {
 				for (var j = 0; !hereFound && j < json[i]["tags"].length; j++) {

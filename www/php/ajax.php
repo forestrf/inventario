@@ -19,9 +19,9 @@ if (isset($_GET['action'])) {
 					$objetos = $db->get_objetos_seccion($seccion["id"]);
 					foreach ($objetos as $objeto) {
 						$objeto["tags"] = array_map(function ($d) {return $d["nombre"];}, $db->get_tags_objeto($objeto["id"]));
-						$seccion["contenido"][] = $objeto;
+						$seccion["objetos"][] = $objeto;
 					}
-					$almacen["contenido"][] = $seccion;
+					$almacen["secciones"][] = $seccion;
 				}
 				$res[] = $almacen;
 			}

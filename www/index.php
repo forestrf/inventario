@@ -37,6 +37,9 @@ C = crel2;
 .objeto > div {
     padding: 1px 2px 1px 2px;
 }
+.objeto > .titulo {
+    padding: 5px;
+}
 </style>
 
 
@@ -45,7 +48,7 @@ C = crel2;
 <pre>
 Buscador por tags, nombre, sección y almancén
 
-Clicar en un botón (como número o un tag) abre un popup que da funcionalidad (cambiar cantidad, quitar el tag, etc)
+Clicar en un botón (como número o un tag) abre un popup que da funcionalidad (cambiar cantidad, quitar el tag o filtrar usando ese tag, etc)
 
 hueco para poner la clave, y quitarla si está puesta
 
@@ -61,6 +64,7 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 <div class="clearer"></div>
 
 <div id="inventario"></div>
+<div class="clearer"></div>
 
 
 
@@ -71,8 +75,8 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 	var lista = JSON.parse(x.responseText);
 	
 	// Dibujar toda la lista en el DOM
-	var inventario = document.getElementById("inventario");
-	C(inventario, DrawInventory(lista));
+	C(document.getElementById("inventario"), DrawInventory(lista));
+	C(document.getElementById("tagMatrix"), DrawTagMatrix(lista));
 	
 	// Preparar buscador
 	var Buscador = document.getElementById("Buscador");
@@ -97,56 +101,53 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 function DrawInventory(lista) {
 	var contenedor = C("div");
 	for (var i in lista) {
-		var almacenJson = lista[i];
-		almacenJson["DOM"] = C("div", ["class", "almacen"], C("div",
-			C("div", ["class", "nombre"], almacenJson["nombre"]),
-			C("div", ["class", "descripcion"], almacenJson["descripcion"])
+		var almacen = lista[i];
+		almacen["DOM"] = C("div", ["class", "almacen"], C("div",
+			C("div", ["class", "nombre"], almacen["nombre"]),
+			C("div", ["class", "descripcion"], almacen["descripcion"])
 		));
-		C(contenedor, almacenJson["DOM"]);
-		for (var j in almacenJson["contenido"]) {
-			var seccionJson = almacenJson["contenido"][j];
-			seccionJson["DOM"] = C("div", ["class", "seccion"], C("div",
-				C("div", ["class", "nombre"], seccionJson["nombre"]),
-				C("div", ["class", "descripcion"], seccionJson["descripcion"])
+		C(contenedor, almacen["DOM"]);
+		for (var j in almacen["secciones"]) {
+			var seccion = almacen["secciones"][j];
+			seccion["DOM"] = C("div", ["class", "seccion"], C("div",
+				C("div", ["class", "nombre"], seccion["nombre"]),
+				C("div", ["class", "descripcion"], seccion["descripcion"])
 			));
-			C(almacenJson["DOM"], seccionJson["DOM"]);
-			for (var k in seccionJson["contenido"]) {
-				var objetoJson = seccionJson["contenido"][k];
+			C(almacen["DOM"], seccion["DOM"]);
+			for (var k in seccion["objetos"]) {
+				var objeto = seccion["objetos"][k];
 				var objetoClass = "objeto";
-				var hayMinimo = undefined !== objetoJson["minimo_alerta"];
-				objetoClass = GetMinimoAlert(objetoJson, objetoClass);
+				objetoClass = GetMinimoAlert(objeto, objetoClass);
 				var tagsDom;
-				objetoJson["DOM"] = C("div", ["class", objetoClass],
+				objeto["DOM"] = C("div", ["class", objetoClass],
 					C("div", ["class", "titulo"],
-						C("div", ["class", "nombre"], objetoJson["nombre"]),
-						C("div", ["class", "descripcion"], objetoJson["descripcion"])
-					),
-					C("div", ["class", "tags"], "Tags: ",
-						tagsDom = C("span", ["class", "tags-list"])
+						C("div", ["class", "nombre"], C("button", objeto["nombre"])),
+						C("div", ["class", "descripcion"], objeto["descripcion"])
 					),
 					C("div", ["class", "cantidad"],
 						"Cantidad: ",
-						objetoJson["DOM_CNT"] = C("Button", objetoJson["cantidad"])
+						objeto["DOM_CNT"] = C("Button", objeto["cantidad"])
+					),
+					C("div", ["class", "minimo"],
+						"Mínimo: ", C("Button", objeto["minimo_alerta"])
+					),
+					C("div", ["class", "tags"], "Tags: ",
+						tagsDom = C("span", ["class", "tags-list"])
 					)
 				);
 				
-				for (var l = 0; l < objetoJson["tags"].length; l++) {
-					C(tagsDom, C("Button", objetoJson["tags"][j]));
+				for (var l = 0; l < objeto["tags"].length; l++) {
+					C(tagsDom, C("Button", objeto["tags"][j]));
 				}
 				C(tagsDom, C("Button", "+"));
 				
-				if (hayMinimo) {
-					C(objetoJson["DOM"], 
-						C("div", ["class", "minimo"],
-							"Mínimo: ", C("Button", objetoJson["minimo_alerta"])
-						)
-					);
-				}
-				
-				C(seccionJson["DOM"], objetoJson["DOM"]);
+				C(seccion["DOM"], objeto["DOM"]);
 			}
+			C(seccion["DOM"], C("div", ["class", "objeto"], C("Button", "+ Objeto")));
 		}
+		C(almacen["DOM"], C("div", ["class", "seccion"], C("Button", "+ Sección")));
 	}
+	C(contenedor, C("div", ["class", "almacen"], C("Button", "+ Almacén")));
 	return contenedor;
 }
 
@@ -159,4 +160,93 @@ function GetMinimoAlert(json, className) {
 
 
 
+function GetTagList(lista) {
+	var allTags = [];
+	var allTagsTmp = {};
+	for (var a in lista) {
+		var secciones = lista[a]["secciones"];
+		for (var s in secciones) {
+			var objetos = secciones[s]["objetos"];
+			for (var o in objetos) {
+				var tags = objetos[o]["tags"];
+				for (var l in tags) {
+					allTagsTmp[tags[l]] = true;
+				}
+			}
+		}
+	}
+	for (var i in allTagsTmp) allTags.push(i);
+	return allTags;
+}
+
+function DrawTagMatrix(lista) {
+	var allTags = GetTagList(lista);
+	
+	
+	
+	var contenedor = C("table", ["border", 1]);
+	var tr0 = C("tr");
+	C(contenedor, tr0);
+	C(tr0, C("th", ["colspan", 3], "Objetos"));
+	C(tr0, C("th", ["colspan", allTags.length], "Tags"));
+	
+	var tr1 = C("tr");
+	C(contenedor, tr1);
+	C(tr1, C("td", "Almacén"));
+	C(tr1, C("td", "Sección"));
+	C(tr1, C("td", "Objeto"));
+	for (var i in allTags) {
+		C(tr1, C("td", allTags[i]));
+	}
+	
+	for (var a in lista) {
+		var almacen = lista[a];
+		for (var s in almacen["secciones"]) {
+			var seccion = almacen["secciones"][s];
+			for (var o in seccion["objetos"]) {
+				var objeto = seccion["objetos"][o];
+				
+				var trn = C("tr");
+				C(contenedor, trn);
+				C(trn, C("td", almacen["nombre"]));
+				C(trn, C("td", seccion["nombre"]));
+				C(trn, C("td", objeto["nombre"]));
+				
+				for (var t in allTags) {
+					var cb = C("input", [
+						"type", "checkbox",
+						"checked", objeto["tags"].indexOf(allTags[t]) !== -1,
+						"onclick", function(obj) {
+							//console.log(obj);
+							//console.log(obj.target);
+							//console.log(obj.target.objeto);
+							console.log(obj.target.tag);
+						}
+					]);
+					cb["objeto"] = objeto;
+					cb["tag"] = allTags[t];
+					C(trn, cb);
+				}
+			}
+		}
+	}
+	return contenedor;
+}
+
+
+
+
+
+
+
+
+
 </script>
+
+
+<div>
+Matriz con todos los objetos y tags
+<div id="tagMatrix"></div>
+</div>
+
+
