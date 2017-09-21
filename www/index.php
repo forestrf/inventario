@@ -9,10 +9,10 @@ C = crel2;
 
 <style>
 .almacen, .seccion, .objeto {
-	float: left;
+	background-color: rgba(0, 0, 0, 0.1);
 	border: 1px solid #000;
 	margin: 2px;
-	background-color: rgba(0, 0, 0, 0.1);
+	float: left;
 }
 .objeto .titulo {
 	background-color: #000;
@@ -23,8 +23,8 @@ C = crel2;
 }
 .descripcion {
 	margin-left: 20px;
-	display: inline;
 	font-size: 0.7em;
+	display: inline;
 	opacity: 0.7;
 }
 .clearer {
@@ -39,6 +39,44 @@ C = crel2;
 }
 .objeto > .titulo {
     padding: 5px;
+}
+.popup {
+	position: absolute;
+	z-index: 500;
+	width: 100%;
+	left: 0;
+	top: 0;
+}
+.popup .bg {
+	background-color: rgba(0, 0, 0, 0.75);
+	position: fixed;
+	z-index: -1;
+	height: 100%;
+	width: 100%;
+}
+.popup .close {
+	position: absolute;
+	height: 30px;
+	margin: 5%;
+	width: 30px;
+	right: 0;
+	top: -30px;
+}
+.popup .close button {
+	background-color: #f00;
+	border-width: 2px;
+	border-color: #f00;
+	font-weight: bold;
+	cursor: pointer;
+	height: 100%;
+	width: 100%;
+	color: #fff;
+}
+.popup .msg {
+	background-color: #fff;
+	padding: 1%;
+	margin: 5%;
+	border: 1px solid #aaa;
 }
 </style>
 
@@ -59,12 +97,18 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 
 <input id="Buscador" type="text" placeholder="Búsqueda"/>
 
-
-
-<div class="clearer"></div>
-
 <div id="inventario"></div>
 <div class="clearer"></div>
+
+<button>+ Objeto</button>
+
+<div class="popup" id="popup" style="display:none">
+	<div class="bg" id="bg" onclick="closePopup()"></div>
+	<div class="msg" id="msg">
+		jojojojo
+	</div>
+	<div class="close"><button onclick="closePopup()">X</botton></div>
+</div>
 
 
 
@@ -91,6 +135,18 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 
 
 
+
+
+function closePopup() {
+	document.getElementById("popup").style = "display:none";
+	document.getElementById("msg").innerHTML = "";
+}
+
+function showPopup(contentsDOM) {
+	closePopup();
+	document.getElementById("popup").style = "";
+	C(document.getElementById("msg"), contentsDOM);
+}
 
 
 
@@ -143,11 +199,8 @@ function DrawInventory(lista) {
 				
 				C(seccion["DOM"], objeto["DOM"]);
 			}
-			C(seccion["DOM"], C("div", ["class", "objeto"], C("Button", "+ Objeto")));
 		}
-		C(almacen["DOM"], C("div", ["class", "seccion"], C("Button", "+ Sección")));
 	}
-	C(contenedor, C("div", ["class", "almacen"], C("Button", "+ Almacén")));
 	return contenedor;
 }
 
