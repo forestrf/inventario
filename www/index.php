@@ -1,84 +1,13 @@
 <script src="js/accent-remover.js"></script>
 <script src="js/filter.js"></script>
 <script src="js/ajax.js"></script>
+<link rel="stylesheet" type="text/css" href="css/main.css"> 
 <script>
 crel2=function(){var c=arguments,b=c[0],g=c.length,b="string"===typeof b?document.createElement(b):b;if(1===g)return b;var a=c[1],e=2;if(a instanceof Array)for(var d=a.length,f;d;)switch(typeof(f=a[--d])){case "string":case "number":b.setAttribute(a[--d],f);break;default:b[a[--d]]=f}else--e;for(;g>e;)a=c[e++],"object"!==typeof a&&"function"!==typeof a&&(a=document.createTextNode(a)),b.appendChild(a);return b};
 
 C = crel2;
 </script>
 
-<style>
-.almacen, .seccion, .objeto {
-	background-color: rgba(0, 0, 0, 0.1);
-	border: 1px solid #000;
-	margin: 2px;
-	float: left;
-}
-.objeto .titulo {
-	background-color: #000;
-	color: #fff;
-}
-.nombre {
-	display: inline;
-}
-.descripcion {
-	margin-left: 20px;
-	font-size: 0.7em;
-	display: inline;
-	opacity: 0.7;
-}
-.clearer {
-	clear: both;
-}
-.objeto.alerta {
-	background-color: #F00;
-	color: #fff;
-}
-.objeto > div {
-    padding: 1px 2px 1px 2px;
-}
-.objeto > .titulo {
-    padding: 5px;
-}
-.popup {
-	position: absolute;
-	z-index: 500;
-	width: 100%;
-	left: 0;
-	top: 0;
-}
-.popup .bg {
-	background-color: rgba(0, 0, 0, 0.75);
-	position: fixed;
-	z-index: -1;
-	height: 100%;
-	width: 100%;
-}
-.popup .close {
-	position: absolute;
-	height: 30px;
-	margin: 5%;
-	width: 30px;
-	right: 0;
-	top: -30px;
-}
-.popup .close button {
-	background-color: #f00;
-	border-width: 2px;
-	border-color: #f00;
-	font-weight: bold;
-	cursor: pointer;
-	height: 100%;
-	width: 100%;
-	color: #fff;
-}
-.popup .msg {
-	background-color: #fff;
-	padding: 1%;
-	margin: 5%;
-	border: 1px solid #aaa;
-}
-</style>
 
 
 
@@ -152,61 +81,87 @@ function showPopup(contentsDOM) {
 
 
 
-
+function nombreDescripcion(json) {
+	return C("div",
+		C("div", ["class", "nombre"], json["nombre"]),
+		C("div", ["class", "descripcion"], json["descripcion"])
+	);
+}
 
 function DrawInventory(lista) {
 	var contenedor = C("div");
-	for (var i in lista) {
-		var almacen = lista[i];
-		almacen["DOM"] = C("div", ["class", "almacen"], C("div",
-			C("div", ["class", "nombre"], almacen["nombre"]),
-			C("div", ["class", "descripcion"], almacen["descripcion"])
-		));
-		C(contenedor, almacen["DOM"]);
+	
+	var objetos = lista.objetos;
+	var almacenes = lista.almacenes;
+	for (var i in almacenes) {
+		var almacen = almacenes[i];
+		C(contenedor, almacen["DOM"] = C("div", ["class", "almacen"], nombreDescripcion(almacen)));
 		for (var j in almacen["secciones"]) {
 			var seccion = almacen["secciones"][j];
-			seccion["DOM"] = C("div", ["class", "seccion"], C("div",
-				C("div", ["class", "nombre"], seccion["nombre"]),
-				C("div", ["class", "descripcion"], seccion["descripcion"])
-			));
-			C(almacen["DOM"], seccion["DOM"]);
-			for (var k in seccion["objetos"]) {
-				var objeto = seccion["objetos"][k];
-				var objetoClass = "objeto";
-				objetoClass = GetMinimoAlert(objeto, objetoClass);
-				var tagsDom;
-				objeto["DOM"] = C("div", ["class", objetoClass],
-					C("div", ["class", "titulo"],
-						C("div", ["class", "nombre"], C("button", objeto["nombre"])),
-						C("div", ["class", "descripcion"], objeto["descripcion"])
-					),
-					C("div", ["class", "cantidad"],
-						"Cantidad: ",
-						objeto["DOM_CNT"] = C("Button", objeto["cantidad"])
-					),
-					C("div", ["class", "minimo"],
-						"Mínimo: ", C("Button", objeto["minimo_alerta"])
-					),
-					C("div", ["class", "tags"], "Tags: ",
-						tagsDom = C("span", ["class", "tags-list"])
-					)
-				);
-				
-				for (var l = 0; l < objeto["tags"].length; l++) {
-					C(tagsDom, C("Button", objeto["tags"][j]));
+			C(almacen["DOM"], seccion["DOM"] = C("div", ["class", "seccion"], nombreDescripcion(seccion)));
+			
+			
+			for (var k in objetos) {
+				if (objetos[k].secciones[seccion.id]) {
+					C(seccion["DOM"], DrawObjeto(objetos[k], seccion.id));
 				}
-				C(tagsDom, C("Button", "+"));
-				
-				C(seccion["DOM"], objeto["DOM"]);
 			}
 		}
 	}
+	
 	return contenedor;
+}
+
+function DrawObjeto(objeto, id_seccion) {
+	console.log(objeto);
+	
+	var objetoClass = GetMinimoAlert(objeto, "objeto");
+	var tagsDom;
+	var dom = objeto.secciones[id_seccion]["DOM"] = C("div", ["class", objetoClass, "onmouseenter", onmouseenter, "onmouseleave", onmouseleave],
+		C("div", ["class", "titulo"],
+			C("div", ["class", "nombre"], C("button", objeto["nombre"])),
+			C("div", ["class", "descripcion"], objeto["descripcion"])
+		),
+		C("div", ["class", "cantidad"],
+			"Cantidad: ",
+			objeto["DOM_CNT"] = C("Button", objeto["secciones"][id_seccion]["cantidad"])
+		),
+		C("div", ["class", "minimo"],
+			"Mínimo: ", C("Button", objeto["minimo_alerta"])
+		),
+		C("div", ["class", "tags"], "Tags: ",
+			tagsDom = C("span", ["class", "tags-list"])
+		)
+	);
+	dom["objeto"] = objeto;
+	
+	for (var l in objeto["tags"]) {
+		C(tagsDom, C("Button", objeto["tags"][l]));
+	}
+	C(tagsDom, C("Button", "+"));
+	
+	return dom;
+	
+	function onmouseenter(info) {
+		for (var i in info.target["objeto"].secciones)
+			AddClass(info.target["objeto"].secciones[i]["DOM"], "over");
+	}
+	function onmouseleave(info) {
+		for (var i in info.target["objeto"].secciones)
+			RemoveClass(info.target["objeto"].secciones[i]["DOM"], "over");
+	}
 }
 
 function GetMinimoAlert(json, className) {
 	var hayMinimo = undefined !== json["minimo_alerta"]
 	return hayMinimo && json["cantidad"] < json["minimo_alerta"] ?  className + " alerta" : className.split(" alerta").join("");
+}
+
+function AddClass(dom, className) {
+	dom.className += " " + className;
+}
+function RemoveClass(dom, className) {
+	dom.className = dom.className.split(" " + className).join("");
 }
 
 

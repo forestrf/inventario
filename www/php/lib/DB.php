@@ -123,12 +123,16 @@ class DB {
 	
 	function get_secciones($id_almacen) {
 		$id_almacen = mysql_escape_mimic($id_almacen);
-		return $this->query("SELECT * FROM seccion_almacen WHERE id_almacen = {$id_almacen}");
+		return $this->query("SELECT id, nombre, descripcion FROM seccion_almacen WHERE id_almacen = {$id_almacen}");
 	}
 	
-	function get_objetos_seccion($id_seccion_almacen) {
-		$id_seccion_almacen = mysql_escape_mimic($id_seccion_almacen);
-		return $this->query("SELECT objeto.*, objeto_seccion_almacen.cantidad FROM objeto_seccion_almacen LEFT JOIN objeto ON objeto_seccion_almacen.id_objeto = objeto.id WHERE id_seccion_almacen = {$id_seccion_almacen}");
+	function get_all_objetos() {
+		return $this->query("SELECT * FROM objeto");
+	}
+	
+	function get_objeto_secciones($id_objeto) {
+		$id_objeto = mysql_escape_mimic($id_objeto);
+		return $this->query("SELECT id_seccion_almacen, cantidad FROM objeto_seccion_almacen WHERE id_objeto = {$id_objeto}");
 	}
 	
 	function get_tags_objeto($id_objeto) {

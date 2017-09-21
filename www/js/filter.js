@@ -7,31 +7,34 @@ var FilterSearch = (function(){
 	function filterAndSort(text, lista, callbackShow, callbackHide) {
 		// For each word remove tildes and lower the case
 		var search = text.trim().latinize().toLowerCase().split(" ");
-		RecursiveSearch(lista, search, callbackShow, callbackHide);
+		Search(lista, search, callbackShow, callbackHide);
 	}
 	
-	var levels = ["secciones", "objetos"];
-	
 	// Recursively find matches. callbackShow and callbackHide receive the dom element that should be hidden/showed if there is a match. Returns true if there is a match
-	function RecursiveSearch(json, search, callbackShow, callbackHide, lvl) {
-		if (lvl === undefined) lvl = 0;
-		var somethingFound = false;
-		for (var i = 0; i < json.length; i++) {
-			var lastLevel = undefined === json[i][levels[lvl]];
-			var somethingFoundInside = !lastLevel ? RecursiveSearch(json[i][levels[lvl]], search, callbackShow, callbackHide, lvl + 1) : false;
-			var hereFound = lastLevel && Test(search, json[i]["nombre"]);
-			if (undefined !== json[i]["tags"]) {
-				for (var j = 0; !hereFound && j < json[i]["tags"].length; j++) {
-					hereFound = hereFound || Test(search, json[i]["tags"][j]);
+	function Search(lista, search, callbackShow, callbackHide) {
+		var objetos = lista.objetos;
+		var hitSecciones = [], hitAlmacenes = [];
+		
+		for (var i = 0; i < objetos.length; i++) {
+			var hereFound = Test(search, objetos[i]["nombre"]);
+			if (undefined !== objetos[i]["tags"]) {
+				for (var j = 0; !hereFound && j < objetos[i]["tags"].length; j++) {
+					hereFound = hereFound || Test(search, objetos[i]["tags"][j]);
 				}
 			}
-			somethingFound = somethingFound || somethingFoundInside || hereFound;
+			
+			if (hereFound) {
+				hitSecciones.push(objetos[i]["secciones"]);
+				//hitAlmacenes TO DO;
+			}
 			
 			// Execute callbacks
-			var callback = somethingFoundInside || hereFound ? callbackShow : callbackHide;
-			callback(json[i]["DOM"]);
+			var callback = hereFound ? callbackShow : callbackHide;
+			for (var j in objetos[i]["secciones"])
+				callback(objetos[i]["secciones"][j]["DOM"]);
 		}
-		return somethingFound;
+		
+		
 	}
 	
 	// True if text contains all of the strings in the search array. False otherwise
