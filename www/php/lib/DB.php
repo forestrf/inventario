@@ -120,19 +120,16 @@ class DB {
 	function get_almacenes() {
 		return $this->query("SELECT * FROM almacen");
 	}
-	
-	function get_secciones($id_almacen) {
-		$id_almacen = mysql_escape_mimic($id_almacen);
-		return $this->query("SELECT id, nombre, descripcion FROM seccion_almacen WHERE id_almacen = {$id_almacen}");
+	function get_secciones() {
+		return $this->query("SELECT * FROM seccion_almacen");
 	}
-	
-	function get_all_objetos() {
+	function get_objetos() {
 		return $this->query("SELECT * FROM objeto");
 	}
 	
 	function get_objeto_secciones($id_objeto) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
-		return $this->query("SELECT id_seccion_almacen, cantidad FROM objeto_seccion_almacen WHERE id_objeto = {$id_objeto}");
+		return $this->query("SELECT id_seccion, cantidad FROM objeto_seccion WHERE id_objeto = {$id_objeto}");
 	}
 	
 	function get_tags_objeto($id_objeto) {

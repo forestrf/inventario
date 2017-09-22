@@ -13,28 +13,19 @@ var FilterSearch = (function(){
 	// Recursively find matches. callbackShow and callbackHide receive the dom element that should be hidden/showed if there is a match. Returns true if there is a match
 	function Search(lista, search, callbackShow, callbackHide) {
 		var objetos = lista.objetos;
-		var hitSecciones = [], hitAlmacenes = [];
 		
 		for (var i = 0; i < objetos.length; i++) {
-			var hereFound = Test(search, objetos[i]["nombre"]);
+			var found = Test(search, objetos[i]["nombre"]);
 			if (undefined !== objetos[i]["tags"]) {
-				for (var j = 0; !hereFound && j < objetos[i]["tags"].length; j++) {
-					hereFound = hereFound || Test(search, objetos[i]["tags"][j]);
+				for (var j = 0; !found && j < objetos[i]["tags"].length; j++) {
+					found = found || Test(search, objetos[i]["tags"][j]);
 				}
 			}
 			
-			if (hereFound) {
-				hitSecciones.push(objetos[i]["secciones"]);
-				//hitAlmacenes TO DO;
-			}
-			
 			// Execute callbacks
-			var callback = hereFound ? callbackShow : callbackHide;
-			for (var j in objetos[i]["secciones"])
-				callback(objetos[i]["secciones"][j]["DOM"]);
+			var callback = found ? callbackShow : callbackHide;
+			callback(objetos[i]["DOM"]);
 		}
-		
-		
 	}
 	
 	// True if text contains all of the strings in the search array. False otherwise

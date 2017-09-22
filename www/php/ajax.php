@@ -12,21 +12,23 @@ if (isset($_GET['action'])) {
 	
 	switch($_GET['action']) {
 		case 'getinventario':
-			$objetos = $db->get_all_objetos();
+			$objetos = $db->get_objetos();
 			foreach ($objetos as &$objeto) {
 				$objeto["tags"] = array_map(function ($d) {return $d["nombre"];}, $db->get_tags_objeto($objeto["id"]));
-				foreach ($db->get_objeto_secciones($objeto["id"]) as &$seccion) {
-					$objeto["secciones"][$seccion["id_seccion_almacen"]] = &$seccion;
-				}
+				$objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
 			}
 			
-			$almacenes = $db->get_almacenes();
-			foreach ($almacenes as &$almacen) {
-				$almacen["secciones"] = $db->get_secciones($almacen["id"]);
+			foreach ($db->get_almacenes() as &$almacen) {
+				$almacenes[$almacen["id"]] = &$almacen;
+			}
+			
+			foreach ($db->get_secciones() as &$seccion) {
+				$secciones[$seccion["id"]] = &$seccion;
 			}
 			
 			echo json_encode(array(
 				"almacenes" => $almacenes,
+				"secciones" => $secciones,
 				"objetos" => $objetos
 			), 1);
 			break;

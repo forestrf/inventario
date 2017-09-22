@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 24-07-2017 a las 14:00:37
+-- Tiempo de generación: 22-09-2017 a las 11:22:36
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -11,12 +11,6 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Base de datos: `almacen`
@@ -54,13 +48,13 @@ CREATE TABLE `almacen` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `etiqueta`
+-- Estructura de tabla para la tabla `files`
 --
 
-CREATE TABLE `etiqueta` (
+CREATE TABLE `files` (
   `id` int(11) NOT NULL,
-  `nombre` int(11) NOT NULL,
-  `id_objeto` int(11) NOT NULL
+  `nombre` text COLLATE utf8_bin NOT NULL,
+  `contenido` mediumblob
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
@@ -85,26 +79,27 @@ CREATE TABLE `objeto` (
   `id` int(11) NOT NULL,
   `nombre` text COLLATE utf8_bin NOT NULL,
   `descripcion` text COLLATE utf8_bin NOT NULL,
-  `minimo_alerta` int(11) NOT NULL
+  `minimo_alerta` int(11) NOT NULL,
+  `imagen` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `objeto_seccion_almacen`
+-- Estructura de tabla para la tabla `objeto_seccion`
 --
 
-CREATE TABLE `objeto_seccion_almacen` (
+CREATE TABLE `objeto_seccion` (
   `id_objeto` int(11) NOT NULL,
-  `id_seccion_almacen` int(11) NOT NULL,
+  `id_seccion` int(11) NOT NULL,
   `cantidad` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
--- Disparadores `objeto_seccion_almacen`
+-- Disparadores `objeto_seccion`
 --
 DELIMITER $$
-CREATE TRIGGER `objeto actualizado` AFTER UPDATE ON `objeto_seccion_almacen` FOR EACH ROW INSERT INTO `historico_objeto`
+CREATE TRIGGER `objeto actualizado` AFTER UPDATE ON `objeto_seccion` FOR EACH ROW INSERT INTO `historico_objeto`
 (id_objeto, 
  fecha,
  cantidad)
@@ -131,6 +126,28 @@ CREATE TABLE `seccion_almacen` (
   `id_almacen` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tag`
+--
+
+CREATE TABLE `tag` (
+  `id` int(11) NOT NULL,
+  `nombre` text COLLATE utf8_bin NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tag_objeto`
+--
+
+CREATE TABLE `tag_objeto` (
+  `id_tag` int(11) NOT NULL,
+  `id_objeto` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
 --
 -- Índices para tablas volcadas
 --
@@ -142,11 +159,10 @@ ALTER TABLE `almacen`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indices de la tabla `etiqueta`
+-- Indices de la tabla `files`
 --
-ALTER TABLE `etiqueta`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `id_objeto` (`id_objeto`);
+ALTER TABLE `files`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indices de la tabla `historico_objeto`
@@ -158,14 +174,15 @@ ALTER TABLE `historico_objeto`
 -- Indices de la tabla `objeto`
 --
 ALTER TABLE `objeto`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `objeto_ibfk_1` (`imagen`);
 
 --
--- Indices de la tabla `objeto_seccion_almacen`
+-- Indices de la tabla `objeto_seccion`
 --
-ALTER TABLE `objeto_seccion_almacen`
-  ADD PRIMARY KEY (`id_objeto`,`id_seccion_almacen`),
-  ADD KEY `id_seccion_almacen` (`id_seccion_almacen`);
+ALTER TABLE `objeto_seccion`
+  ADD PRIMARY KEY (`id_objeto`,`id_seccion`),
+  ADD KEY `id_seccion_almacen` (`id_seccion`);
 
 --
 -- Indices de la tabla `seccion_almacen`
@@ -175,6 +192,19 @@ ALTER TABLE `seccion_almacen`
   ADD KEY `id_almacen` (`id_almacen`);
 
 --
+-- Indices de la tabla `tag`
+--
+ALTER TABLE `tag`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indices de la tabla `tag_objeto`
+--
+ALTER TABLE `tag_objeto`
+  ADD PRIMARY KEY (`id_tag`,`id_objeto`),
+  ADD KEY `id_objeto` (`id_objeto`);
+
+--
 -- AUTO_INCREMENT de las tablas volcadas
 --
 
@@ -182,31 +212,30 @@ ALTER TABLE `seccion_almacen`
 -- AUTO_INCREMENT de la tabla `almacen`
 --
 ALTER TABLE `almacen`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 --
--- AUTO_INCREMENT de la tabla `etiqueta`
+-- AUTO_INCREMENT de la tabla `files`
 --
-ALTER TABLE `etiqueta`
+ALTER TABLE `files`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT de la tabla `objeto`
 --
 ALTER TABLE `objeto`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 --
 -- AUTO_INCREMENT de la tabla `seccion_almacen`
 --
 ALTER TABLE `seccion_almacen`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+--
+-- AUTO_INCREMENT de la tabla `tag`
+--
+ALTER TABLE `tag`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 --
 -- Restricciones para tablas volcadas
 --
-
---
--- Filtros para la tabla `etiqueta`
---
-ALTER TABLE `etiqueta`
-  ADD CONSTRAINT `etiqueta_ibfk_1` FOREIGN KEY (`id_objeto`) REFERENCES `objeto` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `historico_objeto`
@@ -215,19 +244,28 @@ ALTER TABLE `historico_objeto`
   ADD CONSTRAINT `historico_objeto_ibfk_1` FOREIGN KEY (`id_objeto`) REFERENCES `objeto` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Filtros para la tabla `objeto_seccion_almacen`
+-- Filtros para la tabla `objeto`
 --
-ALTER TABLE `objeto_seccion_almacen`
-  ADD CONSTRAINT `objeto_seccion_almacen_ibfk_1` FOREIGN KEY (`id_objeto`) REFERENCES `objeto` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `objeto_seccion_almacen_ibfk_2` FOREIGN KEY (`id_seccion_almacen`) REFERENCES `seccion_almacen` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `objeto`
+  ADD CONSTRAINT `objeto_ibfk_1` FOREIGN KEY (`imagen`) REFERENCES `files` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `objeto_seccion`
+--
+ALTER TABLE `objeto_seccion`
+  ADD CONSTRAINT `objeto_seccion_ibfk_1` FOREIGN KEY (`id_objeto`) REFERENCES `objeto` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `objeto_seccion_ibfk_2` FOREIGN KEY (`id_seccion`) REFERENCES `seccion_almacen` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `seccion_almacen`
 --
 ALTER TABLE `seccion_almacen`
   ADD CONSTRAINT `seccion_almacen_ibfk_1` FOREIGN KEY (`id_almacen`) REFERENCES `almacen` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+--
+-- Filtros para la tabla `tag_objeto`
+--
+ALTER TABLE `tag_objeto`
+  ADD CONSTRAINT `tag_objeto_ibfk_1` FOREIGN KEY (`id_objeto`) REFERENCES `objeto` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `tag_objeto_ibfk_2` FOREIGN KEY (`id_tag`) REFERENCES `tag` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+COMMIT;

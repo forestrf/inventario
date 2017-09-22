@@ -8,8 +8,10 @@ button {
 .objeto, .titulo {
 	transition: 0.2s all ease;
 }
-.almacen, .seccion, .objeto {
-	background-color: rgba(0, 0, 0, 0.1);
+.objeto {
+	background-color: #ddd;
+	text-align: left;
+	padding: 0;
 	border: 1px solid #000;
 	margin: 2px;
 	float: left;
@@ -22,12 +24,12 @@ button {
 	background-color: #000;
 	color: #fff;
 }
-.objeto.over {
+.objeto:hover {
 	border-color: #42004a;
 	background-color: #ebc3f0;
 	box-shadow: 0 0 10px #000;
 }
-.objeto.over > .titulo {
+.objeto:hover > .titulo {
 	background-color: #42004a;
 }
 

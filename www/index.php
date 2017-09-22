@@ -46,6 +46,7 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 
 AJAX('php/ajax.php?action=getinventario', null, function(x) {
 	var lista = JSON.parse(x.responseText);
+	r = lista;
 	
 	// Dibujar toda la lista en el DOM
 	C(document.getElementById("inventario"), DrawInventory(lista));
@@ -91,70 +92,54 @@ function nombreDescripcion(json) {
 function DrawInventory(lista) {
 	var contenedor = C("div");
 	
-	var objetos = lista.objetos;
-	var almacenes = lista.almacenes;
-	for (var i in almacenes) {
-		var almacen = almacenes[i];
-		C(contenedor, almacen["DOM"] = C("div", ["class", "almacen"], nombreDescripcion(almacen)));
-		for (var j in almacen["secciones"]) {
-			var seccion = almacen["secciones"][j];
-			C(almacen["DOM"], seccion["DOM"] = C("div", ["class", "seccion"], nombreDescripcion(seccion)));
-			
-			
-			for (var k in objetos) {
-				if (objetos[k].secciones[seccion.id]) {
-					C(seccion["DOM"], DrawObjeto(objetos[k], seccion.id));
-				}
-			}
-		}
+	for (var i in lista.objetos) {
+		C(contenedor, DrawObjeto(lista.objetos[i], lista));
 	}
 	
 	return contenedor;
 }
 
-function DrawObjeto(objeto, id_seccion) {
-	console.log(objeto);
-	
-	var objetoClass = GetMinimoAlert(objeto, "objeto");
-	var tagsDom;
-	var dom = objeto.secciones[id_seccion]["DOM"] = C("div", ["class", objetoClass, "onmouseenter", onmouseenter, "onmouseleave", onmouseleave],
+function DrawObjeto(objeto, lista) {
+	var cantidad = GetCantidad(objeto);
+	var tags;
+	objeto["DOM"] = C("button", ["class", "objeto", "onclick", edit],
 		C("div", ["class", "titulo"],
-			C("div", ["class", "nombre"], C("button", objeto["nombre"])),
+			C("div", ["class", "nombre"], objeto["nombre"]),
 			C("div", ["class", "descripcion"], objeto["descripcion"])
 		),
-		C("div", ["class", "cantidad"],
-			"Cantidad: ",
-			objeto["DOM_CNT"] = C("Button", objeto["secciones"][id_seccion]["cantidad"])
-		),
-		C("div", ["class", "minimo"],
-			"Mínimo: ", C("Button", objeto["minimo_alerta"])
-		),
-		C("div", ["class", "tags"], "Tags: ",
-			tagsDom = C("span", ["class", "tags-list"])
-		)
+		C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
+		C("div", ["class", "minimo"], "Mínimo: ", objeto["minimo_alerta"]),
+		C("div", ["class", "tags"], "Tags: ", tags = C("span", ["class", "tags-list"]))
 	);
-	dom["objeto"] = objeto;
+	for (var l in objeto["tags"]) C(tags, objeto["tags"][l]);
+	if (objeto["tags"].length === 0) C(tags, "---");
 	
-	for (var l in objeto["tags"]) {
-		C(tagsDom, C("Button", objeto["tags"][l]));
-	}
-	C(tagsDom, C("Button", "+"));
+	objeto["DOM"]["objeto"] = objeto;
+	var cb = cantidad < parseInt(objeto["minimo_alerta"]) ? AddClass : RemoveClass;
+	cb(objeto["DOM"], "alerta");
 	
-	return dom;
 	
-	function onmouseenter(info) {
-		for (var i in info.target["objeto"].secciones)
-			AddClass(info.target["objeto"].secciones[i]["DOM"], "over");
-	}
-	function onmouseleave(info) {
-		for (var i in info.target["objeto"].secciones)
-			RemoveClass(info.target["objeto"].secciones[i]["DOM"], "over");
+	return objeto["DOM"];
+
+	function edit() {
+		var popupDOM = C();
+		/*
+		for (var s in objeto["secciones"]) {
+			console.log(objeto["secciones"][s]);
+			var seccion = lista.secciones[objeto["secciones"][s]["id_seccion"]];
+			var almacen = lista.almacenes[seccion.id_almacen];
+			C(cnt, C("Button", almacen.nombre + " / " + seccion.nombre, ": ", objeto["secciones"][s]["cantidad"]));
+		}
+		*/
+		
+		showPopup(popupDOM);
 	}
 }
 
-function GetMinimoAlert(json, className) {
-	var hayMinimo = undefined !== json["minimo_alerta"]
-	return hayMinimo && json["cantidad"] < json["minimo_alerta"] ?  className + " alerta" : className.split(" alerta").join("");
+function GetCantidad(objeto) {
+	return objeto["secciones"].reduce(function(prev, cur) {
+		return { cantidad: parseInt(prev.cantidad) + parseInt(cur.cantidad) };
+	})["cantidad"];
 }
 
 function AddClass(dom, className) {
