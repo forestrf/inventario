@@ -10,7 +10,7 @@
 <script type="text/javascript" src="js/libs/jquery/jquery-ui-1.10.3.min.js"></script>
 <script type="text/javascript" src="js/libs/bootstrap-tokenfield/bootstrap-tokenfield.js"></script>
 <script type="text/javascript" src="js/libs/bootstrap-tokenfield/typeahead.bundle.min.js"></script>
-<link href="js/libs/bootstrap-tokenfield/tokenfield-typeahead.min.css" type="text/css" rel="stylesheet">
+<link href="js/libs/bootstrap-tokenfield/tokenfield-typeahead.css" type="text/css" rel="stylesheet">
 <link href="js/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
 <link href="js/libs/jquery/themes/smoothness/jquery-ui.min.css" type="text/css" rel="stylesheet">
 <link href="js/libs/bootstrap-tokenfield/bootstrap-tokenfield.min.css" type="text/css" rel="stylesheet">
@@ -43,7 +43,6 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 	<div class="msg" id="msg">
 		jojojojo
 	</div>
-	<div class="close"><button onclick="closePopup()">X</botton></div>
 </div>
 
 
@@ -120,31 +119,43 @@ function DrawObjeto(objeto, lista) {
 	return objeto["DOM"];
 
 	function edit() {
+		var actualizarStr = "Actualizar";
 		var tags;
+		var cantidades;
 		var popupDOM = C("div",
 			C("form",
 				C("div", "Nombre"),
 				C("div", C("input", ["type", "text", "value", objeto["nombre"], "class", "form-control"])),
-				C("div", C("input", ["type", "submit", "value", "Actualizar", "class", "btn btn-primary"]))
+				C("div", C("input", ["type", "submit", "value", actualizarStr, "class", "btn btn-primary"]))
 			),
 			C("form",
 				C("div", "Descripción"),
 				C("div", C("input", ["type", "text", "value", objeto["descripcion"], "class", "form-control"])),
-				C("div", C("input", ["type", "submit", "value", "Actualizar", "class", "btn btn-primary"]))
+				C("div", C("input", ["type", "submit", "value", actualizarStr, "class", "btn btn-primary"]))
 			),
 			C("form",
 				C("div", "Cantidad mínima"),
 				C("div", C("input", ["type", "text", "value", objeto["minimo_alerta"], "class", "form-control", "onchange", onMinimoChange])),
-				C("div", C("input", ["type", "submit", "value", "Actualizar", "class", "btn btn-primary"]))
+				C("div", C("input", ["type", "submit", "value", actualizarStr, "class", "btn btn-primary"]))
 			),
-			C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
-			
+			C("form",
+				C("div", "Cantidad"),
+				C("div", cantidades = C("div", 
+					C("input", ["type", "text", "value", objeto["tags"], "class", "form-control"])),
+					cantidad
+				),
+				C("div", C("input", ["type", "submit", "value", actualizarStr, "class", "btn btn-primary"]))
+			),
 			C("form",
 				C("div", "Tags"),
 				C("div", tags = C("input", ["type", "text", "value", objeto["tags"], "class", "form-control"])),
-				C("div", C("input", ["type", "submit", "value", "Actualizar", "class", "btn btn-primary"]))
+				C("div", C("input", ["type", "submit", "value", actualizarStr, "class", "btn btn-primary"]))
 			)
 		);
+		
+		for (var i = 0; i < objeto["secciones"].length; i++) {
+			C(cantidades, DrawCantidadInput(objeto["secciones"][i]));
+		}
 		
 		var engine = new Bloodhound({
 			local: [{value: 'red'}, {value: 'blue'}, {value: 'green'} , {value: 'yellow'}, {value: 'violet'}, {value: 'brown'}, {value: 'purple'}, {value: 'black'}, {value: 'white'}],
@@ -177,6 +188,40 @@ function DrawObjeto(objeto, lista) {
 			if (isNaN(ev.target.value)) ev.target.value = 0;
 			if (ev.target.value < 0) ev.target.value = 0;
 		}
+		
+		function DrawCantidadInput(seccionObjeto) {
+			var seccion = lista.secciones[seccionObjeto["id_seccion"]];
+			var almacen = lista.almacenes[seccion.id_almacen];
+			var seccionesSelect, almacenesSelect;
+			var dropDown = C("div", ["class", "cantidad-block"],
+				almacenesSelect = C("select"),
+				seccionesSelect = C("select"),
+				C("input", ["type", "text", "value", seccionObjeto.cantidad, "class", "form-control"])
+			);
+			ToOptions(almacenesSelect, lista.almacenes, almacen);
+			ToOptions(seccionesSelect, filterSecciones(almacen), seccion);
+			return dropDown;
+		}
+		
+		function ToOptions(parentElement, elementos, selected) {
+			console.log(elementos);
+			for (var i in elementos) {
+				console.log(elementos[i]);
+				var option = C("option", ["value", elementos[i].id], elementos[i].nombre);
+				if (selected.id === elementos[i].id) option.setAttribute("selected", 1);
+				C(parentElement, option);
+			}
+		}
+		
+		function filterSecciones(almacen) {
+			var seccionesFiltradas = {};
+			for (var i in lista.secciones) {
+				if (lista.secciones[i].id_almacen === almacen.id) {
+					seccionesFiltradas[i] = lista.secciones[i];
+				}
+			}
+			return seccionesFiltradas;
+		}		
 	}
 }
 
