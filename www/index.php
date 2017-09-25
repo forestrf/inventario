@@ -140,10 +140,7 @@ function DrawObjeto(objeto, lista) {
 			),
 			C("form",
 				C("div", "Cantidad"),
-				C("div", cantidades = C("div", 
-					C("input", ["type", "text", "value", objeto["tags"], "class", "form-control"])),
-					cantidad
-				),
+				C("div", cantidades = C("div")),
 				C("div", C("input", ["type", "submit", "value", actualizarStr, "class", "btn btn-primary"]))
 			),
 			C("form",
@@ -156,6 +153,8 @@ function DrawObjeto(objeto, lista) {
 		for (var i = 0; i < objeto["secciones"].length; i++) {
 			C(cantidades, DrawCantidadInput(objeto["secciones"][i]));
 		}
+		var cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
+		C(cantidades, C("span", C("span", "Total:"), cantidadROInput));
 		
 		var engine = new Bloodhound({
 			local: [{value: 'red'}, {value: 'blue'}, {value: 'green'} , {value: 'yellow'}, {value: 'violet'}, {value: 'brown'}, {value: 'purple'}, {value: 'black'}, {value: 'white'}],
@@ -173,16 +172,9 @@ function DrawObjeto(objeto, lista) {
 			allowEditing: true
 		});
 		
-		/*
-		for (var s in objeto["secciones"]) {
-			console.log(objeto["secciones"][s]);
-			var seccion = lista.secciones[objeto["secciones"][s]["id_seccion"]];
-			var almacen = lista.almacenes[seccion.id_almacen];
-			C(cnt, C("Button", almacen.nombre + " / " + seccion.nombre, ": ", objeto["secciones"][s]["cantidad"]));
-		}
-		*/
-		
 		showPopup(popupDOM);
+		
+		
 		
 		function onMinimoChange(ev) {
 			if (isNaN(ev.target.value)) ev.target.value = 0;
@@ -196,7 +188,10 @@ function DrawObjeto(objeto, lista) {
 			var dropDown = C("div", ["class", "cantidad-block"],
 				almacenesSelect = C("select"),
 				seccionesSelect = C("select"),
-				C("input", ["type", "text", "value", seccionObjeto.cantidad, "class", "form-control"])
+				C("input", ["type", "text", "value", seccionObjeto.cantidad, "class", "form-control", "onchange", function(x) {
+					seccionObjeto.cantidad = x.target.value;
+					cantidadROInput.value = GetCantidad(objeto);
+				}])
 			);
 			ToOptions(almacenesSelect, lista.almacenes, almacen);
 			ToOptions(seccionesSelect, filterSecciones(almacen), seccion);
