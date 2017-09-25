@@ -11,7 +11,7 @@ button {
 .objeto {
 	background-color: #ddd;
 	text-align: left;
-	padding: 0;
+	padding: 0 0 3px 0;
 	border: 1px solid #000;
 	margin: 2px;
 	float: left;
@@ -38,6 +38,15 @@ button {
 	color: #fff;
 }
 
+.objeto .tags-list span {
+	border: 1px solid #aaa;
+	border-radius: 4px;
+	margin-right: 4px;
+	padding: 0px 3px;
+	background-color: #eee;
+	color: #444;
+}
+
 .nombre {
 	display: inline;
 }
@@ -50,7 +59,7 @@ button {
 
 .popup {
 	position: absolute;
-	z-index: 500;
+	z-index: 0;
 	width: 100%;
 	left: 0;
 	top: 0;
@@ -85,4 +94,33 @@ button {
 	padding: 1%;
 	margin: 5%;
 	border: 1px solid #aaa;
+}
+
+.popup .msg form {
+	border: 1px solid #ddd;
+	display: inline-block;
+	padding: 6px;
+	margin: 3px;
+	background-color: #fafafa;
+}
+.popup .msg form > div {
+	display: inline-block;
+	margin-right: 10px;
+	vertical-align: top;
+}
+.popup .msg form > div:nth-child(1) {
+	width: 200px;
+	text-align: right;
+}
+.popup .msg form > div:nth-child(2),
+.popup .msg form > div:nth-child(2) input {
+	width: 300px;
+}
+.popup .msg form > div:nth-child(3),
+.popup .msg form > div:nth-child(3) input {
+	width: 100px;
+}
+
+.popup .msg .tokenfield .token .token-label {
+	max-width: 180px !important;
 }

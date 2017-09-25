@@ -1,12 +1,19 @@
+<link rel="stylesheet" type="text/css" href="css/main.css"> 
+
 <script src="js/accent-remover.js"></script>
 <script src="js/filter.js"></script>
 <script src="js/ajax.js"></script>
-<link rel="stylesheet" type="text/css" href="css/main.css"> 
-<script>
-crel2=function(){var c=arguments,b=c[0],g=c.length,b="string"===typeof b?document.createElement(b):b;if(1===g)return b;var a=c[1],e=2;if(a instanceof Array)for(var d=a.length,f;d;)switch(typeof(f=a[--d])){case "string":case "number":b.setAttribute(a[--d],f);break;default:b[a[--d]]=f}else--e;for(;g>e;)a=c[e++],"object"!==typeof a&&"function"!==typeof a&&(a=document.createTextNode(a)),b.appendChild(a);return b};
+<script src="js/crel2.js"></script>
 
-C = crel2;
-</script>
+<!-- Tokenfield -->
+<script type="text/javascript" src="js/libs/jquery/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="js/libs/jquery/jquery-ui-1.10.3.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap-tokenfield/bootstrap-tokenfield.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap-tokenfield/typeahead.bundle.min.js"></script>
+<link href="js/libs/bootstrap-tokenfield/tokenfield-typeahead.min.css" type="text/css" rel="stylesheet">
+<link href="js/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
+<link href="js/libs/jquery/themes/smoothness/jquery-ui.min.css" type="text/css" rel="stylesheet">
+<link href="js/libs/bootstrap-tokenfield/bootstrap-tokenfield.min.css" type="text/css" rel="stylesheet">
 
 
 
@@ -24,7 +31,7 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 </pre>
 
 
-<input id="Buscador" type="text" placeholder="Búsqueda"/>
+<input id="Buscador" type="text" placeholder="Búsqueda" class="form-control"/>
 
 <div id="inventario"></div>
 <div class="clearer"></div>
@@ -71,7 +78,6 @@ function closePopup() {
 	document.getElementById("popup").style = "display:none";
 	document.getElementById("msg").innerHTML = "";
 }
-
 function showPopup(contentsDOM) {
 	closePopup();
 	document.getElementById("popup").style = "";
@@ -80,14 +86,6 @@ function showPopup(contentsDOM) {
 
 
 
-
-
-function nombreDescripcion(json) {
-	return C("div",
-		C("div", ["class", "nombre"], json["nombre"]),
-		C("div", ["class", "descripcion"], json["descripcion"])
-	);
-}
 
 function DrawInventory(lista) {
 	var contenedor = C("div");
@@ -111,8 +109,8 @@ function DrawObjeto(objeto, lista) {
 		C("div", ["class", "minimo"], "Mínimo: ", objeto["minimo_alerta"]),
 		C("div", ["class", "tags"], "Tags: ", tags = C("span", ["class", "tags-list"]))
 	);
-	for (var l in objeto["tags"]) C(tags, objeto["tags"][l]);
-	if (objeto["tags"].length === 0) C(tags, "---");
+	var tagsArr = objeto["tagsArray"] = objeto["tags"].split(",").filter(function(x){return x !== ""});
+	for (var i in tagsArr) C(tags, C("span", tagsArr[i]));
 	
 	objeto["DOM"]["objeto"] = objeto;
 	var cb = cantidad < parseInt(objeto["minimo_alerta"]) ? AddClass : RemoveClass;
@@ -122,7 +120,48 @@ function DrawObjeto(objeto, lista) {
 	return objeto["DOM"];
 
 	function edit() {
-		var popupDOM = C();
+		var tags;
+		var popupDOM = C("div",
+			C("form",
+				C("div", "Nombre"),
+				C("div", C("input", ["type", "text", "value", objeto["nombre"], "class", "form-control"])),
+				C("div", C("input", ["type", "submit", "value", "Actualizar", "class", "btn btn-primary"]))
+			),
+			C("form",
+				C("div", "Descripción"),
+				C("div", C("input", ["type", "text", "value", objeto["descripcion"], "class", "form-control"])),
+				C("div", C("input", ["type", "submit", "value", "Actualizar", "class", "btn btn-primary"]))
+			),
+			C("form",
+				C("div", "Cantidad mínima"),
+				C("div", C("input", ["type", "text", "value", objeto["minimo_alerta"], "class", "form-control", "onchange", onMinimoChange])),
+				C("div", C("input", ["type", "submit", "value", "Actualizar", "class", "btn btn-primary"]))
+			),
+			C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
+			
+			C("form",
+				C("div", "Tags"),
+				C("div", tags = C("input", ["type", "text", "value", objeto["tags"], "class", "form-control"])),
+				C("div", C("input", ["type", "submit", "value", "Actualizar", "class", "btn btn-primary"]))
+			)
+		);
+		
+		var engine = new Bloodhound({
+			local: [{value: 'red'}, {value: 'blue'}, {value: 'green'} , {value: 'yellow'}, {value: 'violet'}, {value: 'brown'}, {value: 'purple'}, {value: 'black'}, {value: 'white'}],
+			datumTokenizer: function(d) {
+				return Bloodhound.tokenizers.whitespace(d.value);
+			},
+			queryTokenizer: Bloodhound.tokenizers.whitespace
+		});
+
+		engine.initialize();
+
+		$(tags).tokenfield({
+			typeahead: [null, { source: engine.ttAdapter() }],
+			showAutocompleteOnFocus: true,
+			allowEditing: true
+		});
+		
 		/*
 		for (var s in objeto["secciones"]) {
 			console.log(objeto["secciones"][s]);
@@ -133,6 +172,11 @@ function DrawObjeto(objeto, lista) {
 		*/
 		
 		showPopup(popupDOM);
+		
+		function onMinimoChange(ev) {
+			if (isNaN(ev.target.value)) ev.target.value = 0;
+			if (ev.target.value < 0) ev.target.value = 0;
+		}
 	}
 }
 
@@ -236,7 +280,12 @@ function DrawTagMatrix(lista) {
 
 </script>
 
-
+<select multiple name="interests" size="4">
+ <option value="arts">Arts</option>
+ <option value="pol" >Politics</option>
+ <option value="sci" >Science</option>
+ <option value="comp">Computers and internet</option>
+</select>
 <div>
 Matriz con todos los objetos y tags
 <div id="tagMatrix"></div>

@@ -14,7 +14,6 @@ if (isset($_GET['action'])) {
 		case 'getinventario':
 			$objetos = $db->get_objetos();
 			foreach ($objetos as &$objeto) {
-				$objeto["tags"] = array_map(function ($d) {return $d["nombre"];}, $db->get_tags_objeto($objeto["id"]));
 				$objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
 			}
 			
