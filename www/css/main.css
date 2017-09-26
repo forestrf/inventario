@@ -106,17 +106,41 @@ button {
 .popup .msg form > div:nth-child(3) > input {
 	width: 100%;
 }
+.popup .msg form .cantidades .add {
+	width: 100%;
+	margin-bottom: 15px;
+}
 .popup .msg form .cantidad-block {
 	border: 1px solid #aaa;
-	background-color: #eee;
-	margin: 5px 0;
+	background-color: #f6ffd2;
+	margin-bottom: 10px;
 	padding: 5px;
 	border-radius: 5px;
+	box-shadow: 2px 2px 2px #aaa;
+}
+.popup .msg form .cantidad-block > div {
+	vertical-align: top;
+	display: inline-block;
+}
+.popup .msg form .cantidad-block .contenido {
+	width: 90%;
+}
+.popup .msg form .cantidad-block .borrar {
+	margin-left: 1%;
+	width: 9%;
+}
+.popup .msg form .cantidad-block .borrar button {
+	font-weight: bold;
+	height: 30px;
+	width: 100%;
 }
 .popup .msg form .cantidad-block select {
-	width: 50%;
+	width: 49.5%;
 	height: 30px;
 	margin-bottom: 5px;
+}
+.popup .msg form .cantidad-block select:nth-child(1) {
+	margin-right: 1%;
 }
 .popup .msg form > div:nth-child(2) span > span {
 	display: inline-block;

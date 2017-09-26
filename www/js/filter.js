@@ -16,10 +16,9 @@ var FilterSearch = (function(){
 		
 		for (var i = 0; i < objetos.length; i++) {
 			var found = Test(search, objetos[i]["nombre"]);
-			if (undefined !== objetos[i]["tags"]) {
-				for (var j = 0; !found && j < objetos[i]["tags"].length; j++) {
-					found = found || Test(search, objetos[i]["tags"][j]);
-				}
+			for (var j = 0; !found && j < objetos[i]["tags"].length; j++) {
+				console.log(objetos[i]["tags"][j]);
+				found = found || Test(search, objetos[i]["tags"][j]);
 			}
 			
 			// Execute callbacks

@@ -9,8 +9,6 @@
 <script type="text/javascript" src="js/libs/jquery/jquery-1.9.1.min.js"></script>
 <script type="text/javascript" src="js/libs/jquery/jquery-ui-1.10.3.min.js"></script>
 <script type="text/javascript" src="js/libs/bootstrap-tokenfield/bootstrap-tokenfield.js"></script>
-<script type="text/javascript" src="js/libs/bootstrap-tokenfield/typeahead.bundle.min.js"></script>
-<link href="js/libs/bootstrap-tokenfield/tokenfield-typeahead.css" type="text/css" rel="stylesheet">
 <link href="js/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
 <link href="js/libs/jquery/themes/smoothness/jquery-ui.min.css" type="text/css" rel="stylesheet">
 <link href="js/libs/bootstrap-tokenfield/bootstrap-tokenfield.min.css" type="text/css" rel="stylesheet">
@@ -40,23 +38,25 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 
 <div class="popup" id="popup" style="display:none">
 	<div class="bg" id="bg" onclick="closePopup()"></div>
-	<div class="msg" id="msg">
-		jojojojo
-	</div>
+	<div class="msg" id="msg"></div>
 </div>
 
 
 
 <script>
 
+var tagsArrayAutocomplete = [];
 
 AJAX('php/ajax.php?action=getinventario', null, function(x) {
 	var lista = JSON.parse(x.responseText);
-	r = lista;
+	
+	FixTags(lista.objetos);
 	
 	// Dibujar toda la lista en el DOM
 	C(document.getElementById("inventario"), DrawInventory(lista));
 	C(document.getElementById("tagMatrix"), DrawTagMatrix(lista));
+	
+	tagsArrayAutocomplete = GetAutocompleteTags(lista.objetos);
 	
 	// Preparar buscador
 	var Buscador = document.getElementById("Buscador");
@@ -70,7 +70,11 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 }, console.log);
 
 
-
+function FixTags(objetos) {
+	for (var i = 0; i < objetos.length; i++) {
+		objetos[i].tags = objetos[i].tags.split(",");
+	}
+}
 
 
 function closePopup() {
@@ -83,6 +87,15 @@ function showPopup(contentsDOM) {
 	C(document.getElementById("msg"), contentsDOM);
 }
 
+
+
+function GetAutocompleteTags(objetos) {
+	var arr = [];
+	for (var i in objetos) {
+		arr = arr.concat(objetos[i].tags.filter(function(x){ return arr.indexOf(x) === -1; }));
+	}
+	return arr
+}
 
 
 
@@ -108,7 +121,7 @@ function DrawObjeto(objeto, lista) {
 		C("div", ["class", "minimo"], "Mínimo: ", objeto["minimo_alerta"]),
 		C("div", ["class", "tags"], "Tags: ", tags = C("span", ["class", "tags-list"]))
 	);
-	var tagsArr = objeto["tagsArray"] = objeto["tags"].split(",").filter(function(x){return x !== ""});
+	var tagsArr = objeto["tagsArray"] = objeto["tags"].filter(function(x){return x !== ""});
 	for (var i in tagsArr) C(tags, C("span", tagsArr[i]));
 	
 	objeto["DOM"]["objeto"] = objeto;
@@ -120,54 +133,53 @@ function DrawObjeto(objeto, lista) {
 
 	function edit() {
 		var actualizarStr = "Actualizar";
+		var cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
 		var tags;
 		var cantidades;
 		var popupDOM = C("div",
-			C("form",
+			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Nombre"),
 				C("div", C("input", ["type", "text", "value", objeto["nombre"], "class", "form-control"])),
-				C("div", C("input", ["type", "submit", "value", actualizarStr, "class", "btn btn-primary"]))
+				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
 			),
-			C("form",
+			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Descripción"),
 				C("div", C("input", ["type", "text", "value", objeto["descripcion"], "class", "form-control"])),
-				C("div", C("input", ["type", "submit", "value", actualizarStr, "class", "btn btn-primary"]))
+				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
 			),
-			C("form",
+			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Cantidad mínima"),
 				C("div", C("input", ["type", "text", "value", objeto["minimo_alerta"], "class", "form-control", "onchange", onMinimoChange])),
-				C("div", C("input", ["type", "submit", "value", actualizarStr, "class", "btn btn-primary"]))
+				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
 			),
-			C("form",
+			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Cantidad"),
-				C("div", cantidades = C("div")),
-				C("div", C("input", ["type", "submit", "value", actualizarStr, "class", "btn btn-primary"]))
+				C("div", C("div", ["class", "cantidades"],
+					cantidades = C("div"), 
+					C("div", ["class", "btn btn-primary add", "onclick", function(){
+						C(cantidades, DrawCantidadInput());
+						return false;
+					}], "+ Añadir a otro lugar"),
+					C("span", C("span", "Total:"), cantidadROInput)
+				)),
+				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
 			),
-			C("form",
+			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Tags"),
 				C("div", tags = C("input", ["type", "text", "value", objeto["tags"], "class", "form-control"])),
-				C("div", C("input", ["type", "submit", "value", actualizarStr, "class", "btn btn-primary"]))
+				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
 			)
 		);
 		
 		for (var i = 0; i < objeto["secciones"].length; i++) {
 			C(cantidades, DrawCantidadInput(objeto["secciones"][i]));
 		}
-		var cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
-		C(cantidades, C("span", C("span", "Total:"), cantidadROInput));
 		
-		var engine = new Bloodhound({
-			local: [{value: 'red'}, {value: 'blue'}, {value: 'green'} , {value: 'yellow'}, {value: 'violet'}, {value: 'brown'}, {value: 'purple'}, {value: 'black'}, {value: 'white'}],
-			datumTokenizer: function(d) {
-				return Bloodhound.tokenizers.whitespace(d.value);
-			},
-			queryTokenizer: Bloodhound.tokenizers.whitespace
-		});
-
-		engine.initialize();
-
 		$(tags).tokenfield({
-			typeahead: [null, { source: engine.ttAdapter() }],
+			autocomplete: {
+				source: tagsArrayAutocomplete,
+				delay: 100
+			  },
 			showAutocompleteOnFocus: true,
 			allowEditing: true
 		});
@@ -177,31 +189,50 @@ function DrawObjeto(objeto, lista) {
 		
 		
 		function onMinimoChange(ev) {
-			if (isNaN(ev.target.value)) ev.target.value = 0;
 			if (ev.target.value < 0) ev.target.value = 0;
+			onNumberChange(ev);
+		}
+		function onNumberChange(ev) {
+			ev.target.value = eval(ev.target.value);
+			if (isNaN(ev.target.value)) ev.target.value = 0;
 		}
 		
 		function DrawCantidadInput(seccionObjeto) {
+			if (seccionObjeto === undefined) {
+				seccionObjeto = {cantidad: 0, id_seccion: Object.keys(lista.secciones)[0]};
+			}
 			var seccion = lista.secciones[seccionObjeto["id_seccion"]];
 			var almacen = lista.almacenes[seccion.id_almacen];
 			var seccionesSelect, almacenesSelect;
-			var dropDown = C("div", ["class", "cantidad-block"],
-				almacenesSelect = C("select"),
-				seccionesSelect = C("select"),
-				C("input", ["type", "text", "value", seccionObjeto.cantidad, "class", "form-control", "onchange", function(x) {
-					seccionObjeto.cantidad = x.target.value;
-					cantidadROInput.value = GetCantidad(objeto);
-				}])
+			var cantidadBlock = C("div", ["class", "cantidad-block"],
+				C("div", ["class", "contenido"],
+					almacenesSelect = C("select"),
+					seccionesSelect = C("select"),
+					C("input", ["type", "text", "value", seccionObjeto.cantidad, "class", "form-control", "onchange", function(ev) {
+						onMinimoChange(ev);
+						seccionObjeto.cantidad = ev.target.value;
+						UpdateROCantidad();
+					}])
+				),
+				C("div", ["class", "borrar"],
+					C("div", ["class", "btn btn-danger", "onclick", function(){
+						cantidadBlock.parentNode.removeChild(cantidadBlock);
+						objeto.secciones = objeto.secciones.filter(function(x){ return x.id_seccion !== seccionObjeto.id_seccion; });
+						UpdateROCantidad();
+					}], "X")
+				)
 			);
 			ToOptions(almacenesSelect, lista.almacenes, almacen);
 			ToOptions(seccionesSelect, filterSecciones(almacen), seccion);
-			return dropDown;
+			return cantidadBlock;
+		}
+		
+		function UpdateROCantidad() {
+			cantidadROInput.value = GetCantidad(objeto);
 		}
 		
 		function ToOptions(parentElement, elementos, selected) {
-			console.log(elementos);
 			for (var i in elementos) {
-				console.log(elementos[i]);
 				var option = C("option", ["value", elementos[i].id], elementos[i].nombre);
 				if (selected.id === elementos[i].id) option.setAttribute("selected", 1);
 				C(parentElement, option);
@@ -221,7 +252,7 @@ function DrawObjeto(objeto, lista) {
 }
 
 function GetCantidad(objeto) {
-	return objeto["secciones"].reduce(function(prev, cur) {
+	return objeto.secciones.reduce(function(prev, cur) {
 		return { cantidad: parseInt(prev.cantidad) + parseInt(cur.cantidad) };
 	})["cantidad"];
 }
