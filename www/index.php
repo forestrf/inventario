@@ -132,6 +132,7 @@ function DrawObjeto(objeto, lista) {
 	return objeto["DOM"];
 
 	function edit() {
+		cantidad = GetCantidad(objeto);
 		var actualizarStr = "Actualizar";
 		var cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
 		var tags;
@@ -157,7 +158,8 @@ function DrawObjeto(objeto, lista) {
 				C("div", C("div", ["class", "cantidades"],
 					cantidades = C("div"), 
 					C("div", ["class", "btn btn-primary add", "onclick", function(){
-						C(cantidades, DrawCantidadInput());
+						objeto.secciones[objeto.secciones.length] = {cantidad: 0, id_seccion: Object.keys(lista.secciones)[0]};
+						C(cantidades, DrawCantidadInput(objeto["secciones"][objeto.secciones.length - 1]));
 						return false;
 					}], "+ Añadir a otro lugar"),
 					C("span", C("span", "Total:"), cantidadROInput)
@@ -193,14 +195,12 @@ function DrawObjeto(objeto, lista) {
 			onNumberChange(ev);
 		}
 		function onNumberChange(ev) {
-			ev.target.value = eval(ev.target.value);
+			var numeroSinCerosDelante = /^0*(.*)/.exec(ev.target.value)[1];
+			ev.target.value = eval(numeroSinCerosDelante);
 			if (isNaN(ev.target.value)) ev.target.value = 0;
 		}
 		
 		function DrawCantidadInput(seccionObjeto) {
-			if (seccionObjeto === undefined) {
-				seccionObjeto = {cantidad: 0, id_seccion: Object.keys(lista.secciones)[0]};
-			}
 			var seccion = lista.secciones[seccionObjeto["id_seccion"]];
 			var almacen = lista.almacenes[seccion.id_almacen];
 			var seccionesSelect, almacenesSelect;
