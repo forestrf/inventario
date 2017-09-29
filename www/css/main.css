@@ -71,6 +71,26 @@ button {
 	height: 100%;
 	width: 100%;
 }
+.popup .closeButton {
+	position: absolute;
+	top: -30px;
+	right: 0;
+	margin-right: 5%;
+	margin-top: 5%;
+	width: 30px;
+	height: 30px;
+}
+.popup .closeButton button {
+	width: 100%;
+	height: 100%;
+	background-color: #f00;
+	border-color: #f00;
+	color: #fff;
+	font-weight: bold;
+	font-size: 20px;
+	line-height: 30px;
+	padding: 0;
+}
 .popup .msg {
 	background-color: #fff;
 	padding: 1%;

@@ -38,6 +38,7 @@ listado de almacenes, con listado de secciones, con listado de objetos. Filtrar 
 
 <div class="popup" id="popup" style="display:none">
 	<div class="bg" id="bg" onclick="closePopup()"></div>
+	<div class="closeButton"><button onclick="closePopup()">X</botton></div>
 	<div class="msg" id="msg"></div>
 </div>
 
