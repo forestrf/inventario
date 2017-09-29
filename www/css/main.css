@@ -5,6 +5,17 @@ button {
 	cursor: pointer;
 }
 
+div.buscador {
+	margin: 1%;
+	line-height: 30px;
+}
+#buscador {
+	line-height: 30px;
+	min-width: 40%;
+	display: inline;
+	width: auto;
+}
+
 .objeto, .titulo {
 	transition: 0.2s all ease;
 }
@@ -131,12 +142,11 @@ button {
 	margin-bottom: 15px;
 }
 .popup .msg form .cantidad-block {
-	border: 1px solid #aaa;
+	border: 1px solid #cbcbcb;
 	background-color: #f6ffd2;
 	margin-bottom: 10px;
 	padding: 5px;
 	border-radius: 5px;
-	box-shadow: 2px 2px 2px #aaa;
 }
 .popup .msg form .cantidad-block > div {
 	vertical-align: top;

@@ -1,3 +1,5 @@
+<html>
+<head>
 <link rel="stylesheet" type="text/css" href="css/main.css"> 
 
 <script src="js/accent-remover.js"></script>
@@ -12,24 +14,14 @@
 <link href="js/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
 <link href="js/libs/jquery/themes/smoothness/jquery-ui.min.css" type="text/css" rel="stylesheet">
 <link href="js/libs/bootstrap-tokenfield/bootstrap-tokenfield.min.css" type="text/css" rel="stylesheet">
+</head>
+<body>
 
 
 
-
-
-<pre>
-Buscador por tags, nombre, sección y almancén
-
-Clicar en un botón (como número o un tag) abre un popup que da funcionalidad (cambiar cantidad, quitar el tag o filtrar usando ese tag, etc)
-
-hueco para poner la clave, y quitarla si está puesta
-
-listado de almacenes, con listado de secciones, con listado de objetos. Filtrar con el cuadro de búsqueda
-
-</pre>
-
-
-<input id="Buscador" type="text" placeholder="Búsqueda" class="form-control"/>
+<div class="buscador">
+	Búsqueda: <input id="buscador" type="text" placeholder="Búsqueda" class="form-control"/>
+</div>
 
 <div id="inventario"></div>
 <div class="clearer"></div>
@@ -55,14 +47,13 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 	
 	// Dibujar toda la lista en el DOM
 	C(document.getElementById("inventario"), DrawInventory(lista));
-	C(document.getElementById("tagMatrix"), DrawTagMatrix(lista));
 	
 	tagsArrayAutocomplete = GetAutocompleteTags(lista.objetos);
 	
 	// Preparar buscador
-	var Buscador = document.getElementById("Buscador");
-	Buscador.onkeyup = function() {
-		FilterSearch.process(Buscador.value, lista,
+	var buscador = document.getElementById("buscador");
+	buscador.onkeyup = function() {
+		FilterSearch.process(buscador.value, lista,
 			function(DOM) { DOM.style.display = "unset"; },
 			function(DOM) { DOM.style.display = "none"; }
 		);
@@ -171,7 +162,8 @@ function DrawObjeto(objeto, lista) {
 				C("div", "Tags"),
 				C("div", tags = C("input", ["type", "text", "value", objeto["tags"], "class", "form-control"])),
 				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
-			)
+			),
+			"ID: ", objeto.id,
 		);
 		
 		for (var i = 0; i < objeto["secciones"].length; i++) {
@@ -202,6 +194,7 @@ function DrawObjeto(objeto, lista) {
 		}
 		
 		function DrawCantidadInput(seccionObjeto) {
+			console.log(seccionObjeto);
 			var seccion = lista.secciones[seccionObjeto["id_seccion"]];
 			var almacen = lista.almacenes[seccion.id_almacen];
 			var seccionesSelect, almacenesSelect;
@@ -225,6 +218,16 @@ function DrawObjeto(objeto, lista) {
 			);
 			ToOptions(almacenesSelect, lista.almacenes, almacen);
 			ToOptions(seccionesSelect, filterSecciones(almacen), seccion);
+			almacenesSelect.onchange = function(ev) {
+				almacen = lista.almacenes[ev.target.value];
+				ToOptions(seccionesSelect, filterSecciones(almacen), seccion);
+				
+				var event = new Event('change');
+				seccionesSelect.dispatchEvent(event);
+			}
+			seccionesSelect.onchange = function(ev) {
+				seccionObjeto.id_seccion = parseInt(ev.target.value);
+			}
 			return cantidadBlock;
 		}
 		
@@ -233,6 +236,9 @@ function DrawObjeto(objeto, lista) {
 		}
 		
 		function ToOptions(parentElement, elementos, selected) {
+			for (var i = parentElement.childNodes.length - 1; i >= 0; i--) {
+				parentElement.removeChild(parentElement.childNodes[i]);
+			}
 			for (var i in elementos) {
 				var option = C("option", ["value", elementos[i].id], elementos[i].nombre);
 				if (selected.id === elementos[i].id) option.setAttribute("selected", 1);
@@ -288,79 +294,10 @@ function GetTagList(lista) {
 	return allTags;
 }
 
-function DrawTagMatrix(lista) {
-	var allTags = GetTagList(lista);
-	
-	
-	
-	var contenedor = C("table", ["border", 1]);
-	var tr0 = C("tr");
-	C(contenedor, tr0);
-	C(tr0, C("th", ["colspan", 3], "Objetos"));
-	C(tr0, C("th", ["colspan", allTags.length], "Tags"));
-	
-	var tr1 = C("tr");
-	C(contenedor, tr1);
-	C(tr1, C("td", "Almacén"));
-	C(tr1, C("td", "Sección"));
-	C(tr1, C("td", "Objeto"));
-	for (var i in allTags) {
-		C(tr1, C("td", allTags[i]));
-	}
-	
-	for (var a in lista) {
-		var almacen = lista[a];
-		for (var s in almacen["secciones"]) {
-			var seccion = almacen["secciones"][s];
-			for (var o in seccion["objetos"]) {
-				var objeto = seccion["objetos"][o];
-				
-				var trn = C("tr");
-				C(contenedor, trn);
-				C(trn, C("td", almacen["nombre"]));
-				C(trn, C("td", seccion["nombre"]));
-				C(trn, C("td", objeto["nombre"]));
-				
-				for (var t in allTags) {
-					var cb = C("input", [
-						"type", "checkbox",
-						"checked", objeto["tags"].indexOf(allTags[t]) !== -1,
-						"onclick", function(obj) {
-							//console.log(obj);
-							//console.log(obj.target);
-							//console.log(obj.target.objeto);
-							console.log(obj.target.tag);
-						}
-					]);
-					cb["objeto"] = objeto;
-					cb["tag"] = allTags[t];
-					C(trn, cb);
-				}
-			}
-		}
-	}
-	return contenedor;
-}
-
-
-
-
-
-
-
-
 
 </script>
 
-<select multiple name="interests" size="4">
- <option value="arts">Arts</option>
- <option value="pol" >Politics</option>
- <option value="sci" >Science</option>
- <option value="comp">Computers and internet</option>
-</select>
-<div>
-Matriz con todos los objetos y tags
-<div id="tagMatrix"></div>
-</div>
 
 
+</body>
+</html>
