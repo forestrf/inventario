@@ -28,11 +28,6 @@
 
 <button>+ Objeto</button>
 
-<div class="popup" id="popup" style="display:none">
-	<div class="bg" id="bg" onclick="closePopup()"></div>
-	<div class="closeButton"><button onclick="closePopup()">X</botton></div>
-	<div class="msg" id="msg"></div>
-</div>
 
 
 
@@ -69,14 +64,19 @@ function FixTags(objetos) {
 }
 
 
+var popups = [];
 function closePopup() {
-	document.getElementById("popup").style = "display:none";
-	document.getElementById("msg").innerHTML = "";
+	var dom = popups.pop();
+	document.body.removeChild(dom);
 }
 function showPopup(contentsDOM) {
-	closePopup();
-	document.getElementById("popup").style = "";
-	C(document.getElementById("msg"), contentsDOM);
+	var dom = C("div", ["class", "popup"],
+		C("div", ["class", "bg", "onclick", closePopup]),
+		C("div", ["class", "closeButton"], C("button", ["onclick", closePopup], "X")),
+		C("div", ["class", "msg"], contentsDOM)
+	);
+	document.body.appendChild(dom);
+	popups.push(dom);
 }
 
 
@@ -132,17 +132,17 @@ function DrawObjeto(objeto, lista) {
 		var popupDOM = C("div",
 			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Nombre"),
-				C("div", C("input", ["type", "text", "value", objeto["nombre"], "class", "form-control"])),
+				C("div", C("input", ["name", "", "type", "text", "value", objeto["nombre"], "class", "form-control"])),
 				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
 			),
 			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Descripción"),
-				C("div", C("input", ["type", "text", "value", objeto["descripcion"], "class", "form-control"])),
+				C("div", C("input", ["name", "", "type", "text", "value", objeto["descripcion"], "class", "form-control"])),
 				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
 			),
 			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Cantidad mínima"),
-				C("div", C("input", ["type", "text", "value", objeto["minimo_alerta"], "class", "form-control", "onchange", onMinimoChange])),
+				C("div", C("input", ["name", "", "type", "text", "value", objeto["minimo_alerta"], "class", "form-control", "onchange", onMinimoChange])),
 				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
 			),
 			C("form", ["onsubmit", function(){ return false; }],
@@ -160,7 +160,7 @@ function DrawObjeto(objeto, lista) {
 			),
 			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Tags"),
-				C("div", tags = C("input", ["type", "text", "value", objeto["tags"], "class", "form-control"])),
+				C("div", tags = C("input", ["name", "", "type", "text", "value", objeto["tags"], "class", "form-control"])),
 				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
 			),
 			"ID: ", objeto.id,
@@ -194,19 +194,23 @@ function DrawObjeto(objeto, lista) {
 		}
 		
 		function DrawCantidadInput(seccionObjeto) {
-			console.log(seccionObjeto);
 			var seccion = lista.secciones[seccionObjeto["id_seccion"]];
+			console.log(seccion);
 			var almacen = lista.almacenes[seccion.id_almacen];
+			var img;
 			var seccionesSelect, almacenesSelect;
 			var cantidadBlock = C("div", ["class", "cantidad-block"],
-				C("div", ["class", "contenido"],
+				C("div", ["class", "contenido c1"],
 					almacenesSelect = C("select"),
 					seccionesSelect = C("select"),
-					C("input", ["type", "text", "value", seccionObjeto.cantidad, "class", "form-control", "onchange", function(ev) {
+					C("input", ["name", "", "type", "text", "value", seccionObjeto.cantidad, "class", "form-control", "onchange", function(ev) {
 						onMinimoChange(ev);
 						seccionObjeto.cantidad = ev.target.value;
 						UpdateROCantidad();
 					}])
+				),
+				C("div", ["class", "contenido c2"],
+					img = C("img")
 				),
 				C("div", ["class", "borrar"],
 					C("div", ["class", "btn btn-danger", "onclick", function(){
@@ -227,7 +231,14 @@ function DrawObjeto(objeto, lista) {
 			}
 			seccionesSelect.onchange = function(ev) {
 				seccionObjeto.id_seccion = parseInt(ev.target.value);
+				seccion = lista.secciones[seccionObjeto.id_seccion];
+				setImage();
 			}
+			
+			function setImage() {
+				img.src = seccion.imagen === null ? "http://via.placeholder.com/256x128" : "ajax.php?action=getimage&id=" + seccion.imagen;
+			}
+			setImage();
 			return cantidadBlock;
 		}
 		
