@@ -21,8 +21,12 @@ AJAX = function(url, data, callbackOK, callbackFAIL, timeout) {
 	};
 	
 	if (isPost) {
+		pepe = data;
+		console.log(data.toString());
 		if (typeof data === "string") {
 			x.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		} else if (data.toString() === "[object FormData]") {
+			// do nothing, data is already ok
 		} else {
 			// Data is a form
 			// http://stackoverflow.com/questions/2198470/javascript-uploading-a-file-without-a-file

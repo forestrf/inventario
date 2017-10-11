@@ -22,18 +22,28 @@ div.buscador {
 .objeto {
 	background-color: #ddd;
 	text-align: left;
-	padding: 0 0 3px 0;
+	padding: 0;
 	border: 1px solid #000;
 	margin: 2px;
 	float: left;
 }
-.objeto > div {
+.objeto > div > div {
 	padding: 1px 2px 1px 2px;
 }
-.objeto > .titulo {
+.objeto .titulo {
 	padding: 5px;
 	background-color: #000;
 	color: #fff;
+}
+.objeto .info {
+	display: inline-block;
+}
+.objeto .img {
+	background-color: #a7a7a7;
+	height: 128px;
+	border-right: 1px solid #000000;
+	margin-right: 8px;
+	padding: 5px;
 }
 .objeto:hover {
 	border-color: #42004a;
@@ -136,6 +146,9 @@ div.buscador {
 .popup .msg form > div:nth-child(2) > input,
 .popup .msg form > div:nth-child(3) > input {
 	width: 100%;
+}
+.popup .msg form .img-objeto {
+	width: 128px;
 }
 .popup .msg form .cantidades .add {
 	width: 100%;

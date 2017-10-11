@@ -131,6 +131,22 @@ class DB {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		return $this->query("SELECT id_seccion, cantidad FROM objeto_seccion WHERE id_objeto = {$id_objeto}");
 	}
+	
+	function add_file($mimetype, $blob, &$file_index) {
+		$file_index = md5($blob);
+		$mimetype = mysql_escape_mimic($mimetype);
+		$blob = mysql_escape_mimic($blob);
+		return $this->query("INSERT INTO files (id, mimetype, bin) VALUES ('$file_index', '$mimetype', '$blob')");
+	}
+	function get_file($file_index) {
+		$file_index = mysql_escape_mimic($file_index);
+		return $this->query("SELECT * FROM files WHERE id = '$file_index'");
+	}
+	function object_set_image($id_objeto, $id_file) {
+		$id_objeto = mysql_escape_mimic($id_objeto);
+		$id_file = mysql_escape_mimic($id_file);
+		return $this->query("UPDATE objeto SET imagen = '$id_file' WHERE id = '$id_objeto' LIMIT 1");
+	}
 }
 // Copy of mysql_real_escape_string to use it without an opened connection.
 // http://es1.php.net/mysql_real_escape_string

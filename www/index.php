@@ -109,9 +109,12 @@ function DrawObjeto(objeto, lista) {
 			C("div", ["class", "nombre"], objeto["nombre"]),
 			C("div", ["class", "descripcion"], objeto["descripcion"])
 		),
-		C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
-		C("div", ["class", "minimo"], "Mínimo: ", objeto["minimo_alerta"]),
-		C("div", ["class", "tags"], "Tags: ", tags = C("span", ["class", "tags-list"]))
+		C("img", ["class", "img", "src", GetImagenObjeto(objeto)]),
+		C("div", ["class", "info"],
+			C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
+			C("div", ["class", "minimo"], "Mínimo: ", objeto["minimo_alerta"]),
+			C("div", ["class", "tags"], "Tags: ", tags = C("span", ["class", "tags-list"]))
+		)
 	);
 	var tagsArr = objeto["tagsArray"] = objeto["tags"].filter(function(x){return x !== ""});
 	for (var i in tagsArr) C(tags, C("span", tagsArr[i]));
@@ -139,6 +142,16 @@ function DrawObjeto(objeto, lista) {
 				C("div", "Descripción"),
 				C("div", C("input", ["name", "", "type", "text", "value", objeto["descripcion"], "class", "form-control"])),
 				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
+			),
+			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
+				C("div", "Imagen"),
+				C("div", 
+					C("img", ["src", GetImagenObjeto(objeto), "class", "img-objeto"]),
+					C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera"])
+				), 
+				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
+				C("input", ["type", "hidden", "name", "id-object", "value", objeto.id]),
+				C("input", ["type", "hidden", "name", "action", "value", "update-object-image"])
 			),
 			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Cantidad mínima"),
@@ -195,7 +208,6 @@ function DrawObjeto(objeto, lista) {
 		
 		function DrawCantidadInput(seccionObjeto) {
 			var seccion = lista.secciones[seccionObjeto["id_seccion"]];
-			console.log(seccion);
 			var almacen = lista.almacenes[seccion.id_almacen];
 			var img;
 			var seccionesSelect, almacenesSelect;
@@ -275,6 +287,10 @@ function GetCantidad(objeto) {
 	})["cantidad"];
 }
 
+function GetImagenObjeto(objeto) {
+	return objeto.imagen === null ? "http://via.placeholder.com/128x128" : "php/ajax.php?action=getfile&id=" + objeto.imagen;
+}
+
 function AddClass(dom, className) {
 	dom.className += " " + className;
 }
@@ -282,6 +298,23 @@ function RemoveClass(dom, className) {
 	dom.className = dom.className.split(" " + className).join("");
 }
 
+
+
+function update(event) {
+	event.preventDefault();
+	console.log(event);
+	var target = event.originalTarget !== undefined ? event.originalTarget : event.target;
+	var formData = new FormData(target);
+	for (var key of formData.entries()) {
+        console.log(key[0] + ', ' + key[1]);
+    }
+	AJAX('php/ajax.php', formData, upd2, upd2);
+}
+
+function upd2(ev) {
+	console.log(ev);
+	showPopup(ev.response);
+}
 
 
 
