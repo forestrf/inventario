@@ -28,7 +28,7 @@ if (isset($_GET['action'])) {
 		case 'getfile':
 			if (isset($_GET["id"])) {
 				$file = $db->get_file($_GET["id"]);
-				if ($file[0]) {
+				if (isset($file[0])) {
 					$file = $file[0];
 					$etag = base64_encode(md5($file['id']));
 					
@@ -42,33 +42,36 @@ if (isset($_GET['action'])) {
 						header('Content-type: ' . $file["mimetype"]);
 						echo $file["bin"];
 					}
+				} else {
+					echo "not found";
 				}
 			}
 			break;
 	}
 } else {
-	print_r($_GET);
-	print_r($_POST);
-	print_r($_FILES);
-	
 	switch($_POST['action']) {
 		case 'update-object-image':
-		if (!isset($_POST["id-object"])) {
-			echo json_encode(array(
-				"STATUS" => "ERROR",
-				"MESSAGE" => "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app."
-			));
-		} else if (!isset($_FILES["imagen"]) || $_FILES["imagen"]["name"] == "") {
-			echo json_encode(array(
-				"STATUS" => "ERROR",
-				"MESSAGE" => "No se ha enviado una imagen"
-			));
-		} else {
-			$file_index = "";
-			$db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index);
-			echo $file_index;
-			$db->object_set_image($_POST["id-object"], $file_index);
-		}
-		break;
+			if (!isset($_POST["id-object"])) {
+				echo json_encode(array(
+					"STATUS" => "ERROR",
+					"MESSAGE" => "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app."
+				));
+			} else if (!isset($_FILES["imagen"]) || $_FILES["imagen"]["name"] == "") {
+				echo json_encode(array(
+					"STATUS" => "ERROR",
+					"MESSAGE" => "No se ha enviado una imagen"
+				));
+			} else {
+				$file_index = "";
+				$db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index);
+				$db->object_set_image($_POST["id-object"], $file_index);
+				
+				echo json_encode(array(
+					"STATUS" => "OK",
+					"MESSAGE" => "Imagen actualizada",
+					"EVAL" => "updateImagen('".$_POST["id-object"]."', '$file_index')"
+				));
+			}
+			break;
 	}
 }

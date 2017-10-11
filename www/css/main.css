@@ -147,7 +147,7 @@ div.buscador {
 .popup .msg form > div:nth-child(3) > input {
 	width: 100%;
 }
-.popup .msg form .img-objeto {
+.popup .msg form #img_objeto {
 	width: 128px;
 }
 .popup .msg form .cantidades .add {

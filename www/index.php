@@ -146,7 +146,7 @@ function DrawObjeto(objeto, lista) {
 			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Imagen"),
 				C("div", 
-					C("img", ["src", GetImagenObjeto(objeto), "class", "img-objeto"]),
+					C("img", ["src", GetImagenObjeto(objeto), "id", "img_objeto"]),
 					C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera"])
 				), 
 				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
@@ -308,13 +308,21 @@ function update(event) {
 	for (var key of formData.entries()) {
         console.log(key[0] + ', ' + key[1]);
     }
-	AJAX('php/ajax.php', formData, upd2, upd2);
+	AJAX('php/ajax.php', formData, function(msg) {
+		var json = JSON.parse(msg.response);
+		console.log(json);
+		showPopup(json.MESSAGE);
+		eval(json.EVAL);
+	}, function(msg) {
+		alert("ERROR: " + msg.response);
+	});
 }
 
-function upd2(ev) {
-	console.log(ev);
-	showPopup(ev.response);
+function updateImagen(id_objeto, id_imagen) {
+	console.log(id_objeto);
+	console.log(id_imagen);
 }
+
 
 
 
