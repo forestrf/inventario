@@ -112,8 +112,7 @@ function DrawObjeto(objeto) {
 	var tags;
 	objeto["DOM"] = C("button", ["class", "objeto obj-" + objeto.id, "onclick", edit],
 		C("div", ["class", "titulo"],
-			C("div", ["class", "nombre"], objeto["nombre"]),
-			C("div", ["class", "descripcion"], objeto["descripcion"])
+			C("div", ["class", "nombre"], objeto["nombre"])
 		),
 		C("div", ["class", "img-container"],
 			C("span", ["class", "helper"]),
@@ -150,11 +149,6 @@ function DrawObjeto(objeto) {
 				C("input", ["type", "hidden", "name", "id-object", "value", objeto.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-name"])
 			),
-			C("form", ["onsubmit", function(){ return false; }],
-				C("div", "Descripción"),
-				C("div", C("input", ["name", "", "type", "text", "value", objeto["descripcion"], "class", "form-control"])),
-				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
-			),
 			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Imagen"),
 				C("div", 
@@ -165,10 +159,12 @@ function DrawObjeto(objeto) {
 				C("input", ["type", "hidden", "name", "id-object", "value", objeto.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-image"])
 			),
-			C("form", ["onsubmit", function(){ return false; }],
+			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Cantidad mínima"),
-				C("div", C("input", ["name", "", "type", "text", "value", objeto["minimo_alerta"], "class", "form-control", "onchange", onMinimoChange])),
-				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
+				C("div", C("input", ["name", "minimo", "type", "text", "value", objeto["minimo_alerta"], "class", "form-control", "onchange", onMinimoChange])),
+				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
+				C("input", ["type", "hidden", "name", "id-object", "value", objeto.id]),
+				C("input", ["type", "hidden", "name", "action", "value", "update-object-minimo"])
 			),
 			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Cantidad"),
@@ -331,17 +327,18 @@ function update(event) {
 }
 
 function formPoke(form, className, msg) {
+	console.log(form.poked);
 	if (form.poked) {
 		getTimeout(form.poked)();
 		delTimeout(form.poked);
-		form.poked = undefined;
 	}
 	AddClass(form, className);
 	var msgDOM;
 	if (msg !== undefined && msg !== null) C(form, msgDOM = C("span", ["class", "msg"], msg));
 	form.poked = addTimeout(function() {
 		RemoveClass(form, className);
-		if (msg !== undefined && msg !== null) form.removeChild(msgDOM);
+		if (msgDOM !== null) form.removeChild(msgDOM);
+		form.poked = undefined;
 	}, 6000);
 }
 

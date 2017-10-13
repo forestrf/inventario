@@ -14,10 +14,9 @@ var FilterSearch = (function(){
 	function Search(lista, search, callbackShow, callbackHide) {
 		var objetos = lista.objetos;
 		
-		for (var i = 0; i < objetos.length; i++) {
+		for (var i in objetos) {
 			var found = Test(search, objetos[i]["nombre"]);
 			for (var j = 0; !found && j < objetos[i]["tags"].length; j++) {
-				console.log(objetos[i]["tags"][j]);
 				found = found || Test(search, objetos[i]["tags"][j]);
 			}
 			

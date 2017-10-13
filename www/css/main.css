@@ -84,12 +84,6 @@ div.buscador {
 .nombre {
 	display: inline;
 }
-.descripcion {
-	margin-left: 20px;
-	font-size: 0.7em;
-	display: inline;
-	opacity: 0.7;
-}
 
 .popup {
 	position: absolute;
@@ -133,12 +127,13 @@ div.buscador {
 }
 
 .popup > .msg form {
-	border: 1px solid #ddd;
-	display: block;
-	padding: 6px;
-	margin: 3px;
 	background-color: #fafafa;
 	transition: .3s all ease;
+	position: relative;
+	display: block;
+	padding: 6px;
+	border: 1px solid #ddd;
+	margin: 3px;
 }
 .popup > .msg form.success {
 	background-color: #48a748;
@@ -149,11 +144,9 @@ div.buscador {
 	color: #fff;
 }
 .popup > .msg form .msg {
-	width: 100%;
-	display: block;
-	text-align: center;
-	margin-top: 10px;
-	padding: 5px;
+	position: relative;
+	font-weight: bold;
+	left: 20%;
 }
 .popup > .msg form > div {
 	display: inline-block;

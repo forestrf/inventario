@@ -51,17 +51,9 @@ if (isset($_GET['action'])) {
 } else {
 	switch($_POST['action']) {
 		case 'update-object-image':
-			if (!isset($_POST["id-object"])) {
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app."
-				));
-			} else if (!isset($_FILES["imagen"]) || $_FILES["imagen"]["name"] == "") {
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => "No se ha enviado una imagen"
-				));
-			} else {
+			if (check(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+				&& check(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "", "No se ha enviado una imagen")) {
+				
 				$file_index = "";
 				$db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index);
 				$db->object_set_image($_POST["id-object"], $file_index);
@@ -74,17 +66,10 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'update-object-name':
-			if (!isset($_POST["id-object"])) {
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app."
-				));
-			} else if (!isset($_POST["nombre"])) {
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => "No se ha enviado un nombre. Por favor comunica este error a un encargado de la app."
-				));
-			} else {
+			if (check(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+				&& check(isset($_POST["nombre"]), "No se ha enviado un nombre. Por favor comunica este error a un encargado de la app")
+				&& check(strlen($_POST["nombre"]) > 0, "El nombre es demasiado corto")) {
+				
 				$db->object_set_name($_POST["id-object"], $_POST["nombre"]);
 				
 				echo json_encode(array(
@@ -94,5 +79,19 @@ if (isset($_GET['action'])) {
 				));
 			}
 			break;
+		case 'update-object-minimo':
+		
+			break;
 	}
+}
+
+function check($check, $errorMsg) {
+	if (!$check) {
+		echo json_encode(array(
+			"STATUS" => "ERROR",
+			"MESSAGE" => $errorMsg
+		));
+		return false;
+	}
+	return true;
 }
