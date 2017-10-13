@@ -146,16 +146,21 @@ class DB {
 		$file_index = mysql_escape_mimic($file_index);
 		return $this->query("SELECT * FROM files WHERE id = '$file_index'");
 	}
+	
 	function object_set_image($id_objeto, $id_file) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$id_file = mysql_escape_mimic($id_file);
 		return $this->query("UPDATE objeto SET imagen = '$id_file' WHERE id = '$id_objeto' LIMIT 1");
 	}
-	
 	function object_set_name($id_objeto, $name) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$name = mysql_escape_mimic($name);
 		return $this->query("UPDATE objeto SET nombre = '$name' WHERE id = '$id_objeto' LIMIT 1");
+	}
+	function object_set_minimo($id_objeto, $minimo) {
+		$id_objeto = mysql_escape_mimic($id_objeto);
+		$minimo = mysql_escape_mimic($minimo);
+		return $this->query("UPDATE objeto SET minimo_alerta = '$minimo' WHERE id = '$id_objeto' LIMIT 1");
 	}
 }
 // Copy of mysql_real_escape_string to use it without an opened connection.

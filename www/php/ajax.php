@@ -80,7 +80,18 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'update-object-minimo':
-		
+			if (check(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+				&& check(isset($_POST["minimo"]), "No se ha enviado una cantidad mínima. Por favor comunica este error a un encargado de la app")
+				&& check(intval($_POST["minimo"]) >= 0, "El valor mínimo debe de ser un número mayor o igual que cero")) {
+				
+				$db->object_set_minimo($_POST["id-object"], $_POST["minimo"]);
+				
+				echo json_encode(array(
+					"STATUS" => "OK",
+					"MESSAGE" => "Mínimo actualizado",
+					"EVAL" => "updateMinimo('".$_POST["id-object"]."', '".$_POST["minimo"]."')"
+				));
+			}
 			break;
 	}
 }
