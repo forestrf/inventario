@@ -35,8 +35,14 @@
 
 var tagsArrayAutocomplete = [];
 
+var lista;
+
 AJAX('php/ajax.php?action=getinventario', null, function(x) {
-	var lista = JSON.parse(x.responseText);
+	lista = JSON.parse(x.responseText);
+	
+	var objetosById = {};
+	for (var i in lista.objetos) objetosById[lista.objetos[i].id] = lista.objetos[i];
+	lista.objetos = objetosById;
 	
 	FixTags(lista.objetos);
 	
@@ -58,7 +64,7 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 
 
 function FixTags(objetos) {
-	for (var i = 0; i < objetos.length; i++) {
+	for (var i in objetos) {
 		objetos[i].tags = objetos[i].tags.split(",");
 	}
 }
@@ -95,13 +101,13 @@ function DrawInventory(lista) {
 	var contenedor = C("div");
 	
 	for (var i in lista.objetos) {
-		C(contenedor, DrawObjeto(lista.objetos[i], lista));
+		C(contenedor, DrawObjeto(lista.objetos[i]));
 	}
 	
 	return contenedor;
 }
 
-function DrawObjeto(objeto, lista) {
+function DrawObjeto(objeto) {
 	var cantidad = GetCantidad(objeto);
 	var tags;
 	objeto["DOM"] = C("button", ["class", "objeto", "onclick", edit],
@@ -109,7 +115,10 @@ function DrawObjeto(objeto, lista) {
 			C("div", ["class", "nombre"], objeto["nombre"]),
 			C("div", ["class", "descripcion"], objeto["descripcion"])
 		),
-		C("img", ["class", "img", "src", GetImagenObjeto(objeto)]),
+		C("div", ["class", "img-container"],
+			C("span", ["class", "helper"]),
+			C("img", ["class", "img img-" + objeto.id, "src", GetImagenObjeto(objeto)])
+		),
 		C("div", ["class", "info"],
 			C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
 			C("div", ["class", "minimo"], "Mínimo: ", objeto["minimo_alerta"]),
@@ -123,9 +132,10 @@ function DrawObjeto(objeto, lista) {
 	var cb = cantidad < parseInt(objeto["minimo_alerta"]) ? AddClass : RemoveClass;
 	cb(objeto["DOM"], "alerta");
 	
-	
 	return objeto["DOM"];
 
+	
+	
 	function edit() {
 		cantidad = GetCantidad(objeto);
 		var actualizarStr = "Actualizar";
@@ -146,7 +156,7 @@ function DrawObjeto(objeto, lista) {
 			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Imagen"),
 				C("div", 
-					C("img", ["src", GetImagenObjeto(objeto), "id", "img_objeto"]),
+					C("img", ["src", GetImagenObjeto(objeto), "id", "img_objeto", "class", "img-" + objeto.id]),
 					C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera"])
 				), 
 				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
@@ -311,7 +321,7 @@ function update(event) {
 	AJAX('php/ajax.php', formData, function(msg) {
 		var json = JSON.parse(msg.response);
 		console.log(json);
-		showPopup(json.MESSAGE);
+		if (json.STATUS !== "OK") showPopup(json.MESSAGE);
 		eval(json.EVAL);
 	}, function(msg) {
 		alert("ERROR: " + msg.response);
@@ -319,8 +329,13 @@ function update(event) {
 }
 
 function updateImagen(id_objeto, id_imagen) {
-	console.log(id_objeto);
-	console.log(id_imagen);
+	console.log("Imagen actualizada", id_objeto, lista.objetos[id_objeto].imagen + " => " + id_imagen);
+	var objeto = lista.objetos[id_objeto];
+	objeto.imagen = id_imagen;
+	var imgs = document.querySelectorAll(".img-" + id_objeto);
+	for (var i in imgs) {
+		imgs[i].src = GetImagenObjeto(objeto);
+	}
 }
 
 

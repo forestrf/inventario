@@ -62,13 +62,13 @@ class DB {
 			$this->LAST_MYSQL_ID = null;
 		}
 		if ($result === false || $result === true) {
-			if($this->d) $this->debug('<span class="info">query</span>: <span class="query">'.$query."</span>\r\n<span class='info'>result</span>: <b class=\"".($result?'ok">TRUE':'fail">FALSE ('.$this->mysqli->error.')')."</b>\r\n");
+			if($this->d) $this->debug('<span class="info">query</span>: <span class="query">'.$this->query_debug_str($query)."</span>\r\n<span class='info'>result</span>: <b class=\"".($result?'ok">TRUE':'fail">FALSE ('.$this->mysqli->error.')')."</b>\r\n");
 			return $result;
 		}
 		
 		$resultArray = array();
 		while ($rt = $result->fetch_array(MYSQLI_ASSOC)) $resultArray[] = $rt;
-		if($this->d) $this->debug('<span class="info">query</span>: <span class="query">'.$query."</span>\r\n<span class='info'>result</span>: ".print_r($resultArray)."\r\n");
+		if($this->d) $this->debug('<span class="info">query</span>: <span class="query">'.$this->query_debug_str($query)."</span>\r\n<span class='info'>result</span>: ".print_r($resultArray)."\r\n");
 		return $resultArray;
 	}
 	
@@ -83,6 +83,7 @@ class DB {
 	var $debug_array = array();
 	private $d = false;
 	private $d_array = false;
+	private $d_queryLength = 256;
 	function debug_mode($bool) {
 		$this->d = $bool;
 		$this->debug('<span class="info">debug mode: ' . $bool.'</span>');
@@ -98,6 +99,9 @@ class DB {
 				echo $txt . "\r\n";
 			}
 		}
+	}
+	private function query_debug_str(&$query) {
+		return strlen($query) > $this->d_queryLength ? substr($query, 0, $this->d_queryLength) : $query;
 	}
 	
 	

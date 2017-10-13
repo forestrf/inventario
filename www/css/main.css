@@ -31,23 +31,36 @@ div.buscador {
 	padding: 1px 2px 1px 2px;
 }
 .objeto .titulo {
-	padding: 5px;
 	background-color: #000;
+	padding: 5px;
 	color: #fff;
 }
 .objeto .info {
 	display: inline-block;
 }
-.objeto .img {
+.objeto .img-container {
 	background-color: #a7a7a7;
-	height: 128px;
-	border-right: 1px solid #000000;
+	border-right: 1px solid #000;
 	margin-right: 8px;
+	display: inline-block;
+	height: 128px;
+	float: left;
+}
+
+.objeto .img-container .helper {
+    vertical-align: middle;
+    display: inline-block;
+    height: 100%;
+}
+.objeto .img-container .img {
+	vertical-align: middle;
+	max-height: 128px;
+	max-width: 128px;
 	padding: 5px;
 }
 .objeto:hover {
-	border-color: #42004a;
 	background-color: #ebc3f0;
+	border-color: #42004a;
 	box-shadow: 0 0 10px #000;
 }
 .objeto:hover > .titulo {
@@ -148,7 +161,8 @@ div.buscador {
 	width: 100%;
 }
 .popup .msg form #img_objeto {
-	width: 128px;
+	max-width: 128px;
+	max-height: 128px;
 }
 .popup .msg form .cantidades .add {
 	width: 100%;
