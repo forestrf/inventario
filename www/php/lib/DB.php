@@ -151,6 +151,12 @@ class DB {
 		$id_file = mysql_escape_mimic($id_file);
 		return $this->query("UPDATE objeto SET imagen = '$id_file' WHERE id = '$id_objeto' LIMIT 1");
 	}
+	
+	function object_set_name($id_objeto, $name) {
+		$id_objeto = mysql_escape_mimic($id_objeto);
+		$name = mysql_escape_mimic($name);
+		return $this->query("UPDATE objeto SET nombre = '$name' WHERE id = '$id_objeto' LIMIT 1");
+	}
 }
 // Copy of mysql_real_escape_string to use it without an opened connection.
 // http://es1.php.net/mysql_real_escape_string

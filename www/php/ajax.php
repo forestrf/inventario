@@ -73,5 +73,26 @@ if (isset($_GET['action'])) {
 				));
 			}
 			break;
+		case 'update-object-name':
+			if (!isset($_POST["id-object"])) {
+				echo json_encode(array(
+					"STATUS" => "ERROR",
+					"MESSAGE" => "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app."
+				));
+			} else if (!isset($_POST["nombre"])) {
+				echo json_encode(array(
+					"STATUS" => "ERROR",
+					"MESSAGE" => "No se ha enviado un nombre. Por favor comunica este error a un encargado de la app."
+				));
+			} else {
+				$db->object_set_name($_POST["id-object"], $_POST["nombre"]);
+				
+				echo json_encode(array(
+					"STATUS" => "OK",
+					"MESSAGE" => "Nombre actualizado",
+					"EVAL" => "updateNombre('".$_POST["id-object"]."', '".$_POST["nombre"]."')"
+				));
+			}
+			break;
 	}
 }

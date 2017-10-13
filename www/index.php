@@ -110,7 +110,7 @@ function DrawInventory(lista) {
 function DrawObjeto(objeto) {
 	var cantidad = GetCantidad(objeto);
 	var tags;
-	objeto["DOM"] = C("button", ["class", "objeto", "onclick", edit],
+	objeto["DOM"] = C("button", ["class", "objeto obj-" + objeto.id, "onclick", edit],
 		C("div", ["class", "titulo"],
 			C("div", ["class", "nombre"], objeto["nombre"]),
 			C("div", ["class", "descripcion"], objeto["descripcion"])
@@ -143,10 +143,12 @@ function DrawObjeto(objeto) {
 		var tags;
 		var cantidades;
 		var popupDOM = C("div",
-			C("form", ["onsubmit", function(){ return false; }],
+			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Nombre"),
-				C("div", C("input", ["name", "", "type", "text", "value", objeto["nombre"], "class", "form-control"])),
-				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
+				C("div", C("input", ["name", "nombre", "type", "text", "value", objeto["nombre"], "class", "form-control"])),
+				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
+				C("input", ["type", "hidden", "name", "id-object", "value", objeto.id]),
+				C("input", ["type", "hidden", "name", "action", "value", "update-object-name"])
 			),
 			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Descripción"),
@@ -321,21 +323,40 @@ function update(event) {
 	AJAX('php/ajax.php', formData, function(msg) {
 		var json = JSON.parse(msg.response);
 		console.log(json);
-		if (json.STATUS !== "OK") showPopup(json.MESSAGE);
+		formPoke(event.originalTarget, json.STATUS === "OK" ? "success" : "fail", json.MESSAGE);
 		eval(json.EVAL);
 	}, function(msg) {
 		alert("ERROR: " + msg.response);
 	});
 }
 
+function formPoke(form, className, msg) {
+	if (form.poked) {
+		getTimeout(form.poked)();
+		delTimeout(form.poked);
+		form.poked = undefined;
+	}
+	AddClass(form, className);
+	var msgDOM;
+	if (msg !== undefined && msg !== null) C(form, msgDOM = C("span", ["class", "msg"], msg));
+	form.poked = addTimeout(function() {
+		RemoveClass(form, className);
+		if (msg !== undefined && msg !== null) form.removeChild(msgDOM);
+	}, 6000);
+}
+
 function updateImagen(id_objeto, id_imagen) {
-	console.log("Imagen actualizada", id_objeto, lista.objetos[id_objeto].imagen + " => " + id_imagen);
 	var objeto = lista.objetos[id_objeto];
 	objeto.imagen = id_imagen;
 	var imgs = document.querySelectorAll(".img-" + id_objeto);
 	for (var i in imgs) {
 		imgs[i].src = GetImagenObjeto(objeto);
 	}
+}
+
+function updateNombre(id_objeto, nombre) {
+	var objeto = lista.objetos[id_objeto];
+	document.querySelector(".obj-" + id_objeto + " .titulo .nombre").innerHTML = nombre;
 }
 
 
@@ -362,6 +383,33 @@ function GetTagList(lista) {
 }
 
 
+</script>
+
+
+
+
+<script>
+var timeout_funcs = {};
+
+function addTimeout(func,time) {
+    var id = window.setTimeout(func,time);
+    timeout_funcs[id] = func;
+    return id;
+}
+
+function getTimeout(id) {
+    if(timeout_funcs[id])
+        return timeout_funcs[id];
+    else
+        return null;
+}
+
+function delTimeout(id) {
+    if(timeout_funcs[id]) {
+        window.clearTimeout(timeout_funcs[id]);
+        delete timeout_funcs[id];
+    }
+}
 </script>
 
 
