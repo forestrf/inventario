@@ -166,7 +166,7 @@ function DrawObjeto(objeto) {
 				C("input", ["type", "hidden", "name", "id-object", "value", objeto.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-minimo"])
 			),
-			C("form", ["onsubmit", function(){ return false; }],
+			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Cantidad"),
 				C("div", C("div", ["class", "cantidades"],
 					cantidades = C("div"), 
@@ -177,7 +177,9 @@ function DrawObjeto(objeto) {
 					}], "+ Añadir a otro lugar"),
 					C("span", C("span", "Total:"), cantidadROInput)
 				)),
-				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
+				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
+				C("input", ["type", "hidden", "name", "id-object", "value", objeto.id]),
+				C("input", ["type", "hidden", "name", "action", "value", "update-object-cantidades"])
 			),
 			C("form", ["onsubmit", function(){ return false; }],
 				C("div", "Tags"),
@@ -217,13 +219,14 @@ function DrawObjeto(objeto) {
 		function DrawCantidadInput(seccionObjeto) {
 			var seccion = lista.secciones[seccionObjeto["id_seccion"]];
 			var almacen = lista.almacenes[seccion.id_almacen];
+			var rId = random_id();
 			var img;
 			var seccionesSelect, almacenesSelect;
 			var cantidadBlock = C("div", ["class", "cantidad-block"],
 				C("div", ["class", "contenido c1"],
-					almacenesSelect = C("select"),
-					seccionesSelect = C("select"),
-					C("input", ["name", "", "type", "text", "value", seccionObjeto.cantidad, "class", "form-control", "onchange", function(ev) {
+					almacenesSelect = C("select", ["name", "almacen-" + rId]),
+					seccionesSelect = C("select", ["name", "seccion-" + rId]),
+					C("input", ["name", "cantidad-" + rId, "type", "text", "value", seccionObjeto.cantidad, "class", "form-control", "onchange", function(ev) {
 						onMinimoChange(ev);
 						seccionObjeto.cantidad = ev.target.value;
 						UpdateROCantidad();
@@ -290,6 +293,7 @@ function DrawObjeto(objeto) {
 }
 
 function GetCantidad(objeto) {
+	if (objeto.secciones.length == 0) return 0;
 	return objeto.secciones.reduce(function(prev, cur) {
 		return { cantidad: parseInt(prev.cantidad) + parseInt(cur.cantidad) };
 	})["cantidad"];
@@ -306,7 +310,12 @@ function RemoveClass(dom, className) {
 	dom.className = dom.className.split(" " + className).join("");
 }
 
-
+var random_id = (function() {
+	var c = 0;
+	return function() {
+		return c++;
+	};
+})();
 
 function update(event) {
 	event.preventDefault();

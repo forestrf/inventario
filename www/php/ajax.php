@@ -93,6 +93,18 @@ if (isset($_GET['action'])) {
 				));
 			}
 			break;
+		case 'update-object-cantidades':
+			if (check(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+				/*&& */) {
+				
+				print_r($_POST);
+				
+				echo json_encode(array(
+					"STATUS" => "ERROR",
+					"MESSAGE" => "No implementado todavía"
+				));
+			}
+			break;
 	}
 }
 
