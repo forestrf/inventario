@@ -124,7 +124,7 @@ function DrawObjeto(objeto) {
 			C("div", ["class", "tags"], "Tags: ", tags = C("span", ["class", "tags-list"]))
 		)
 	);
-	var tagsArr = objeto["tagsArray"] = objeto["tags"].filter(function(x){return x !== ""});
+	var tagsArr = objeto["tags"] = objeto["tags"].filter(function(x){return x !== ""});
 	for (var i in tagsArr) C(tags, C("span", tagsArr[i]));
 	
 	objeto["DOM"]["objeto"] = objeto;
@@ -232,9 +232,6 @@ function DrawObjeto(objeto) {
 						UpdateROCantidad();
 					}])
 				),
-				C("div", ["class", "contenido c2"],
-					img = C("img")
-				),
 				C("div", ["class", "borrar"],
 					C("div", ["class", "btn btn-danger", "onclick", function(){
 						cantidadBlock.parentNode.removeChild(cantidadBlock);
@@ -255,13 +252,8 @@ function DrawObjeto(objeto) {
 			seccionesSelect.onchange = function(ev) {
 				seccionObjeto.id_seccion = parseInt(ev.target.value);
 				seccion = lista.secciones[seccionObjeto.id_seccion];
-				setImage();
 			}
 			
-			function setImage() {
-				img.src = seccion.imagen === null ? "http://via.placeholder.com/256x128" : "ajax.php?action=getimage&id=" + seccion.imagen;
-			}
-			setImage();
 			return cantidadBlock;
 		}
 		

@@ -181,11 +181,11 @@ div.buscador {
 	margin-bottom: 15px;
 }
 .popup > .msg form .cantidad-block {
-	border: 1px solid #cbcbcb;
 	background-color: #f6ffd2;
 	margin-bottom: 10px;
-	padding: 5px;
 	border-radius: 5px;
+	padding: 5px;
+	border: 1px solid #cbcbcb;
 }
 .popup > .msg form .cantidad-block > div {
 	vertical-align: top;
@@ -195,7 +195,7 @@ div.buscador {
 	margin-bottom: 1%;
 }
 .popup > .msg form .cantidad-block .contenido {
-	width: 44%;
+	width: 85%;
 }
 .popup > .msg form .cantidad-block .contenido.c2 {
 	margin-left: 1%;
@@ -207,8 +207,16 @@ div.buscador {
 }
 .popup > .msg form .cantidad-block select,
 .popup > .msg form .cantidad-block input {
-	display: block;
+	display: inline-block;
 	height: 30px;
+}
+.popup > .msg form .cantidad-block select {
+	margin-right: 1%;
+	width: 40%;
+}
+.popup > .msg form .cantidad-block input {
+	margin-top: -2px;
+	width: 15%;
 }
 .popup > .msg form .cantidad-block .borrar {
 	margin-left: 1%;

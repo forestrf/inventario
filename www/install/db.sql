@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 11-10-2017 a las 12:31:09
+-- Tiempo de generación: 14-11-2017 a las 12:19:25
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -71,7 +71,7 @@ CREATE TABLE `files` (
 
 CREATE TABLE `historico_objeto` (
   `id_objeto` int(11) NOT NULL,
-  `fecha` date NOT NULL,
+  `fecha` datetime NOT NULL,
   `cantidad` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
@@ -84,7 +84,6 @@ CREATE TABLE `historico_objeto` (
 CREATE TABLE `objeto` (
   `id` int(11) NOT NULL,
   `nombre` text COLLATE utf8_bin NOT NULL,
-  `descripcion` text COLLATE utf8_bin NOT NULL,
   `minimo_alerta` int(11) NOT NULL,
   `imagen` varchar(32) COLLATE utf8_bin DEFAULT NULL,
   `tags` text COLLATE utf8_bin NOT NULL
@@ -99,26 +98,8 @@ CREATE TABLE `objeto` (
 CREATE TABLE `objeto_seccion` (
   `id_objeto` int(11) NOT NULL,
   `id_seccion` int(11) NOT NULL,
-  `cantidad` int(11) NOT NULL
+  `cantidad` int(11) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
---
--- Disparadores `objeto_seccion`
---
-DELIMITER $$
-CREATE TRIGGER `objeto actualizado` AFTER UPDATE ON `objeto_seccion` FOR EACH ROW INSERT INTO `historico_objeto`
-(id_objeto, 
- fecha,
- cantidad)
- 
- SELECT 
- id_objeto,
- NOW(),
- SUM(`cantidad`) 
-  from `objeto_seccion_almacen`
-  WHERE `objeto_seccion_almacen`.`id_objeto` = id_objeto
-$$
-DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -130,8 +111,7 @@ CREATE TABLE `seccion` (
   `id` int(11) NOT NULL,
   `nombre` text COLLATE utf8_bin NOT NULL,
   `descripcion` text COLLATE utf8_bin NOT NULL,
-  `id_almacen` int(11) NOT NULL,
-  `imagen` varchar(32) COLLATE utf8_bin DEFAULT NULL
+  `id_almacen` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
@@ -175,8 +155,7 @@ ALTER TABLE `objeto_seccion`
 --
 ALTER TABLE `seccion`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `id_almacen` (`id_almacen`),
-  ADD KEY `imagen` (`imagen`);
+  ADD KEY `id_almacen` (`id_almacen`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -191,7 +170,7 @@ ALTER TABLE `almacen`
 -- AUTO_INCREMENT de la tabla `objeto`
 --
 ALTER TABLE `objeto`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 --
 -- AUTO_INCREMENT de la tabla `seccion`
 --
@@ -224,8 +203,7 @@ ALTER TABLE `objeto_seccion`
 -- Filtros para la tabla `seccion`
 --
 ALTER TABLE `seccion`
-  ADD CONSTRAINT `seccion_ibfk_1` FOREIGN KEY (`id_almacen`) REFERENCES `almacen` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `seccion_ibfk_2` FOREIGN KEY (`imagen`) REFERENCES `files` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `seccion_ibfk_1` FOREIGN KEY (`id_almacen`) REFERENCES `almacen` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
