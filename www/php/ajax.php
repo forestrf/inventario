@@ -19,6 +19,8 @@ if (isset($_GET['action'])) {
 			foreach ($db->get_almacenes() as &$almacen) $almacenes[$almacen["id"]] = &$almacen;
 			foreach ($db->get_secciones() as &$seccion) $secciones[$seccion["id"]] = &$seccion;
 			
+			insert_nocache_headers();
+			
 			echo json_encode(array(
 				"almacenes" => $almacenes,
 				"secciones" => $secciones,
@@ -96,13 +98,32 @@ if (isset($_GET['action'])) {
 		case 'update-object-cantidades':
 			if (check(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
 				/*&& */) {
+				$cantidades = array();
+				foreach ($_POST as $key => $value) {
+					if (preg_match('@(seccion|cantidad)-([0-9]+)@', $key, $matches)) {
+						$cantidades[$matches[2]][$matches[1]] = $value;
+					}
+				}
+				$cantidadesFiltradas = array();
+				foreach ($cantidades as $cantidad) {
+					if (check(isset($cantidad["seccion"]) && isset($cantidad["cantidad"]), "Una de las entradas del almacen está incompleta")) {
+						$cantidadesFiltradas[] = $cantidad;
+					}
+				}
 				
-				print_r($_POST);
-				
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => "No implementado todavía"
-				));
+				if ($db->object_set_cantidades($_POST["id-object"], $cantidadesFiltradas)) {				
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Cantidades actualizadas"/*,
+						"EVAL" => "updateMinimo('".$_POST["id-object"]."', '".$_POST["minimo"]."')"*/
+					));
+				} else {
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error/*,
+						"EVAL" => "updateMinimo('".$_POST["id-object"]."', '".$_POST["minimo"]."')"*/
+					));
+				}
 			}
 			break;
 	}
@@ -114,7 +135,7 @@ function check($check, $errorMsg) {
 			"STATUS" => "ERROR",
 			"MESSAGE" => $errorMsg
 		));
-		return false;
+		exit;
 	}
 	return true;
 }

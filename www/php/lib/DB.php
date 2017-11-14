@@ -162,6 +162,28 @@ class DB {
 		$minimo = mysql_escape_mimic($minimo);
 		return $this->query("UPDATE objeto SET minimo_alerta = '$minimo' WHERE id = '$id_objeto' LIMIT 1");
 	}
+	// $cantidades es un array que se recorrera con foreach cuyos elementos son otro array con indices seccion y cantidad
+	function object_set_cantidades($id_objeto, $cantidades) {
+		$id_objeto = mysql_escape_mimic($id_objeto);
+		if ($this->query("DELETE FROM objeto_seccion WHERE id_objeto = '$id_objeto';")) {
+			foreach ($cantidades as $cantidad) {
+				$id_seccion = mysql_escape_mimic($cantidad["seccion"]);
+				$cantidad = mysql_escape_mimic($cantidad["cantidad"]);
+				if (!$this->query("INSERT INTO objeto_seccion (id_objeto, id_seccion, cantidad) VALUES ($id_objeto, $id_seccion, $cantidad);")) {
+					return false;
+				}
+			}
+			$this->objeto_update_historio_cantidades($id_objeto);
+			return true;
+		}
+		return false;
+	}
+	
+	private function objeto_update_historio_cantidades($id_objeto) {
+		$id_objeto = mysql_escape_mimic($id_objeto);
+		return $this->query("INSERT INTO `historico_objeto` (id_objeto, fecha, cantidad) "
+			. "SELECT id_objeto, NOW(), SUM(`cantidad`) FROM `objeto_seccion` WHERE `objeto_seccion`.`id_objeto` = $id_objeto");
+	}
 }
 // Copy of mysql_real_escape_string to use it without an opened connection.
 // http://es1.php.net/mysql_real_escape_string
