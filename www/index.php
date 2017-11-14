@@ -136,7 +136,8 @@ function DrawObjeto(objeto) {
 	
 	
 	function edit() {
-		cantidad = GetCantidad(objeto);
+		var objetoLocal = cloneObjecto(objeto)
+		cantidad = GetCantidad(objetoLocal);
 		var actualizarStr = "Actualizar";
 		var cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
 		var tags;
@@ -144,26 +145,26 @@ function DrawObjeto(objeto) {
 		var popupDOM = C("div",
 			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Nombre"),
-				C("div", C("input", ["name", "nombre", "type", "text", "value", objeto["nombre"], "class", "form-control"])),
+				C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal["nombre"], "class", "form-control"])),
 				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
-				C("input", ["type", "hidden", "name", "id-object", "value", objeto.id]),
+				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-name"])
 			),
 			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Imagen"),
 				C("div", 
-					C("img", ["src", GetImagenObjeto(objeto), "id", "img_objeto", "class", "img-" + objeto.id]),
+					C("img", ["src", GetImagenObjeto(objetoLocal), "id", "img_objeto", "class", "img-" + objetoLocal.id]),
 					C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera"])
 				), 
 				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
-				C("input", ["type", "hidden", "name", "id-object", "value", objeto.id]),
+				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-image"])
 			),
 			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Cantidad mínima"),
-				C("div", C("input", ["name", "minimo", "type", "text", "value", objeto["minimo_alerta"], "class", "form-control", "onchange", onMinimoChange])),
+				C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal["minimo_alerta"], "class", "form-control", "onchange", onMinimoChange])),
 				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
-				C("input", ["type", "hidden", "name", "id-object", "value", objeto.id]),
+				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-minimo"])
 			),
 			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
@@ -171,26 +172,28 @@ function DrawObjeto(objeto) {
 				C("div", C("div", ["class", "cantidades"],
 					cantidades = C("div"), 
 					C("div", ["class", "btn btn-primary add", "onclick", function(){
-						objeto.secciones[objeto.secciones.length] = {cantidad: 0, id_seccion: Object.keys(lista.secciones)[0]};
-						C(cantidades, DrawCantidadInput(objeto["secciones"][objeto.secciones.length - 1]));
+						objetoLocal.secciones[objetoLocal.secciones.length] = {cantidad: 0, id_seccion: Object.keys(lista.secciones)[0]};
+						C(cantidades, DrawCantidadInput(objetoLocal["secciones"][objetoLocal.secciones.length - 1]));
 						return false;
 					}], "+ Añadir a otro lugar"),
 					C("span", C("span", "Total:"), cantidadROInput)
 				)),
 				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
-				C("input", ["type", "hidden", "name", "id-object", "value", objeto.id]),
+				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-cantidades"])
 			),
-			C("form", ["onsubmit", function(){ return false; }],
+			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Tags"),
-				C("div", tags = C("input", ["name", "", "type", "text", "value", objeto["tags"], "class", "form-control"])),
-				C("div", C("button", ["class", "btn btn-primary"], actualizarStr))
+				C("div", tags = C("input", ["name", "", "type", "text", "value", objetoLocal["tags"], "class", "form-control"])),
+				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
+				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
+				C("input", ["type", "hidden", "name", "action", "value", "update-object-tags"])
 			),
-			"ID: ", objeto.id,
+			"ID: ", objetoLocal.id,
 		);
 		
-		for (var i = 0; i < objeto["secciones"].length; i++) {
-			C(cantidades, DrawCantidadInput(objeto["secciones"][i]));
+		for (var i = 0; i < objetoLocal["secciones"].length; i++) {
+			C(cantidades, DrawCantidadInput(objetoLocal["secciones"][i]));
 		}
 		
 		$(tags).tokenfield({
@@ -220,7 +223,6 @@ function DrawObjeto(objeto) {
 			var seccion = lista.secciones[seccionObjeto["id_seccion"]];
 			var almacen = lista.almacenes[seccion.id_almacen];
 			var rId = random_id();
-			var img;
 			var seccionesSelect, almacenesSelect;
 			var cantidadBlock = C("div", ["class", "cantidad-block"],
 				C("div", ["class", "contenido c1"],
@@ -235,7 +237,7 @@ function DrawObjeto(objeto) {
 				C("div", ["class", "borrar"],
 					C("div", ["class", "btn btn-danger", "onclick", function(){
 						cantidadBlock.parentNode.removeChild(cantidadBlock);
-						objeto.secciones = objeto.secciones.filter(function(x){ return x.id_seccion !== seccionObjeto.id_seccion; });
+						objetoLocal.secciones = objetoLocal.secciones.filter(function(x){ return x.id_seccion !== seccionObjeto.id_seccion; });
 						UpdateROCantidad();
 					}], "X")
 				)
@@ -282,6 +284,17 @@ function DrawObjeto(objeto) {
 			return seccionesFiltradas;
 		}		
 	}
+}
+
+
+function cloneObjecto(objeto) {
+	var cloned = {};
+	for (var i in objeto) {
+		if (i != "DOM") {
+			cloned[i] = JSON.parse(JSON.stringify(objeto[i]));
+		}
+	}
+	return cloned;
 }
 
 function GetCantidad(objeto) {
