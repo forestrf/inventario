@@ -191,9 +191,6 @@ div.buscador {
 	vertical-align: top;
 	display: inline-block;
 }
-.popup > .msg form .cantidad-block select {
-	margin-bottom: 1%;
-}
 .popup > .msg form .cantidad-block .contenido {
 	width: 85%;
 }
