@@ -138,32 +138,32 @@ function DrawObjeto(objeto) {
 	function edit() {
 		var objetoLocal = cloneObjecto(objeto)
 		cantidad = GetCantidad(objetoLocal);
-		var actualizarStr = "Actualizar";
+		var actualizarStr = "Guardar cambios";
 		var cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
 		var tags;
 		var cantidades;
 		var popupDOM = C("div",
 			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Nombre"),
-				C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal["nombre"], "class", "form-control"])),
-				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
+				C("div", ["class", "hideNextElement"], C("input", ["name", "nombre", "type", "text", "value", objetoLocal["nombre"], "class", "form-control", "onkeyup", compruebaCambios])),
+				C("div", C("input", ["type", "submit", "class", "btn btn-success", "value", actualizarStr])),
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-name"])
 			),
 			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Imagen"),
-				C("div", 
+				C("div", ["class", "hideNextElement"], 
 					C("img", ["src", GetImagenObjeto(objetoLocal), "id", "img_objeto", "class", "img-" + objetoLocal.id]),
-					C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera"])
+					C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera", "onchange", compruebaCambios])
 				), 
-				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
+				C("div", C("input", ["type", "submit", "class", "btn btn-success", "value", actualizarStr])),
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-image"])
 			),
 			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Cantidad mínima"),
-				C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal["minimo_alerta"], "class", "form-control", "onchange", onMinimoChange])),
-				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
+				C("div", ["class", "hideNextElement"], C("input", ["name", "minimo", "type", "text", "value", objetoLocal["minimo_alerta"], "class", "form-control", "onchange", onMinimoChange, "onkeyup", compruebaCambios])),
+				C("div", C("input", ["type", "submit", "class", "btn btn-success", "value", actualizarStr])),
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-minimo"])
 			),
@@ -178,14 +178,14 @@ function DrawObjeto(objeto) {
 					}], "+ Añadir a otro lugar"),
 					C("span", C("span", "Total:"), cantidadROInput)
 				)),
-				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
+				C("div", C("input", ["type", "submit", "class", "btn btn-success", "value", actualizarStr])),
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-cantidades"])
 			),
 			C("form", ["method", "post", "action", "php/ajax.php", "onsubmit", update],
 				C("div", "Tags"),
-				C("div", tags = C("input", ["name", "", "type", "text", "value", objetoLocal["tags"], "class", "form-control"])),
-				C("div", C("input", ["type", "submit", "class", "btn btn-primary", "value", actualizarStr])),
+				C("div", ["class", "hideNextElement"], tags = C("input", ["name", "", "type", "text", "value", objetoLocal.tags, "class", "form-control", "onchange", compruebaCambios])),
+				C("div", C("input", ["type", "submit", "class", "btn btn-success", "value", actualizarStr])),
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-tags"])
 			),
@@ -194,6 +194,12 @@ function DrawObjeto(objeto) {
 		
 		for (var i = 0; i < objetoLocal["secciones"].length; i++) {
 			C(cantidades, DrawCantidadInput(objetoLocal["secciones"][i]));
+		}
+		aa = popupDOM;
+		var arr = popupDOM.querySelectorAll("input[type=text]");
+		for (var i = 0; i < arr.length; i++) {
+			if (arr[i].originalValue === undefined)
+				arr[i].originalValue = arr[i].value;
 		}
 		
 		$(tags).tokenfield({
@@ -207,6 +213,18 @@ function DrawObjeto(objeto) {
 		
 		showPopup(popupDOM);
 		
+		
+		function compruebaCambios(ev) {
+			// Esta comprobación la hago porque tokenfield cambia el parent del input
+			var parent = ev.target.parentElement.parentElement.tagName == "FORM" ? 
+				ev.target.parentElement :
+				ev.target.parentElement.parentElement;
+			if (ev.target.value != ev.target.originalValue) {
+				RemoveClass(parent, "hideNextElement");
+			} else {
+				AddClass(parent, "hideNextElement");
+			}
+		}
 		
 		
 		function onMinimoChange(ev) {
@@ -309,10 +327,15 @@ function GetImagenObjeto(objeto) {
 }
 
 function AddClass(dom, className) {
-	dom.className += " " + className;
+	var clases = dom.className.split(" ");
+	clases.push(className);
+	dom.className = clases.filter(onlyUnique).join(" ");
 }
 function RemoveClass(dom, className) {
-	dom.className = dom.className.split(" " + className).join("");
+	dom.className = dom.className.split(" ").filter(function(c) { return c != className; }).join(" ");
+}
+function onlyUnique(value, index, self) { 
+    return self.indexOf(value) === index;
 }
 
 var random_id = (function() {
@@ -333,7 +356,15 @@ function update(event) {
 	AJAX('php/ajax.php', formData, function(msg) {
 		var json = JSON.parse(msg.response);
 		console.log(json);
-		formPoke(event.originalTarget, json.STATUS === "OK" ? "success" : "fail", json.MESSAGE);
+		formPoke(target, json.STATUS === "OK" ? "success" : "fail", json.MESSAGE);
+		if (json.STATUS === "OK") {
+			var arr = event.target.querySelectorAll("input[type=text]");
+			for (var i = 0; i < arr.length; i++) {
+				arr[i].originalValue = arr[i].value;
+				arr[i].dispatchEvent(new Event('change'));
+				arr[i].dispatchEvent(new Event('keyup'));
+			}
+		}
 		eval(json.EVAL);
 	}, function(msg) {
 		alert("ERROR: " + msg.response);
@@ -341,8 +372,7 @@ function update(event) {
 }
 
 function formPoke(form, className, msg) {
-	console.log(form.poked);
-	if (form.poked) {
+	if (form.poked !== undefined) {
 		getTimeout(form.poked)();
 		delTimeout(form.poked);
 	}
@@ -353,7 +383,7 @@ function formPoke(form, className, msg) {
 		RemoveClass(form, className);
 		if (msgDOM !== null) form.removeChild(msgDOM);
 		form.poked = undefined;
-	}, 6000);
+	}, 10000);
 }
 
 function updateImagen(id_objeto, id_imagen) {

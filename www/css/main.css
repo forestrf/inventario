@@ -150,11 +150,15 @@ div.buscador {
 	position: relative;
 	font-weight: bold;
 	left: 20%;
+	display: block;
 }
 .popup > .msg form > div {
 	display: inline-block;
 	margin-right: 1%;
 	vertical-align: top;
+}
+.popup > .msg form > div.hideNextElement + div {
+	display:none;
 }
 .popup > .msg form > div:nth-child(1) {
 	width: 19%;
@@ -172,13 +176,18 @@ div.buscador {
 .popup > .msg form > div:nth-child(3) > input {
 	width: 100%;
 }
+.popup > .msg form > div:nth-child(3) {
+	margin-right: 0;
+}
 .popup > .msg form #img_objeto {
 	max-width: 128px;
 	max-height: 128px;
 }
 .popup > .msg form .cantidades .add {
-	width: 100%;
+	width: 40%;
 	margin-bottom: 15px;
+	display: block;
+	margin-left: 30%;
 }
 .popup > .msg form .cantidad-block {
 	background-color: #f6ffd2;
