@@ -227,7 +227,7 @@ div.buscador {
 .popup > .msg form .cantidad-block .borrar {
 	margin-left: 1%;
 	text-align: center;
-	width: 9%;
+	float: right;
 }
 .popup > .msg form .cantidad-block .borrar .btn {
 	height: 30px;
