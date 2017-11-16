@@ -117,10 +117,10 @@ div.buscador {
 	margin: 3px;
 	width: 49%;
 }
-.left {
+.left_big {
 	float: left;
 }
-.right {
+.right_big {
 	float: right;
 }
 .clear {
@@ -146,23 +146,16 @@ div.buscador {
 	vertical-align: top;
 }
 .popup > .msg form > div:nth-child(1) {
-	width: 19%;
+	width: 26%;
 	text-align: right;
 	height: 34px;
 	line-height: 34px;
 }
 .popup > .msg form > div:nth-child(2) {
-	width: 59%;
+	width: 72%;
 }
-.popup > .msg form > div:nth-child(3) {
-	width: 19%;
-}
-.popup > .msg form > div:nth-child(2) > input,
-.popup > .msg form > div:nth-child(3) > input {
+.popup > .msg form > div:nth-child(2) > input {
 	width: 100%;
-}
-.popup > .msg form > div:nth-child(3) {
-	margin-right: 0;
 }
 .popup > .msg form #img_objeto {
 	max-width: 128px;
@@ -207,7 +200,7 @@ div.buscador {
 }
 .popup > .msg form .cantidad-block input {
 	margin-top: -2px;
-	width: 15%;
+	width: 16%;
 }
 .popup > .msg form .cantidad-block .borrar {
 	margin-left: 1%;
@@ -250,8 +243,15 @@ div.buscador {
 .popup > .msg .botonesAceptarCancelar input.cancelar {
 	padding: 10px 30px;
 }
-.popup > .msg .submitHidden {
-	
-}
 
+
+@media (max-width: 1024px) {
+	.left_big,
+	.right_big {
+		float: none;
+	}
+	.popup > .msg form {
+		width: 100%;
+	}
+}
 

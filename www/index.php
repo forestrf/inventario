@@ -142,14 +142,14 @@ function DrawObjeto(objeto) {
 		var cantidades;
 		var popupDOM = C("div",
 			C("div", ["style", "padding: 1%"],
-				C("form", ["class", "left", "method", "post", "action", "php/ajax.php", "onsubmit", update],
+				C("form", ["class", "left_big", "method", "post", "action", "php/ajax.php", "onsubmit", update],
 					C("div", "Nombre"),
 					C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal["nombre"], "class", "form-control", "onkeyup", compruebaCambios])),
 					C("input", ["type", "submit"]),
 					C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 					C("input", ["type", "hidden", "name", "action", "value", "update-object-name"])
 				),
-				C("form", ["class", "right", "method", "post", "action", "php/ajax.php", "onsubmit", update],
+				C("form", ["class", "right_big", "method", "post", "action", "php/ajax.php", "onsubmit", update],
 					C("div", "Imagen"),
 					C("div",
 						C("img", ["src", GetImagenObjeto(objetoLocal), "id", "img_objeto", "class", "img-" + objetoLocal.id]),
@@ -159,14 +159,14 @@ function DrawObjeto(objeto) {
 					C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 					C("input", ["type", "hidden", "name", "action", "value", "update-object-image"])
 				),
-				C("form", ["class", "left", "method", "post", "action", "php/ajax.php", "onsubmit", update],
+				C("form", ["class", "left_big", "method", "post", "action", "php/ajax.php", "onsubmit", update],
 					C("div", "Cantidad mínima"),
 					C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal["minimo_alerta"], "class", "form-control", "onchange", onMinimoChange, "onkeyup", compruebaCambios])),
 					C("input", ["type", "submit"]),
 					C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 					C("input", ["type", "hidden", "name", "action", "value", "update-object-minimo"])
 				),
-				C("form", ["class", "left", "method", "post", "action", "php/ajax.php", "onsubmit", update],
+				C("form", ["class", "left_big", "method", "post", "action", "php/ajax.php", "onsubmit", update],
 					C("div", "Cantidad"),
 					C("div", C("div", ["class", "cantidades"],
 						cantidades = C("div"), 
@@ -181,7 +181,7 @@ function DrawObjeto(objeto) {
 					C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 					C("input", ["type", "hidden", "name", "action", "value", "update-object-cantidades"])
 				),
-				C("form", ["class", "right", "method", "post", "action", "php/ajax.php", "onsubmit", update],
+				C("form", ["class", "right_big", "method", "post", "action", "php/ajax.php", "onsubmit", update],
 					C("div", "Tags"),
 					C("div", tags = C("input", ["name", "", "type", "text", "value", objetoLocal.tags, "class", "form-control", "onchange", compruebaCambios])),
 					C("input", ["type", "submit"]),
