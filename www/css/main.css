@@ -162,10 +162,12 @@ div.buscador {
 	max-height: 128px;
 }
 .popup > .msg form .cantidades .add {
-	width: 40%;
 	margin-bottom: 15px;
 	display: block;
-	margin-left: 30%;
+	font-size: 1.2em;
+	padding: 0;
+	height: 30px;
+	line-height: 30px;
 }
 .popup > .msg form .cantidad-block {
 	background-color: #f6ffd2;
