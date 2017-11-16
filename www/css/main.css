@@ -102,31 +102,9 @@ div.buscador {
 	height: 100%;
 	width: 100%;
 }
-.popup .closeButton {
-	position: absolute;
-	top: -30px;
-	right: 0;
-	margin-right: 5%;
-	margin-top: 5%;
-	width: 30px;
-	height: 30px;
-}
-.popup .closeButton button {
-	width: 100%;
-	height: 100%;
-	background-color: #f00;
-	border-color: #f00;
-	color: #fff;
-	font-weight: bold;
-	font-size: 20px;
-	line-height: 30px;
-	padding: 0;
-}
 .popup > .msg {
 	background-color: #fff;
-	padding: 1%;
 	margin: 5%;
-	border: 1px solid #aaa;
 }
 
 .popup > .msg form {
@@ -137,12 +115,22 @@ div.buscador {
 	padding: 6px;
 	border: 1px solid #ddd;
 	margin: 3px;
+	width: 49%;
 }
-.popup > .msg form.success {
+.left {
+	float: left;
+}
+.right {
+	float: right;
+}
+.clear {
+	clear: both;
+}
+.popup > .msg form.OK {
 	background-color: #48a748;
 	color: #fff;
 }
-.popup > .msg form.fail {
+.popup > .msg form.ERROR {
 	background-color: #a82c2c;
 	color: #fff;
 }
@@ -156,9 +144,6 @@ div.buscador {
 	display: inline-block;
 	margin-right: 1%;
 	vertical-align: top;
-}
-.popup > .msg form > div.hideNextElement + div {
-	display:none;
 }
 .popup > .msg form > div:nth-child(1) {
 	width: 19%;
@@ -247,6 +232,26 @@ div.buscador {
 
 .popup > .msg .tokenfield .token .token-label {
 	max-width: 180px !important;
+}
+
+.popup > .msg .botonesAceptarCancelar {
+	margin-top: 10px;
+	padding-top: 30px;
+	padding-bottom: 15px;
+	text-align: center;
+	background-color: #d7ffa4;
+}
+.popup > .msg .botonesAceptarCancelar input {
+	margin: 0 5px;
+}
+.popup > .msg .botonesAceptarCancelar input.aceptar {
+	padding: 10px 50px;
+}
+.popup > .msg .botonesAceptarCancelar input.cancelar {
+	padding: 10px 30px;
+}
+.popup > .msg .submitHidden {
+	
 }
 
 
