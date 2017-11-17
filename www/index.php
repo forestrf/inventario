@@ -169,7 +169,15 @@ function DrawObjeto(objeto) {
 				C("form", ["class", "left_big", "method", "post", "action", "php/ajax.php", "onsubmit", update],
 					C("div", "Cantidad"),
 					C("div", C("div", ["class", "cantidades"],
-						cantidades = C("div"), 
+						cantidades = C("div", ["class", "tabla"],
+							C("div", ["class", "cantidad-block"],
+								C("div", ["class", "contenido"],
+									C("span", "Almacen"),
+									C("span", "Sección"),
+									C("span", "Cantidad")
+								)
+							)
+						), 
 						C("div", ["class", "btn btn-primary add", "onclick", function(){
 							objetoLocal.secciones[objetoLocal.secciones.length] = {cantidad: 0, id_seccion: Object.keys(lista.secciones)[0]};
 							C(cantidades, DrawCantidadInput(objetoLocal["secciones"][objetoLocal.secciones.length - 1]));

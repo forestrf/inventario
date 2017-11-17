@@ -168,19 +168,29 @@ div.buscador {
 	height: 30px;
 	line-height: 30px;
 }
-.popup > .msg form .cantidad-block {
+.popup > .msg form .tabla {
 	background-color: #f6ffd2;
-	margin-bottom: 10px;
-	border-radius: 5px;
-	padding: 5px;
+	background-color: #fff;
 	border: 1px solid #cbcbcb;
 }
+.popup > .msg form .tabla span {
+	display: inline-block;
+	border-right: 1px solid #cbcbcb;
+	padding: 3px 0;
+	text-align: center;
+	color: #000;
+}
+.popup > .msg form .cantidad-block {
+	background-color: #f6ffd2;
+	background-color: #fff;
+	border-bottom: 1px solid #cbcbcb;
+}
 .popup > .msg form .cantidad-block > div {
-	vertical-align: top;
+	vertical-align: middle;
 	display: inline-block;
 }
 .popup > .msg form .cantidad-block .contenido {
-	width: 85%;
+	width: 88%;
 }
 .popup > .msg form .cantidad-block .contenido.c2 {
 	margin-left: 1%;
@@ -195,23 +205,33 @@ div.buscador {
 	display: inline-block;
 	height: 30px;
 }
-.popup > .msg form .cantidad-block select {
-	margin-right: 1%;
-	width: 40%;
+.popup > .msg form .cantidad-block select,
+.popup > .msg form .tabla span:nth-child(1),
+.popup > .msg form .tabla span:nth-child(2) {
+	width: 41%;
+}
+.popup > .msg form .cantidad-block input,
+.popup > .msg form .tabla span:nth-child(3) {
+	width: 18%;
 }
 .popup > .msg form .cantidad-block input {
 	margin-top: -2px;
-	width: 16%;
+}
+.popup > .msg form .cantidad-block select ,
+.popup > .msg form .cantidad-block input {
+    border-right: 1px solid #cbcbcb;
+    border-left: 0 none;
+    border-top: 0 none;
+    border-bottom: 0 none;
+    border-radius: 0;
+    box-shadow: none;
 }
 .popup > .msg form .cantidad-block .borrar {
-	margin-left: 1%;
+	width: 12%;
 	text-align: center;
-	float: right;
 }
 .popup > .msg form .cantidad-block .borrar .btn {
-	height: 30px;
-	line-height: 30px;
-	padding: 0 12px;
+	padding: 0px 5px;
 	font-weight: bold;
 }
 

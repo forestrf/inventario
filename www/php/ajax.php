@@ -136,7 +136,7 @@ if (isset($_GET['action'])) {
 				} else {
 					echo json_encode(array(
 						"STATUS" => "ERROR",
-						"MESSAGE" => $db->mysqli->error
+						"MESSAGE" => strpos($db->mysqli->error, "Duplicate entry") !== false ? "La sección de un almacen aparece más de una vez" : $db->mysqli->error
 					));
 				}
 			}
