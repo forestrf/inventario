@@ -57,14 +57,20 @@ if (isset($_GET['action'])) {
 				&& check(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "", "No se ha enviado una imagen")) {
 				
 				$file_index = "";
-				$db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index);
-				$db->object_set_image($_POST["id-object"], $file_index);
+				if ($db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index)
+					&& $db->object_set_image($_POST["id-object"], $file_index)) {
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Imagen actualizada",
+						"EVAL" => "updateImagen('".$_POST["id-object"]."', '$file_index')"
+					));
+				} else {
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
+					));
+				}
 				
-				echo json_encode(array(
-					"STATUS" => "OK",
-					"MESSAGE" => "Imagen actualizada",
-					"EVAL" => "updateImagen('".$_POST["id-object"]."', '$file_index')"
-				));
 			}
 			break;
 		case 'update-object-name':
@@ -72,13 +78,18 @@ if (isset($_GET['action'])) {
 				&& check(isset($_POST["nombre"]), "No se ha enviado un nombre. Por favor comunica este error a un encargado de la app")
 				&& check(strlen($_POST["nombre"]) > 0, "El nombre es demasiado corto")) {
 				
-				$db->object_set_name($_POST["id-object"], $_POST["nombre"]);
-				
-				echo json_encode(array(
-					"STATUS" => "OK",
-					"MESSAGE" => "Nombre actualizado",
-					"EVAL" => "updateNombre('".$_POST["id-object"]."', '".$_POST["nombre"]."')"
-				));
+				if ($db->object_set_name($_POST["id-object"], $_POST["nombre"])) {				
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Nombre actualizado",
+						"EVAL" => "updateNombre('".$_POST["id-object"]."', '".$_POST["nombre"]."')"
+					));
+				} else {
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
+					));
+				}
 			}
 			break;
 		case 'update-object-minimo':
@@ -86,13 +97,18 @@ if (isset($_GET['action'])) {
 				&& check(isset($_POST["minimo"]), "No se ha enviado una cantidad mínima. Por favor comunica este error a un encargado de la app")
 				&& check(intval($_POST["minimo"]) >= 0, "El valor mínimo debe de ser un número mayor o igual que cero")) {
 				
-				$db->object_set_minimo($_POST["id-object"], $_POST["minimo"]);
-				
-				echo json_encode(array(
-					"STATUS" => "OK",
-					"MESSAGE" => "Mínimo actualizado",
-					"EVAL" => "updateMinimo('".$_POST["id-object"]."', '".$_POST["minimo"]."')"
-				));
+				if ($db->object_set_minimo($_POST["id-object"], $_POST["minimo"])) {
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Mínimo actualizado",
+						"EVAL" => "updateMinimo('".$_POST["id-object"]."', '".$_POST["minimo"]."')"
+					));					
+				} else {
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
+					));
+				}
 			}
 			break;
 		case 'update-object-cantidades':
@@ -120,8 +136,25 @@ if (isset($_GET['action'])) {
 				} else {
 					echo json_encode(array(
 						"STATUS" => "ERROR",
-						"MESSAGE" => $db->mysqli->error/*,
+						"MESSAGE" => $db->mysqli->error
+					));
+				}
+			}
+			break;
+		case 'update-object-tags':
+			if (check(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+				&& check(isset($_POST["tags"]), "No se ha enviado una lista de tags. Por favor comunica este error a un encargado de la app")) {
+				
+				if ($db->object_set_tags($_POST["id-object"], $_POST["tags"])) {				
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Cantidades actualizadas"/*,
 						"EVAL" => "updateMinimo('".$_POST["id-object"]."', '".$_POST["minimo"]."')"*/
+					));
+				} else {
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
 					));
 				}
 			}

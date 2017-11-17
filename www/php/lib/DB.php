@@ -162,6 +162,11 @@ class DB {
 		$minimo = mysql_escape_mimic($minimo);
 		return $this->query("UPDATE objeto SET minimo_alerta = '$minimo' WHERE id = '$id_objeto' LIMIT 1");
 	}
+	function object_set_tags($id_objeto, $tags) {
+		$id_objeto = mysql_escape_mimic($id_objeto);
+		$tags = mysql_escape_mimic($tags);
+		return $this->query("UPDATE objeto SET tags = '$tags' WHERE id = '$id_objeto' LIMIT 1");
+	}
 	// $cantidades es un array que se recorrera con foreach cuyos elementos son otro array con indices seccion y cantidad
 	function object_set_cantidades($id_objeto, $cantidades) {
 		$id_objeto = mysql_escape_mimic($id_objeto);

@@ -149,7 +149,7 @@ function DrawObjeto(objeto) {
 					C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 					C("input", ["type", "hidden", "name", "action", "value", "update-object-name"])
 				),
-				C("form", ["class", "right_big", "method", "post", "action", "php/ajax.php", "onsubmit", update],
+				C("form", ["class", "right_big img", "method", "post", "action", "php/ajax.php", "onsubmit", update],
 					C("div", "Imagen"),
 					C("div",
 						C("img", ["src", GetImagenObjeto(objetoLocal), "id", "img_objeto", "class", "img-" + objetoLocal.id]),
@@ -183,7 +183,7 @@ function DrawObjeto(objeto) {
 				),
 				C("form", ["class", "right_big", "method", "post", "action", "php/ajax.php", "onsubmit", update],
 					C("div", "Tags"),
-					C("div", tags = C("input", ["name", "", "type", "text", "value", objetoLocal.tags, "class", "form-control", "onchange", compruebaCambios])),
+					C("div", tags = C("input", ["name", "tags", "type", "text", "value", objetoLocal.tags, "class", "form-control", "onchange", compruebaCambios])),
 					C("input", ["type", "submit"]),
 					C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 					C("input", ["type", "hidden", "name", "action", "value", "update-object-tags"])

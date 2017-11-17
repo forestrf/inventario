@@ -133,7 +133,7 @@ div.buscador {
 .popup > .msg form .msg {
 	position: relative;
 	font-weight: bold;
-	left: 20%;
+	margin-left: 20%;
 	display: block;
 }
 .popup > .msg form > div {
@@ -156,6 +156,9 @@ div.buscador {
 .popup > .msg form #img_objeto {
 	max-width: 128px;
 	max-height: 128px;
+}
+.popup > .msg form.img {
+	height: 180px;
 }
 .popup > .msg form .cantidades .add {
 	margin-bottom: 15px;
