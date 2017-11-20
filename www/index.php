@@ -60,29 +60,17 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 		);
 	};
 	
+	
+	function FixTags(objetos) {
+		for (var i in objetos) {
+			objetos[i].tags = objetos[i].tags.split(",");
+		}
+	}
 }, console.log);
 
 
-function FixTags(objetos) {
-	for (var i in objetos) {
-		objetos[i].tags = objetos[i].tags.split(",");
-	}
-}
 
 
-var popups = [];
-function closePopup() {
-	var dom = popups.pop();
-	document.body.removeChild(dom);
-}
-function showPopup(contentsDOM) {
-	var dom = C("div", ["class", "popup"],
-		C("div", ["class", "bg", "onclick", closePopup]),
-		C("div", ["class", "msg"], contentsDOM)
-	);
-	document.body.appendChild(dom);
-	popups.push(dom);
-}
 
 
 
@@ -109,7 +97,7 @@ function DrawInventory(lista) {
 function DrawObjeto(objeto) {
 	var cantidad = GetCantidad(objeto);
 	var tags;
-	objeto["DOM"] = C("button", ["class", "objeto obj-" + objeto.id, "onclick", edit],
+	var dom = C("button", ["class", "objeto obj-" + objeto.id, "onclick", edit],
 		C("div", ["class", "titulo"],
 			C("div", ["class", "nombre"], objeto["nombre"])
 		),
@@ -123,19 +111,19 @@ function DrawObjeto(objeto) {
 			C("div", ["class", "tags"], "Tags: ", tags = C("span", ["class", "tags-list"]))
 		)
 	);
-	var tagsArr = objeto["tags"] = objeto["tags"].filter(function(x){return x !== ""});
-	for (var i in tagsArr) C(tags, C("span", tagsArr[i]));
+	objeto.tags = objeto.tags.filter(function(x){return x !== ""});
+	for (var i in objeto.tags) C(tags, C("span", objeto.tags[i]));
 	
-	objeto["DOM"]["objeto"] = objeto;
+	dom["objeto"] = objeto;
 	var cb = cantidad < parseInt(objeto["minimo_alerta"]) ? AddClass : RemoveClass;
-	cb(objeto["DOM"], "alerta");
+	cb(dom, "alerta");
 	
-	return objeto["DOM"];
+	return dom;
 
 	
 	
 	function edit() {
-		var objetoLocal = cloneObjecto(objeto)
+		var objetoLocal = cloneObject(objeto)
 		cantidad = GetCantidad(objetoLocal);
 		var cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
 		var tags;
@@ -200,7 +188,7 @@ function DrawObjeto(objeto) {
 			),
 			C("div", ["class", "botonesAceptarCancelar"],
 				C("input", ["type", "button", "class", "btn btn-success aceptar", "value", "Guardar cambios", "onclick", guardarCambios]),
-				C("input", ["type", "button", "class", "btn btn-default cancelar", "value", "Cancelar", "onclick", closePopup]),
+				C("input", ["type", "button", "class", "btn btn-default cancelar", "value", "Cancelar", "onclick", popups.closePopup]),
 				C("div", ["style", "text-align: left; display: none;"], "ID: ", objetoLocal.id)
 			)
 		);
@@ -230,7 +218,7 @@ function DrawObjeto(objeto) {
 			allowEditing: true
 		});
 		
-		showPopup(popupDOM);
+		popups.showPopup(popupDOM);
 		
 		
 		function compruebaCambios(ev) {
@@ -247,13 +235,14 @@ function DrawObjeto(objeto) {
 		
 		
 		function onMinimoChange(ev) {
+			onIntegerChange(ev);
 			if (ev.target.value < 0) ev.target.value = 0;
-			onNumberChange(ev);
 		}
-		function onNumberChange(ev) {
-			var numeroSinCerosDelante = /^0*(.*)/.exec(ev.target.value)[1];
-			ev.target.value = eval(numeroSinCerosDelante);
-			if (isNaN(ev.target.value)) ev.target.value = 0;
+		function onIntegerChange(ev) {
+			var soloNumeros = ev.target.value.replace(/[^0-9 +*/-]/g, ""); // Quitar letras y +
+			var numeroSinCerosDelante = soloNumeros.replace(/^0*/, ""); // Evitar octal quitando en el inicio
+			var numeroFinal = eval(numeroSinCerosDelante);
+			ev.target.value = isNaN(numeroFinal) ? 0 : numeroFinal;
 		}
 		
 		function DrawCantidadInput(seccionObjeto) {
@@ -332,14 +321,8 @@ function DrawObjeto(objeto) {
 }
 
 
-function cloneObjecto(objeto) {
-	var cloned = {};
-	for (var i in objeto) {
-		if (i != "DOM") {
-			cloned[i] = JSON.parse(JSON.stringify(objeto[i]));
-		}
-	}
-	return cloned;
+function cloneObject(objeto) {
+	return JSON.parse(JSON.stringify(objeto));
 }
 
 function GetCantidad(objeto) {
@@ -353,24 +336,6 @@ function GetImagenObjeto(objeto) {
 	return objeto.imagen === null ? "http://via.placeholder.com/128x128" : "php/ajax.php?action=getfile&id=" + objeto.imagen;
 }
 
-function AddClass(dom, className) {
-	var clases = dom.className.split(" ");
-	clases.push(className);
-	dom.className = clases.filter(onlyUnique).join(" ");
-	function onlyUnique(value, index, self) { 
-		return self.indexOf(value) === index;
-	}
-}
-function RemoveClass(dom, className) {
-	dom.className = dom.className.split(" ").filter(function(c) { return c != className; }).join(" ");
-}
-
-var random_id_generator = (function() {
-	var c = 0;
-	return function() {
-		return c++;
-	};
-})();
 
 function update(event) {
 	event.preventDefault();
@@ -398,13 +363,13 @@ function update(event) {
 
 function formPoke(form, className, msg) {
 	if (form.poked !== undefined) {
-		getTimeout(form.poked)();
-		delTimeout(form.poked);
+		timeouts.get(form.poked)();
+		timeouts.gel(form.poked);
 	}
 	AddClass(form, className);
 	var msgDOM;
 	if (msg !== undefined && msg !== null) C(form, msgDOM = C("span", ["class", "msg"], msg));
-	form.poked = addTimeout(function() {
+	form.poked = timeouts.add(function() {
 		RemoveClass(form, className);
 		if (msgDOM !== null) form.removeChild(msgDOM);
 		form.poked = undefined;
@@ -429,30 +394,62 @@ function updateNombre(id_objeto, nombre) {
 
 
 
-</script>
 
+	
 
-
-
-<script>
-	var timeout_funcs = {};
-
-	function addTimeout(func,time) {
-		var id = window.setTimeout(func,time);
-		timeout_funcs[id] = func;
-		return id;
-	}
-
-	function getTimeout(id) {
-		return timeout_funcs[id] ? timeout_funcs[id] : null;
-	}
-
-	function delTimeout(id) {
-		if(timeout_funcs[id]) {
-			window.clearTimeout(timeout_funcs[id]);
-			delete timeout_funcs[id];
+	function AddClass(dom, className) {
+		var clases = dom.className.split(" ");
+		clases.push(className);
+		dom.className = clases.filter(onlyUnique).join(" ");
+		function onlyUnique(value, index, self) { 
+			return self.indexOf(value) === index;
 		}
 	}
+	function RemoveClass(dom, className) {
+		dom.className = dom.className.split(" ").filter(function(c) { return c != className; }).join(" ");
+	}
+
+	var random_id_generator = (function(c) {
+		return function() { return c++; };
+	})(0);
+	
+	var timeouts = (function() {
+		var list = {};
+		return {
+			add: function(func, milliseconds) {
+				var id = window.setTimeout(func, milliseconds);
+				list[id] = func;
+				return id;
+			},
+			get: function(id) {
+				return list[id] ? list[id] : null;
+			},
+			del: function(id) {
+				if(list[id]) {
+					window.clearTimeout(list[id]);
+					delete list[id];
+				}
+			}
+		};
+	})();
+	
+	
+	var popups = (function() {
+		var stack = [];
+		return {
+			showPopup: function(contentsDOM) {
+				var dom = C("div", ["class", "popup"],
+					C("div", ["class", "bg", "onclick", popups.closePopup]),
+					C("div", ["class", "msg"], contentsDOM)
+				);
+				document.body.appendChild(dom);
+				stack.push(dom);
+			},
+			closePopup: function() {
+				document.body.removeChild(stack.pop());
+			}
+		}
+	})();
 </script>
 
 
