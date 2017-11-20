@@ -18,7 +18,6 @@
 <body>
 
 
-
 <div class="buscador">
 	Búsqueda: <input id="buscador" type="text" placeholder="Búsqueda" class="form-control"/>
 </div>
@@ -31,7 +30,7 @@
 
 
 <script>
-	if(typeof String.prototype.trim !== 'function') {
+	if (typeof String.prototype.trim !== 'function') {
 		String.prototype.trim = function() {
 			return this.replace(/^\s+|\s+$/g, ''); 
 		}
@@ -129,6 +128,13 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 		for (var i in objetos) arr = arr.concat(objetos[i].tags.filter(function(x){ return arr.indexOf(x) === -1; }));
 		return arr
 	}
+	
+	function GetCantidad(objeto) {
+		if (objeto.secciones.length == 0) return 0;
+		return objeto.secciones.reduce(function(prev, cur) {
+			return { cantidad: parseInt(prev.cantidad) + parseInt(cur.cantidad) };
+		})["cantidad"];
+	}	
 		
 	function DrawInventory(lista) {
 		var contenedor = C("div");
@@ -330,6 +336,39 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 					forms[i].submitter.click();
 				}
 			}
+			
+			function update(event) {
+				event.preventDefault();
+				console.log(event);
+				var target = event.originalTarget !== undefined ? event.originalTarget : event.target;
+				var formData = new FormData(target);
+				for (var key of formData.entries()) console.log(key[0] + ', ' + key[1]);
+				AJAX('php/ajax.php', formData, function(msg) {
+					var json = JSON.parse(msg.response);
+					formPoke(target, json.STATUS, json.MESSAGE);
+					if (json.STATUS === "OK") {
+						// Actualizar seccion del objeto original
+					}
+					eval(json.EVAL);
+				}, function(msg) {
+					alert("ERROR: " + msg.response);
+				});
+			}
+
+			function formPoke(form, className, msg) {
+				if (form.poked !== undefined) {
+					timeouts.get(form.poked)();
+					timeouts.gel(form.poked);
+				}
+				AddClass(form, className);
+				var msgDOM;
+				if (msg !== undefined && msg !== null) C(form, msgDOM = C("span", ["class", "msg"], msg));
+				form.poked = timeouts.add(function() {
+					RemoveClass(form, className);
+					if (msgDOM !== null) form.removeChild(msgDOM);
+					form.poked = undefined;
+				}, 10000);
+			}
 		}
 	}
 }, console.log);
@@ -345,49 +384,9 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 
 
 
-function GetCantidad(objeto) {
-	if (objeto.secciones.length == 0) return 0;
-	return objeto.secciones.reduce(function(prev, cur) {
-		return { cantidad: parseInt(prev.cantidad) + parseInt(cur.cantidad) };
-	})["cantidad"];
-}
 
 function GetImagenObjeto(objeto) {
 	return objeto.imagen === null ? "http://via.placeholder.com/128x128" : "php/ajax.php?action=getfile&id=" + objeto.imagen;
-}
-
-
-function update(event) {
-	event.preventDefault();
-	console.log(event);
-	var target = event.originalTarget !== undefined ? event.originalTarget : event.target;
-	var formData = new FormData(target);
-	for (var key of formData.entries()) console.log(key[0] + ', ' + key[1]);
-	AJAX('php/ajax.php', formData, function(msg) {
-		var json = JSON.parse(msg.response);
-		formPoke(target, json.STATUS, json.MESSAGE);
-		if (json.STATUS === "OK") {
-			// Actualizar seccion del objeto original
-		}
-		eval(json.EVAL);
-	}, function(msg) {
-		alert("ERROR: " + msg.response);
-	});
-}
-
-function formPoke(form, className, msg) {
-	if (form.poked !== undefined) {
-		timeouts.get(form.poked)();
-		timeouts.gel(form.poked);
-	}
-	AddClass(form, className);
-	var msgDOM;
-	if (msg !== undefined && msg !== null) C(form, msgDOM = C("span", ["class", "msg"], msg));
-	form.poked = timeouts.add(function() {
-		RemoveClass(form, className);
-		if (msgDOM !== null) form.removeChild(msgDOM);
-		form.poked = undefined;
-	}, 10000);
 }
 
 function updateImagen(id_objeto, id_imagen) {
