@@ -158,11 +158,8 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 				C("div", ["class", "tags"], "Tags: ", tagsDOM = C("span", ["class", "tags-list"]))
 			)
 		);
-		
 		for (var i in objeto.tags) C(tagsDOM, C("span", objeto.tags[i]));
-		
 		(cantidad < parseInt(objeto.minimo_alerta) ? AddClass : RemoveClass)(domObjetoEnLista, "alerta");
-		
 		return domObjetoEnLista;
 
 		
@@ -207,11 +204,10 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 										C("span", "Cantidad")
 									)
 								)
-							), 
+							),
 							C("div", ["class", "btn btn-primary add", "onclick", function(){
 								objetoLocal.secciones[objetoLocal.secciones.length] = {cantidad: 0, id_seccion: Object.keys(lista.secciones)[0]};
 								C(cantidades, DrawCantidadInput(objetoLocal.secciones[objetoLocal.secciones.length - 1]));
-								return false;
 							}], "+ Añadir a otro lugar"),
 							C("span", C("span", "Total:"), cantidadROInput)
 						)),
