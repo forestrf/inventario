@@ -162,6 +162,7 @@ div.buscador {
 }
 .popup > .msg form .cantidades .add {
 	margin-bottom: 15px;
+	margin-top: 10px;
 	display: block;
 	font-size: 1.2em;
 	padding: 0;
@@ -263,6 +264,25 @@ div.buscador {
 }
 .popup > .msg .botonesAceptarCancelar input.cancelar {
 	padding: 10px 30px;
+}
+
+.has-help .desc {
+	display: none;
+}
+.has-help:hover .desc {
+	position: absolute;
+	display: inline-block;
+	padding: 10px;
+	line-height: 1em;
+	background-color: #2196f3;
+	border-radius: 0px 20px 20px 20px;
+	top: 34px;
+	left: 26%;
+	z-index: 1;
+	width: 50%;
+	border: 3px dotted #fff;
+	text-align: left;
+	color: #fff;
 }
 
 

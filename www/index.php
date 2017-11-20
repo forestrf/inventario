@@ -190,7 +190,7 @@ function DrawObjeto(objeto) {
 					C("input", ["type", "hidden", "name", "action", "value", "update-object-cantidades"])
 				),
 				C("form", ["class", "right_big", "method", "post", "action", "php/ajax.php", "onsubmit", update],
-					C("div", "Tags"),
+					C("div", ["class", "has-help"], "Tags", C("div", ["class", "desc"], "Palabras claves usadas para filtrar la búsqueda y encontrar este elemento")),
 					C("div", tags = C("input", ["name", "tags", "type", "text", "value", objetoLocal.tags, "class", "form-control", "onchange", compruebaCambios])),
 					C("input", ["type", "submit"]),
 					C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),

@@ -148,7 +148,7 @@ if (isset($_GET['action'])) {
 				if ($db->object_set_tags($_POST["id-object"], $_POST["tags"])) {				
 					echo json_encode(array(
 						"STATUS" => "OK",
-						"MESSAGE" => "Cantidades actualizadas"/*,
+						"MESSAGE" => "Tags actualizados"/*,
 						"EVAL" => "updateMinimo('".$_POST["id-object"]."', '".$_POST["minimo"]."')"*/
 					));
 				} else {
