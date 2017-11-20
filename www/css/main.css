@@ -53,11 +53,6 @@ div.buscador {
 	float: left;
 }
 
-.objeto .img-container .helper {
-    vertical-align: middle;
-    display: inline-block;
-    height: 100%;
-}
 .objeto .img-container .img {
 	vertical-align: middle;
 	max-height: 128px;
@@ -259,10 +254,10 @@ div.buscador {
 .popup > .msg .botonesAceptarCancelar input {
 	margin: 0 5px;
 }
-.popup > .msg .botonesAceptarCancelar input.aceptar {
+.popup > .msg .botonesAceptarCancelar input.guarda {
 	padding: 10px 50px;
 }
-.popup > .msg .botonesAceptarCancelar input.cancelar {
+.popup > .msg .botonesAceptarCancelar input.cierra {
 	padding: 10px 30px;
 }
 
