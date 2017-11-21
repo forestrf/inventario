@@ -21,8 +21,6 @@ AJAX = function(url, data, callbackOK, callbackFAIL, timeout) {
 	};
 	
 	if (isPost) {
-		pepe = data;
-		console.log(data.toString());
 		if (typeof data === "string") {
 			x.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		} else if (data.toString() === "[object FormData]") {

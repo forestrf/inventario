@@ -96,14 +96,17 @@
 
 var lista;
 
+function fixObjetoFromJSON(objeto) {
+	objeto.tags = objeto.tags.split(",").filter(function(x){return x !== ""}).map(function(t) {return t.trim();});
+	return objeto;
+}
+
 AJAX('php/ajax.php?action=getinventario', null, function(x) {
 	lista = JSON.parse(x.responseText);
 	
 	var objetosById = {};
 	for (var i in lista.objetos) {
-		var obj = lista.objetos[i];
-		obj.tags = obj.tags.split(",").filter(function(x){return x !== ""}).map(function(t) {return t.trim();});
-		objetosById[obj.id] = obj;
+		objetosById[obj.id] = fixObjetoFromJSON(lista.objetos[i]);
 	}
 	lista.objetos = objetosById;
 	
@@ -138,31 +141,45 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 		
 	function DrawInventory(lista) {
 		var contenedor = C("div");
-		for (var i in lista.objetos) C(contenedor, DrawObjeto(lista.objetos[i]));
+		for (var i in lista.objetos) C(contenedor, DrawObjeto(i));
 		return contenedor;
 	}
 	
-	function DrawObjeto(objeto) {
-		var cantidad = GetCantidad(objeto);
-		var tagsDOM;
-		var domObjetoEnLista = C("button", ["class", "objeto obj-" + objeto.id, "onclick", edit],
-			C("div", ["class", "titulo"],
-				C("div", ["class", "nombre"], objeto.nombre)
-			),
-			C("div", ["class", "img-container"],
-				C("img", ["class", "img img-" + objeto.id, "src", GetImagenObjeto(objeto)])
-			),
-			C("div", ["class", "info"],
-				C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
-				C("div", ["class", "minimo"], "Mínimo: ", objeto.minimo_alerta),
-				C("div", ["class", "tags"], "Tags: ", tagsDOM = C("span", ["class", "tags-list"]))
-			)
-		);
-		for (var i in objeto.tags) C(tagsDOM, C("span", objeto.tags[i]));
-		(cantidad < parseInt(objeto.minimo_alerta) ? AddClass : RemoveClass)(domObjetoEnLista, "alerta");
-		return domObjetoEnLista;
+	function DrawObjeto(i) {
+		var objeto = lista.objetos[i];
+		var cantidad, tagsDOM, domObjetoEnLista;
+		return GeneraDomObjeto();
 
 		
+		
+		function GeneraDomObjeto() {
+			cantidad = GetCantidad(objeto);
+			domObjetoEnLista = C("button", ["class", "objeto obj-" + objeto.id, "onclick", edit],
+				C("div", ["class", "titulo"],
+					C("div", ["class", "nombre"], objeto.nombre)
+				),
+				C("div", ["class", "img-container"],
+					C("img", ["class", "img img-" + objeto.id, "src", GetImagenObjeto(objeto)])
+				),
+				C("div", ["class", "info"],
+					C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
+					C("div", ["class", "minimo"], "Mínimo: ", objeto.minimo_alerta),
+					C("div", ["class", "tags"], "Tags: ", tagsDOM = C("span", ["class", "tags-list"]))
+				)
+			);
+			for (var i in objeto.tags) C(tagsDOM, C("span", objeto.tags[i]));
+			(cantidad < parseInt(objeto.minimo_alerta) ? AddClass : RemoveClass)(domObjetoEnLista, "alerta");
+			return domObjetoEnLista;
+		}
+		
+		function updateListObject() {
+			AJAX('php/ajax.php?action=getinventarioitem&id=' + objeto.id, null, function(x) {
+				lista.objetos[i] = objeto = fixObjetoFromJSON(JSON.parse(x.responseText)[0]);
+				var aBorrar = domObjetoEnLista;
+				domObjetoEnLista.parentNode.insertBefore(GeneraDomObjeto(), aBorrar);
+				domObjetoEnLista.parentNode.removeChild(aBorrar);
+			}, console.log);
+		}
 		
 		function edit() {
 			var objetoLocal = clone(objeto)
@@ -171,7 +188,7 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 			var tags;
 			var cantidades;
 			var popupDOM = C("div",
-				C("div", ["style", "padding: 1%"],
+				C("div", ["style", "padding: 1%", "updateListObject", updateListObject],
 					C("form", ["class", "left_big", "method", "post", "action", "php/ajax.php"],
 						C("div", "Nombre"),
 						C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal.nombre, "class", "form-control"])),
@@ -277,8 +294,8 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 					),
 					C("div", ["class", "borrar"],
 						C("div", ["class", "btn btn-danger", "onclick", function(){
+							objetoLocal.secciones.splice(Array.prototype.indexOf.call(cantidadBlock.parentNode.childNodes, cantidadBlock) - 1, 1); // -1 porque el indice 0 esta ocupado por la cabecera de la tabla
 							cantidadBlock.parentNode.removeChild(cantidadBlock);
-							objetoLocal.secciones = objetoLocal.secciones.filter(function(x){ return x.id_seccion !== seccionObjeto.id_seccion; });
 							UpdateROCantidad();
 						}], "X")
 					)
@@ -301,7 +318,7 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 			}
 			
 			function UpdateROCantidad() {
-				cantidadROInput.value = GetCantidad(objeto);
+				cantidadROInput.value = GetCantidad(objetoLocal);
 			}
 			
 			function ToOptions(parentElement, elementos, selected) {
@@ -335,17 +352,17 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 			
 			function update(event) {
 				event.preventDefault();
-				console.log(event);
 				var target = event.originalTarget !== undefined ? event.originalTarget : event.target;
 				var formData = new FormData(target);
-				for (var key of formData.entries()) console.log(key[0] + ', ' + key[1]);
+				//for (var key of formData.entries()) console.log(key[0] + ', ' + key[1]);
 				AJAX('php/ajax.php', formData, function(msg) {
 					var json = JSON.parse(msg.response);
 					formPoke(target, json.STATUS, json.MESSAGE);
 					if (json.STATUS === "OK") {
-						// Actualizar seccion del objeto original
+						// Actualizar y Redibujar
+						target.parentNode.updateListObject();
 					}
-					eval(json.EVAL);
+					//eval(json.EVAL);
 				}, function(msg) {
 					alert("ERROR: " + msg.response);
 				});
@@ -383,20 +400,6 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 
 function GetImagenObjeto(objeto) {
 	return objeto.imagen === null ? "http://via.placeholder.com/128x128" : "php/ajax.php?action=getfile&id=" + objeto.imagen;
-}
-
-function updateImagen(id_objeto, id_imagen) {
-	var objeto = lista.objetos[id_objeto];
-	objeto.imagen = id_imagen;
-	var imgs = document.querySelectorAll(".img-" + id_objeto);
-	for (var i in imgs) {
-		imgs[i].src = GetImagenObjeto(objeto);
-	}
-}
-
-function updateNombre(id_objeto, nombre) {
-	var objeto = lista.objetos[id_objeto];
-	document.querySelector(".obj-" + id_objeto + " .titulo .nombre").innerHTML = nombre;
 }
 </script>
 

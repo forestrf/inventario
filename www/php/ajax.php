@@ -14,18 +14,26 @@ if (isset($_GET['action']) || isset($_POST['action'])) {
 if (isset($_GET['action'])) {
 	switch($_GET['action']) {
 		case 'getinventario':
+			insert_nocache_headers();
 			$objetos = $db->get_objetos();
 			foreach ($objetos as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
 			foreach ($db->get_almacenes() as &$almacen) $almacenes[$almacen["id"]] = &$almacen;
 			foreach ($db->get_secciones() as &$seccion) $secciones[$seccion["id"]] = &$seccion;
-			
-			insert_nocache_headers();
 			
 			echo json_encode(array(
 				"almacenes" => $almacenes,
 				"secciones" => $secciones,
 				"objetos" => $objetos
 			), 1);
+			break;
+		case 'getinventarioitem':
+			insert_nocache_headers();
+			if (check(isset($_GET["id"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")) {
+				$objetos = $db->get_objeto($_GET["id"]);
+				foreach ($objetos as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
+				
+				echo json_encode($objetos, 1);	
+			}
 			break;
 		case 'getfile':
 			if (isset($_GET["id"])) {
@@ -61,8 +69,7 @@ if (isset($_GET['action'])) {
 					&& $db->object_set_image($_POST["id-object"], $file_index)) {
 					echo json_encode(array(
 						"STATUS" => "OK",
-						"MESSAGE" => "Imagen actualizada",
-						"EVAL" => "updateImagen('".$_POST["id-object"]."', '$file_index')"
+						"MESSAGE" => "Imagen actualizada"
 					));
 				} else {
 					echo json_encode(array(
@@ -81,8 +88,7 @@ if (isset($_GET['action'])) {
 				if ($db->object_set_name($_POST["id-object"], $_POST["nombre"])) {				
 					echo json_encode(array(
 						"STATUS" => "OK",
-						"MESSAGE" => "Nombre actualizado",
-						"EVAL" => "updateNombre('".$_POST["id-object"]."', '".$_POST["nombre"]."')"
+						"MESSAGE" => "Nombre actualizado"
 					));
 				} else {
 					echo json_encode(array(
@@ -100,8 +106,7 @@ if (isset($_GET['action'])) {
 				if ($db->object_set_minimo($_POST["id-object"], $_POST["minimo"])) {
 					echo json_encode(array(
 						"STATUS" => "OK",
-						"MESSAGE" => "Mínimo actualizado",
-						"EVAL" => "updateMinimo('".$_POST["id-object"]."', '".$_POST["minimo"]."')"
+						"MESSAGE" => "Mínimo actualizado"
 					));					
 				} else {
 					echo json_encode(array(
@@ -130,13 +135,12 @@ if (isset($_GET['action'])) {
 				if ($db->object_set_cantidades($_POST["id-object"], $cantidadesFiltradas)) {				
 					echo json_encode(array(
 						"STATUS" => "OK",
-						"MESSAGE" => "Cantidades actualizadas"/*,
-						"EVAL" => "updateMinimo('".$_POST["id-object"]."', '".$_POST["minimo"]."')"*/
+						"MESSAGE" => "Cantidades actualizadas"
 					));
 				} else {
 					echo json_encode(array(
 						"STATUS" => "ERROR",
-						"MESSAGE" => strpos($db->mysqli->error, "Duplicate entry") !== false ? "La sección de un almacen aparece más de una vez" : $db->mysqli->error
+						"MESSAGE" => strpos($db->mysqli->error, "Duplicate entry") !== false ? "No se pueden repetir secciones de un almacen" : $db->mysqli->error
 					));
 				}
 			}
@@ -148,8 +152,7 @@ if (isset($_GET['action'])) {
 				if ($db->object_set_tags($_POST["id-object"], $_POST["tags"])) {				
 					echo json_encode(array(
 						"STATUS" => "OK",
-						"MESSAGE" => "Tags actualizados"/*,
-						"EVAL" => "updateMinimo('".$_POST["id-object"]."', '".$_POST["minimo"]."')"*/
+						"MESSAGE" => "Tags actualizados"
 					));
 				} else {
 					echo json_encode(array(

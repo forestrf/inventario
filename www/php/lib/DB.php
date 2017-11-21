@@ -130,6 +130,10 @@ class DB {
 	function get_objetos() {
 		return $this->query("SELECT * FROM objeto");
 	}
+	function get_objeto($id) {
+		$id = mysql_escape_mimic($id);
+		return $this->query("SELECT * FROM objeto WHERE id = {$id}");
+	}
 	
 	function get_objeto_secciones($id_objeto) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
