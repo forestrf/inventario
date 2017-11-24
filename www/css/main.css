@@ -105,6 +105,16 @@ div.buscador {
 .popup > .msg {
 	background-color: #fff;
 	margin: 3%;
+	position: relative;
+}
+.popup + .popup > .msg {
+    margin: 6%;
+}
+.popup + .popup + .popup > .msg {
+    margin: 9%;
+}
+.popup + .popup + .popup + .popup > .msg {
+    margin: 12%;
 }
 
 .popup > .msg form {
@@ -168,6 +178,7 @@ div.buscador {
 	background-color: #f6ffd2;
 	background-color: #fff;
 	border: 1px solid #cbcbcb;
+	border-bottom: 0 solid;
 }
 .popup > .msg form .tabla span {
 	display: inline-block;
@@ -259,6 +270,20 @@ div.buscador {
 }
 .popup > .msg .botonesAceptarCancelar input.cierra {
 	padding: 10px 30px;
+}
+.popup > .msg .botonesAceptarCancelar > div.borra {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 100px;
+	height: 30px;
+	margin: 5px;
+}
+.popup > .msg .botonesAceptarCancelar input.borra {
+	padding: 0;
+	height: 100%;
+	width: 100%;
+	margin: 0;
 }
 
 .has-help .desc {

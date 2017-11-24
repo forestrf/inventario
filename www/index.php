@@ -25,8 +25,10 @@
 <div id="inventario"></div>
 <div class="clearer"></div>
 
-<button onclick="alert('+ Objeto')">+ Objeto</button>
-<button onclick="alert('+ Sección Almacen')">+ Sección Almacen</button>
+<button onclick="alert('+ Objeto')">+ Objeto</button>Borrar?
+<button onclick="alert('+ Sección Almacen')">+ Sección Almacen</button>Borrar? (Mejor un administrador de secciones de almacen).
+
+Falta mostrar secciones y almacenes por orden alfabético. Mostrar objetos por orden de último cambio?
 
 
 <script>
@@ -246,6 +248,9 @@ function edit(objeto, updateListObject) {
 		C("div", ["class", "botonesAceptarCancelar"],
 			C("input", ["type", "button", "class", "btn btn-success guarda", "value", "Guardar cambios", "onclick", guardarCambios]),
 			C("input", ["type", "button", "class", "btn btn-default cierra", "value", "Cancelar", "onclick", popups.closePopup]),
+			C("div", ["class", "borra"],
+				C("input", ["type", "button", "class", "btn btn-danger borra", "value", "Borrar", "onclick", abrirBorrarVentana])
+			),
 			C("div", ["style", "text-align: left; display: none;"], "ID: ", objetoLocal.id)
 		)
 	);
@@ -385,6 +390,10 @@ function edit(objeto, updateListObject) {
 			if (msgDOM !== null) form.removeChild(msgDOM);
 			form.poked = undefined;
 		}, 10000);
+	}
+	
+	function abrirBorrarVentana() {
+		popups.showPopup(C("div", "Borrar? testing"));
 	}
 }
 
