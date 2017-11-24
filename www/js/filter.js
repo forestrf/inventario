@@ -2,6 +2,11 @@
 Given a search string search inside the list of inventory items and if there is a match call callbackShow, call callbackHide otherwise
 */
 
+if (typeof String.prototype.trim !== 'function') {
+	String.prototype.trim = function() {
+		return this.replace(/^\s+|\s+$/g, ''); 
+	}
+}
 
 var FilterSearch = (function(){
 	function filterAndSort(text, lista, callbackShow, callbackHide) {
@@ -15,14 +20,14 @@ var FilterSearch = (function(){
 		var objetos = lista.objetos;
 		
 		for (var i in objetos) {
-			var found = Test(search, objetos[i]["nombre"]);
-			for (var j = 0; !found && j < objetos[i]["tags"].length; j++) {
-				found = found || Test(search, objetos[i]["tags"][j]);
+			var found = Test(search, objetos[i].nombre);
+			for (var j = 0; !found && j < objetos[i].tags.length; j++) {
+				found = Test(search, objetos[i].tags[j]);
 			}
 			
 			// Execute callbacks
 			var callback = found ? callbackShow : callbackHide;
-			callback(objetos[i]["DOM"]);
+			callback(objetos[i].DOM);
 		}
 	}
 	
