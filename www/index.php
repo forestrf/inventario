@@ -26,7 +26,7 @@
 <div id="inventario"></div>
 <div class="clearer"></div>
 
-<button onclick="alert('+ Objeto')">+ Objeto</button>Borrar?
+<button onclick="addObjeto()">+ Objeto</button> Crear = crear objeto vacío en DB, coger su id, cargar y darle a editar
 <button onclick="alert('+ Sección Almacen')">+ Sección Almacen</button>Borrar? (Mejor un administrador de secciones de almacen).
 
 Falta mostrar secciones y almacenes por orden alfabético.
@@ -105,56 +105,11 @@ function fixObjetoFromJSON(objeto) {
 }
 
 AJAX('php/ajax.php?action=getinventario', null, function(x) {
-	lista = JSON.parse(x.responseText);
-	
-	var objetosById = {};
-	for (var i in lista.objetos) {
-		objetosById[lista.objetos[i].id] = fixObjetoFromJSON(lista.objetos[i]);
-	}
-	lista.objetos = objetosById;
-	
-	// Dibujar toda la lista en el DOM
-	C(document.getElementById("inventario"), DrawInventory(lista));
-	
-	tagsArrayAutocomplete = GetAutocompleteTags(lista.objetos);
-	
-	// Preparar buscador
-	var buscador = document.getElementById("buscador");
-	buscador.onkeyup = buscador.onchange = function() {
-		FilterSearch.process(buscador.value, lista,
-			TestCustomKeyword,
-			function(DOM) { DOM.style.display = "unset"; },
-			function(DOM) { DOM.style.display = "none"; }
-		);
-	};
-	
-	
-	
-	function TestCustomKeyword(keyword, object) {
-		switch (keyword) {
-			case "minimo":
-				return object.minimo_alerta > GetCantidad(object);
-		}
-	}
-	
-	function GetAutocompleteTags(objetos) {
-		var arr = [];
-		for (var i in objetos) arr = arr.concat(objetos[i].tags.filter(function(x){ return arr.indexOf(x) === -1; }));
-		return arr
-	}
-		
-	function DrawInventory(lista) {
-		var contenedor = C("div");
-		for (var i in lista.objetos) C(contenedor, DrawObjeto(i));
-		return contenedor;
-	}
-	
-	function DrawObjeto(i) {
+	DrawObjeto = function(i) {
 		var objeto = lista.objetos[i];
 		var cantidad, tagsDOM, domObjetoEnLista;
 		return GeneraDomObjeto();
 
-		
 		
 		function GeneraDomObjeto() {
 			cantidad = GetCantidad(objeto);
@@ -184,6 +139,51 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 				domObjetoEnLista.parentNode.removeChild(aBorrar);
 			}, console.log);
 		}	
+	}
+	
+	
+	lista = JSON.parse(x.responseText);
+	
+	var objetosById = {};
+	for (var i in lista.objetos) {
+		objetosById[lista.objetos[i].id] = fixObjetoFromJSON(lista.objetos[i]);
+	}
+	lista.objetos = objetosById;
+	
+	// Dibujar toda la lista en el DOM
+	C(document.getElementById("inventario"), DrawInventory(lista));
+	
+	tagsArrayAutocomplete = GetAutocompleteTags(lista.objetos);
+	
+	// Preparar buscador
+	var buscador = document.getElementById("buscador");
+	buscador.onkeyup = buscador.onchange = function() {
+		FilterSearch.process(buscador.value, lista,
+			TestCustomKeyword,
+			function(DOM) { DOM.style.display = "unset"; },
+			function(DOM) { DOM.style.display = "none"; }
+		);
+	};
+	
+	
+	
+	function DrawInventory(lista) {
+		contenedorListaObjetos = C("div");
+		for (var i in lista.objetos) C(contenedorListaObjetos, DrawObjeto(i));
+		return contenedorListaObjetos;
+	}
+	
+	function TestCustomKeyword(keyword, object) {
+		switch (keyword) {
+			case "minimo":
+				return object.minimo_alerta > GetCantidad(object);
+		}
+	}
+	
+	function GetAutocompleteTags(objetos) {
+		var arr = [];
+		for (var i in objetos) arr = arr.concat(objetos[i].tags.filter(function(x){ return arr.indexOf(x) === -1; }));
+		return arr
 	}
 }, console.log);
 
@@ -406,7 +406,22 @@ function edit(objeto, updateListObject) {
 	}
 }
 
-
+function addObjeto() {
+	AJAX('php/ajax.php', 'action=create-empty-object', function(x) {
+		console.log(x);
+		var json = JSON.parse(x.responseText);
+		var id = json.MESSAGE;
+		console.log("ID of the created object: ", id);
+		
+		AJAX('php/ajax.php?action=getinventarioitem&id=' + id, null, function(x) {
+			lista.objetos[id] = fixObjetoFromJSON(JSON.parse(x.responseText)[0]);
+			contenedorListaObjetos.appendChild(DrawObjeto(id));
+		}, console.log);
+		
+	}, function(x) {
+		console.log(x);
+	});
+}
 
 function GetImagenObjeto(objeto) {
 	return objeto.imagen === null ? "http://via.placeholder.com/128x128" : "php/ajax.php?action=getfile&id=" + objeto.imagen;

@@ -162,6 +162,19 @@ if (isset($_GET['action'])) {
 				}
 			}
 			break;
+		case 'create-empty-object':
+			if ($db->add_object()) {
+				echo json_encode(array(
+					"STATUS" => "OK",
+					"MESSAGE" => $db->LAST_MYSQL_ID
+				));
+			} else {
+				echo json_encode(array(
+					"STATUS" => "ERROR",
+					"MESSAGE" => $db->mysqli->error
+				));
+			}
+			break;
 	}
 }
 

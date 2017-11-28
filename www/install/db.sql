@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 14-11-2017 a las 12:19:25
+-- Tiempo de generación: 28-11-2017 a las 12:05:10
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -27,6 +27,8 @@ SET time_zone = "+00:00";
 --
 -- Estructura de tabla para la tabla `acceso`
 --
+-- Creación: 24-07-2017 a las 11:24:50
+--
 
 CREATE TABLE `acceso` (
   `clave` text COLLATE utf8_bin NOT NULL COMMENT 'password',
@@ -39,10 +41,16 @@ CREATE TABLE `acceso` (
   `admin_cantidad` tinyint(1) NOT NULL COMMENT 'cambiar cantidades de objetos en cualquier almacen'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+--
+-- RELACIONES PARA LA TABLA `acceso`:
+--
+
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `almacen`
+--
+-- Creación: 24-07-2017 a las 10:21:31
 --
 
 CREATE TABLE `almacen` (
@@ -51,10 +59,16 @@ CREATE TABLE `almacen` (
   `descripcion` text COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+--
+-- RELACIONES PARA LA TABLA `almacen`:
+--
+
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `files`
+--
+-- Creación: 28-11-2017 a las 11:01:15
 --
 
 CREATE TABLE `files` (
@@ -63,10 +77,22 @@ CREATE TABLE `files` (
   `mimetype` varchar(32) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+--
+-- TIPOS MIME PARA LA TABLA `files`:
+--   `bin`
+--       `Image_JPEG`
+--
+
+--
+-- RELACIONES PARA LA TABLA `files`:
+--
+
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `historico_objeto`
+--
+-- Creación: 24-07-2017 a las 10:27:52
 --
 
 CREATE TABLE `historico_objeto` (
@@ -75,10 +101,18 @@ CREATE TABLE `historico_objeto` (
   `cantidad` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+--
+-- RELACIONES PARA LA TABLA `historico_objeto`:
+--   `id_objeto`
+--       `objeto` -> `id`
+--
+
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `objeto`
+--
+-- Creación: 13-10-2017 a las 10:09:34
 --
 
 CREATE TABLE `objeto` (
@@ -89,10 +123,18 @@ CREATE TABLE `objeto` (
   `tags` text COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+--
+-- RELACIONES PARA LA TABLA `objeto`:
+--   `imagen`
+--       `files` -> `id`
+--
+
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `objeto_seccion`
+--
+-- Creación: 22-09-2017 a las 09:11:51
 --
 
 CREATE TABLE `objeto_seccion` (
@@ -101,10 +143,20 @@ CREATE TABLE `objeto_seccion` (
   `cantidad` int(11) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+--
+-- RELACIONES PARA LA TABLA `objeto_seccion`:
+--   `id_objeto`
+--       `objeto` -> `id`
+--   `id_seccion`
+--       `seccion` -> `id`
+--
+
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `seccion`
+--
+-- Creación: 14-11-2017 a las 11:18:48
 --
 
 CREATE TABLE `seccion` (
@@ -113,6 +165,12 @@ CREATE TABLE `seccion` (
   `descripcion` text COLLATE utf8_bin NOT NULL,
   `id_almacen` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+--
+-- RELACIONES PARA LA TABLA `seccion`:
+--   `id_almacen`
+--       `almacen` -> `id`
+--
 
 --
 -- Índices para tablas volcadas
@@ -204,6 +262,51 @@ ALTER TABLE `objeto_seccion`
 --
 ALTER TABLE `seccion`
   ADD CONSTRAINT `seccion_ibfk_1` FOREIGN KEY (`id_almacen`) REFERENCES `almacen` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+--
+-- Metadatos
+--
+USE `phpmyadmin`;
+
+--
+-- Metadatos para la tabla acceso
+--
+
+--
+-- Metadatos para la tabla almacen
+--
+
+--
+-- Metadatos para la tabla files
+--
+
+--
+-- Volcado de datos para la tabla `pma__column_info`
+--
+
+INSERT INTO `pma__column_info` (`db_name`, `table_name`, `column_name`, `comment`, `mimetype`, `transformation`, `transformation_options`, `input_transformation`, `input_transformation_options`) VALUES
+('almacen', 'files', 'bin', '', 'image_jpeg', 'output/image_jpeg_inline.php', '', '', '');
+
+--
+-- Metadatos para la tabla historico_objeto
+--
+
+--
+-- Metadatos para la tabla objeto
+--
+
+--
+-- Metadatos para la tabla objeto_seccion
+--
+
+--
+-- Metadatos para la tabla seccion
+--
+
+--
+-- Metadatos para la base de datos almacen
+--
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -151,6 +151,9 @@ class DB {
 		return $this->query("SELECT * FROM files WHERE id = '$file_index'");
 	}
 	
+	function add_object() {
+		return $this->query("INSERT INTO objeto () VALUES ()");
+	}
 	function object_set_image($id_objeto, $id_file) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$id_file = mysql_escape_mimic($id_file);
