@@ -21,6 +21,7 @@
 <div class="buscador">
 	Búsqueda: <input id="buscador" type="text" placeholder="Búsqueda" class="form-control"/>
 </div>
+<button onclick="buscador.value='minimo';buscador.onchange()">Mostrar objetos bajo mínimo</button>
 
 <div id="inventario"></div>
 <div class="clearer"></div>
@@ -28,7 +29,7 @@
 <button onclick="alert('+ Objeto')">+ Objeto</button>Borrar?
 <button onclick="alert('+ Sección Almacen')">+ Sección Almacen</button>Borrar? (Mejor un administrador de secciones de almacen).
 
-Falta mostrar secciones y almacenes por orden alfabético. Mostrar objetos por orden de último cambio?
+Falta mostrar secciones y almacenes por orden alfabético.
 
 
 <script>
@@ -119,14 +120,22 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 	
 	// Preparar buscador
 	var buscador = document.getElementById("buscador");
-	buscador.onkeyup = function() {
+	buscador.onkeyup = buscador.onchange = function() {
 		FilterSearch.process(buscador.value, lista,
+			TestCustomKeyword,
 			function(DOM) { DOM.style.display = "unset"; },
 			function(DOM) { DOM.style.display = "none"; }
 		);
 	};
 	
 	
+	
+	function TestCustomKeyword(keyword, object) {
+		switch (keyword) {
+			case "minimo":
+				return object.minimo_alerta > GetCantidad(object);
+		}
+	}
 	
 	function GetAutocompleteTags(objetos) {
 		var arr = [];
