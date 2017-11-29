@@ -154,6 +154,10 @@ class DB {
 	function add_object() {
 		return $this->query("INSERT INTO objeto () VALUES ()");
 	}
+	function remove_object($id_objeto) {
+		$id_objeto = mysql_escape_mimic($id_objeto);
+		return $this->query("DELETE FROM objeto WHERE id = '$id_objeto'");
+	}
 	function object_set_image($id_objeto, $id_file) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$id_file = mysql_escape_mimic($id_file);

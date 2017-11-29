@@ -28,7 +28,7 @@ if (isset($_GET['action'])) {
 			break;
 		case 'getinventarioitem':
 			insert_nocache_headers();
-			if (check(isset($_GET["id"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")) {
+			if (checkOrExit(isset($_GET["id"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")) {
 				$objetos = $db->get_objeto($_GET["id"]);
 				foreach ($objetos as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
 				
@@ -43,7 +43,7 @@ if (isset($_GET['action'])) {
 					$etag = base64_encode(md5($file['id']));
 					
 					header('Etag: ' . $etag);
-					header('Cache-Control: max-age=120, public'); // 2 min. This is a problem when developing. Force check.
+					header('Cache-Control: max-age=120, public'); // 2 min. This is a problem when developing. Force checkOrExit.
 					
 					if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && trim($_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
 						header('HTTP/1.1 304 Not Modified');
@@ -61,9 +61,9 @@ if (isset($_GET['action'])) {
 } else {
 	switch($_POST['action']) {
 		case 'update-object-image':
-			if (check(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
-				&& check(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
-				&& check(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "", "No se ha enviado una imagen")) {
+			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
+				&& checkOrExit(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "", "No se ha enviado una imagen")) {
 				
 				$file_index = "";
 				if ($db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index)
@@ -82,10 +82,10 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'update-object-name':
-			if (check(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
-				&& check(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
-				&& check(isset($_POST["nombre"]), "No se ha enviado un nombre. Por favor comunica este error a un encargado de la app")
-				&& check(strlen($_POST["nombre"]) > 0, "El nombre es demasiado corto")) {
+			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
+				&& checkOrExit(isset($_POST["nombre"]), "No se ha enviado un nombre. Por favor comunica este error a un encargado de la app")
+				&& checkOrExit(strlen($_POST["nombre"]) > 0, "El nombre es demasiado corto")) {
 				
 				if ($db->object_set_name($_POST["id-object"], $_POST["nombre"])) {				
 					echo json_encode(array(
@@ -101,10 +101,10 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'update-object-minimo':
-			if (check(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
-				&& check(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
-				&& check(isset($_POST["minimo"]), "No se ha enviado una cantidad mínima. Por favor comunica este error a un encargado de la app")
-				&& check(intval($_POST["minimo"]) >= 0, "El valor mínimo debe de ser un número mayor o igual que cero")) {
+			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
+				&& checkOrExit(isset($_POST["minimo"]), "No se ha enviado una cantidad mínima. Por favor comunica este error a un encargado de la app")
+				&& checkOrExit(intval($_POST["minimo"]) >= 0, "El valor mínimo debe de ser un número mayor o igual que cero")) {
 				
 				if ($db->object_set_minimo($_POST["id-object"], $_POST["minimo"])) {
 					echo json_encode(array(
@@ -120,8 +120,8 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'update-object-cantidades':
-			if (check(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
-				&& check(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")) {
+			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")) {
 				$cantidades = array();
 				foreach ($_POST as $key => $value) {
 					if (preg_match('@(seccion|cantidad)-([0-9]+)@', $key, $matches)) {
@@ -130,7 +130,7 @@ if (isset($_GET['action'])) {
 				}
 				$cantidadesFiltradas = array();
 				foreach ($cantidades as $cantidad) {
-					if (check(isset($cantidad["seccion"]) && isset($cantidad["cantidad"]), "Una de las entradas del almacen está incompleta")) {
+					if (checkOrExit(isset($cantidad["seccion"]) && isset($cantidad["cantidad"]), "Una de las entradas del almacen está incompleta")) {
 						$cantidadesFiltradas[] = $cantidad;
 					}
 				}
@@ -149,9 +149,9 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'update-object-tags':
-			if (check(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
-				&& check(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
-				&& check(isset($_POST["tags"]), "No se ha enviado una lista de tags. Por favor comunica este error a un encargado de la app")) {
+			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
+				&& checkOrExit(isset($_POST["tags"]), "No se ha enviado una lista de tags. Por favor comunica este error a un encargado de la app")) {
 				
 				if ($db->object_set_tags($_POST["id-object"], $_POST["tags"])) {				
 					echo json_encode(array(
@@ -179,11 +179,26 @@ if (isset($_GET['action'])) {
 				));
 			}
 			break;
+		case 'remove-object':
+			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")) {
+				if ($db->remove_object($_POST["id-object"])) {
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Objeto borrado"
+					));
+				} else {
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
+					));
+				}
+			}
+			break;
 	}
 }
 
-function check($check, $errorMsg) {
-	if (!$check) {
+function checkOrExit($checkOrExit, $errorMsg) {
+	if (!$checkOrExit) {
 		echo json_encode(array(
 			"STATUS" => "ERROR",
 			"MESSAGE" => $errorMsg

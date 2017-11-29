@@ -264,10 +264,23 @@ div.buscador {
 	text-align: center;
 	background-color: #d7ffa4;
 }
+.popup > .msg .confirmBorrar{
+	background-color: #570909;
+}
+.popup > .msg .confirmBorrar .botonesAceptarCancelar {
+	background-color: #781d1d;
+}
+.popup > .msg .confirmBorrar .titulo {
+	color: #eee;
+	text-align: center;
+	font-size: 20px;
+	padding: 30px;
+}
 .popup > .msg .botonesAceptarCancelar input {
 	margin: 0 5px;
 }
-.popup > .msg .botonesAceptarCancelar input.guarda {
+.popup > .msg .botonesAceptarCancelar input.guarda,
+.popup > .msg .botonesAceptarCancelar input.borra {
 	padding: 10px 50px;
 }
 .popup > .msg .botonesAceptarCancelar input.cierra {
@@ -281,7 +294,7 @@ div.buscador {
 	height: 30px;
 	margin: 5px;
 }
-.popup > .msg .botonesAceptarCancelar input.borra {
+.popup > .msg .botonesAceptarCancelar > div.borra input.borra {
 	padding: 0;
 	height: 100%;
 	width: 100%;

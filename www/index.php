@@ -70,8 +70,10 @@ Falta mostrar secciones y almacenes por orden alfabético.
 		dom.className = dom.className.split(" ").filter(function(c) { return c != className; }).join(" ");
 	}
 
-	function clone(objeto) {
-		return JSON.parse(JSON.stringify(objeto));
+	function shallowClone(objeto) {
+		var clon = {};
+		for (var i in objeto) clon[i] = objeto[i];
+		return clon;
 	}
 
 	var random_id_generator = (function(c) {
@@ -104,7 +106,7 @@ function fixObjetoFromJSON(objeto) {
 	return objeto;
 }
 
-AJAX('php/ajax.php?action=getinventario', null, function(x) {
+AJAX('php/ajax.php?action=getinventario', null, function(msg) {
 	DrawObjeto = function(i) {
 		var objeto = lista.objetos[i];
 		var cantidad, tagsDOM, domObjetoEnLista;
@@ -126,23 +128,35 @@ AJAX('php/ajax.php?action=getinventario', null, function(x) {
 					C("div", ["class", "tags"], "Tags: ", tagsDOM = C("span", ["class", "tags-list"]))
 				)
 			);
-			for (var i in objeto.tags) C(tagsDOM, C("span", objeto.tags[i]));
+			for (var j in objeto.tags) C(tagsDOM, C("span", objeto.tags[j]));
 			(cantidad < parseInt(objeto.minimo_alerta) ? AddClass : RemoveClass)(domObjetoEnLista, "alerta");
+			objeto.onRemove = onRemove;
 			return objeto.DOM = domObjetoEnLista;
 		}
 		
 		function updateListObject() {
-			AJAX('php/ajax.php?action=getinventarioitem&id=' + objeto.id, null, function(x) {
-				lista.objetos[i] = objeto = fixObjetoFromJSON(JSON.parse(x.responseText)[0]);
+			AJAX('php/ajax.php?action=getinventarioitem&id=' + objeto.id, null, function(msg) {
+				lista.objetos[i] = objeto = fixObjetoFromJSON(JSON.parse(msg.response)[0]);
 				var aBorrar = domObjetoEnLista;
 				domObjetoEnLista.parentNode.insertBefore(GeneraDomObjeto(), aBorrar);
 				domObjetoEnLista.parentNode.removeChild(aBorrar);
 			}, console.log);
-		}	
+		}
+		
+		function onRemove() {
+			AJAX('php/ajax.php', 'action=remove-object&id-object=' + objeto.id, function(msg) {
+				var json = JSON.parse(msg.response);
+				if (json.STATUS === "OK") {
+					domObjetoEnLista.parentNode.removeChild(domObjetoEnLista);
+					popups.closePopup();
+					popups.closePopup();
+				}
+			}, console.log);
+		}
 	}
 	
 	
-	lista = JSON.parse(x.responseText);
+	lista = JSON.parse(msg.response);
 	
 	var objetosById = {};
 	for (var i in lista.objetos) {
@@ -197,7 +211,7 @@ function GetCantidad(objeto) {
 }
 
 function edit(objeto, updateListObject) {
-	var objetoLocal = clone(objeto)
+	var objetoLocal = shallowClone(objeto)
 	cantidad = GetCantidad(objetoLocal);
 	var cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
 	var tags;
@@ -402,24 +416,30 @@ function edit(objeto, updateListObject) {
 	}
 	
 	function abrirBorrarVentana() {
-		popups.showPopup(C("div", "Borrar? testing"));
+		popups.showPopup(C("div", ["class", "confirmBorrar"],
+			C("div", ["class", "titulo"], "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"),
+			C("div", ["class", "botonesAceptarCancelar"],
+				C("input", ["type", "button", "class", "btn btn-danger borra", "value", "Borrar", "onclick", objetoLocal.onRemove]),
+				C("input", ["type", "button", "class", "btn btn-default cierra", "value", "Cancelar", "onclick", popups.closePopup])
+			)
+		));
 	}
 }
 
 function addObjeto() {
-	AJAX('php/ajax.php', 'action=create-empty-object', function(x) {
-		console.log(x);
-		var json = JSON.parse(x.responseText);
+	AJAX('php/ajax.php', 'action=create-empty-object', function(msg) {
+		console.log(msg);
+		var json = JSON.parse(msg.response);
 		var id = json.MESSAGE;
 		console.log("ID of the created object: ", id);
 		
-		AJAX('php/ajax.php?action=getinventarioitem&id=' + id, null, function(x) {
-			lista.objetos[id] = fixObjetoFromJSON(JSON.parse(x.responseText)[0]);
+		AJAX('php/ajax.php?action=getinventarioitem&id=' + id, null, function(msg) {
+			lista.objetos[id] = fixObjetoFromJSON(JSON.parse(msg.response)[0]);
 			contenedorListaObjetos.appendChild(DrawObjeto(id));
 		}, console.log);
 		
-	}, function(x) {
-		console.log(x);
+	}, function(msg) {
+		console.log(msg);
 	});
 }
 
