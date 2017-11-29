@@ -21,15 +21,16 @@
 <div class="buscador">
 	Búsqueda: <input id="buscador" type="text" placeholder="Búsqueda" class="form-control"/>
 </div>
+Poner un listado editable por todos con búsquedas preparadas (por ejemplo: boli, papel, carpeta) y que baste con clicarlas para hacer esa búsqueda<br/>
 <button onclick="buscador.value='minimo';buscador.onchange()">Mostrar objetos bajo mínimo</button>
 
 <div id="inventario"></div>
 <div class="clearer"></div>
 
-<button onclick="addObjeto()">+ Objeto</button> Crear = crear objeto vacío en DB, coger su id, cargar y darle a editar
-<button onclick="alert('+ Sección Almacen')">+ Sección Almacen</button>Borrar? (Mejor un administrador de secciones de almacen).
+<button onclick="addObjeto()">Nuevo objeto</button><br/>
+<button onclick="alert('+ Sección Almacen')">Editar Almacenes y secciones</button>Mostrar almacenes y secciones en vista de arbol, editable (o en vista de tabla)<br/>
+<a href="">Historial</a>
 
-Falta mostrar secciones y almacenes por orden alfabético.
 
 
 <script>
@@ -234,13 +235,24 @@ function edit(objeto, updateListObject) {
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-image"])
 			),
 			C("form", ["class", "left_big", "method", "post", "action", "php/ajax.php"],
-				C("div", "Cantidad mínima"),
+				C("div", ["class", "has-help"],
+					"Cantidad mínima",
+					C("div", ["class", "desc"],
+						"Si la cantidad total de objetos es menor que este valor se mostrará una alerta.",
+						C("img", ["src", "media/inputs.gif"])
+					)
+				),
 				C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal.minimo_alerta, "class", "form-control", "onchange", onPositiveNumberChange])),
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-minimo"])
 			),
 			C("form", ["class", "left_big", "method", "post", "action", "php/ajax.php"],
-				C("div", "Cantidad"),
+				C("div", ["class", "has-help"],
+					"Cantidad",
+					C("div", ["class", "desc"],
+						C("img", ["src", "media/inputs.gif"])
+					)
+				),
 				C("div", C("div", ["class", "cantidades"],
 					cantidades = C("div", ["class", "tabla"],
 						C("div", ["class", "cantidad-block"],
@@ -261,7 +273,7 @@ function edit(objeto, updateListObject) {
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-cantidades"])
 			),
 			C("form", ["class", "right_big", "method", "post", "action", "php/ajax.php"],
-				C("div", ["class", "has-help"], "Tags", C("div", ["class", "desc"], "Palabras claves usadas para filtrar la búsqueda y encontrar este elemento")),
+				C("div", ["class", "has-help"], "Tags", C("div", ["class", "desc"], "Palabras clave para filtrar una búsqueda y encontrar este objeto")),
 				C("div", tags = C("input", ["name", "tags", "type", "text", "value", objetoLocal.tags, "class", "form-control"])),
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-tags"])
@@ -269,10 +281,12 @@ function edit(objeto, updateListObject) {
 			C("div", ["class", "clear"])
 		),
 		C("div", ["class", "botonesAceptarCancelar"],
-			C("input", ["type", "button", "class", "btn btn-success guarda", "value", "Guardar cambios", "onclick", guardarCambios]),
-			C("input", ["type", "button", "class", "btn btn-default cierra", "value", "Cancelar", "onclick", popups.closePopup]),
+			C("button", ["type", "button", "class", "btn btn-success guarda", "onclick", guardarCambios], "Guardar cambios"),
+			C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", popups.closePopup], "Cerrar"),
 			C("div", ["class", "borra"],
-				C("input", ["type", "button", "class", "btn btn-danger borra", "value", "Borrar", "onclick", abrirBorrarVentana])
+				C("button", ["type", "button", "class", "btn btn-danger borra", "onclick", abrirBorrarVentana], 
+					"Borrar"
+				)
 			),
 			C("div", ["style", "text-align: left; display: none;"], "ID: ", objetoLocal.id)
 		)
@@ -419,8 +433,8 @@ function edit(objeto, updateListObject) {
 		popups.showPopup(C("div", ["class", "confirmBorrar"],
 			C("div", ["class", "titulo"], "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"),
 			C("div", ["class", "botonesAceptarCancelar"],
-				C("input", ["type", "button", "class", "btn btn-danger borra", "value", "Borrar", "onclick", objetoLocal.onRemove]),
-				C("input", ["type", "button", "class", "btn btn-default cierra", "value", "Cancelar", "onclick", popups.closePopup])
+				C("button", ["type", "button", "class", "btn btn-danger borra", "onclick", objetoLocal.onRemove], "Borrar"),
+				C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", popups.closePopup], "Cancelar")
 			)
 		));
 	}
@@ -436,6 +450,7 @@ function addObjeto() {
 		AJAX('php/ajax.php?action=getinventarioitem&id=' + id, null, function(msg) {
 			lista.objetos[id] = fixObjetoFromJSON(JSON.parse(msg.response)[0]);
 			contenedorListaObjetos.appendChild(DrawObjeto(id));
+			lista.objetos[id].DOM.onclick();
 		}, console.log);
 		
 	}, function(msg) {

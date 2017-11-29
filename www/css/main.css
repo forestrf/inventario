@@ -276,14 +276,14 @@ div.buscador {
 	font-size: 20px;
 	padding: 30px;
 }
-.popup > .msg .botonesAceptarCancelar input {
+.popup > .msg .botonesAceptarCancelar button {
 	margin: 0 5px;
 }
-.popup > .msg .botonesAceptarCancelar input.guarda,
-.popup > .msg .botonesAceptarCancelar input.borra {
+.popup > .msg .botonesAceptarCancelar button.guarda,
+.popup > .msg .botonesAceptarCancelar button.borra {
 	padding: 10px 50px;
 }
-.popup > .msg .botonesAceptarCancelar input.cierra {
+.popup > .msg .botonesAceptarCancelar button.cierra {
 	padding: 10px 30px;
 }
 .popup > .msg .botonesAceptarCancelar > div.borra {
@@ -294,30 +294,36 @@ div.buscador {
 	height: 30px;
 	margin: 5px;
 }
-.popup > .msg .botonesAceptarCancelar > div.borra input.borra {
+.popup > .msg .botonesAceptarCancelar > div.borra button.borra {
 	padding: 0;
 	height: 100%;
 	width: 100%;
 	margin: 0;
 }
 
+.has-help {
+	position: relative;
+}
 .has-help .desc {
 	display: none;
 }
 .has-help:hover .desc {
-	position: absolute;
-	display: inline-block;
-	padding: 10px;
-	line-height: 1em;
 	background-color: #2196f3;
-	border-radius: 0px 20px 20px 20px;
-	top: 34px;
-	left: 26%;
-	z-index: 1;
-	width: 50%;
-	border: 3px dotted #fff;
+	border-radius: 20px;
+	white-space: normal;
+	line-height: 1em;
 	text-align: left;
+	position: absolute;
+	display: block;
+	padding: 10px;
+	z-index: 1;
+	border: 3px dotted #fff;
 	color: #fff;
+	left: 26%;
+	top: 34px;
+}
+.has-help:hover .desc img {
+	margin-top: 10px;
 }
 
 
