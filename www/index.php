@@ -85,7 +85,7 @@ Poner un listado editable por todos con búsquedas preparadas (por ejemplo: boli
 		return {
 			showPopup: function(contentsDOM) {
 				var dom = C("div", ["class", "popup"],
-					C("div", ["class", "bg", "onclick", popups.closePopup]),
+					C("div", ["class", "bg"]),
 					C("div", ["class", "msg"], contentsDOM)
 				);
 				document.body.appendChild(dom);
@@ -238,7 +238,7 @@ function edit(objeto, updateListObject) {
 				C("div", ["class", "has-help"],
 					"Cantidad mínima",
 					C("div", ["class", "desc"],
-						"Si la cantidad total de objetos es menor que este valor se mostrará una alerta.",
+						"Se mostrará una alerta si la cantidad total de objetos es menor que este valor.",
 						C("img", ["src", "media/inputs.gif"])
 					)
 				),

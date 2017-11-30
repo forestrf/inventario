@@ -76,14 +76,14 @@ div.buscador {
 }
 
 .objeto .tags-list > span {
-	border: 1px solid #aaa;
-	border-radius: 4px;
-	margin-right: 4px;
-	padding: 0px 3px;
 	background-color: #eee;
-	color: #444;
-	display: inline-block;
+	border-radius: 4px;
 	margin-bottom: 4px;
+	margin-right: 4px;
+	display: inline-block;
+	padding: 0px 3px;
+	border: 1px solid #aaa;
+	color: #444;
 }
 
 .nombre {
@@ -91,8 +91,9 @@ div.buscador {
 }
 
 .popup {
-	position: absolute;
+	position: fixed;
 	z-index: 0;
+	height: 100%;
 	width: 100%;
 	left: 0;
 	top: 0;
@@ -105,9 +106,13 @@ div.buscador {
 	width: 100%;
 }
 .popup > .msg {
+	padding: 3%;
+	height: 100%;
+}
+.popup > .msg > div {
 	background-color: #fff;
-	margin: 3%;
-	position: relative;
+	overflow-y: auto;
+	max-height: 100%;
 }
 .popup + .popup > .msg {
 	margin: 6%;
@@ -263,8 +268,9 @@ div.buscador {
 	padding-bottom: 15px;
 	text-align: center;
 	background-color: #d7ffa4;
+	position: relative;
 }
-.popup > .msg .confirmBorrar{
+.popup > .msg .confirmBorrar {
 	background-color: #570909;
 }
 .popup > .msg .confirmBorrar .botonesAceptarCancelar {
