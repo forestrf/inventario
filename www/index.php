@@ -28,7 +28,7 @@ Poner un listado editable por todos con búsquedas preparadas (por ejemplo: boli
 <div class="clearer"></div>
 
 <button onclick="addObjeto()">Nuevo objeto</button><br/>
-<button onclick="alert('+ Sección Almacen')">Editar Almacenes y secciones</button>Mostrar almacenes y secciones en vista de arbol, editable (o en vista de tabla)<br/>
+<button onclick="ListarAlmacenesSecciones()">Editar Almacenes y secciones</button>Mostrar almacenes y secciones en vista de arbol, editable (o en vista de tabla)<br/>
 <a href="">Historial</a>
 
 
@@ -460,6 +460,49 @@ function addObjeto() {
 
 function GetImagenObjeto(objeto) {
 	return objeto.imagen === null ? "http://via.placeholder.com/128x128" : "php/ajax.php?action=getfile&id=" + objeto.imagen;
+}
+
+function ListarAlmacenesSecciones() {
+	var arbolContainer;
+	popups.showPopup(C("div",
+		arbolContainer = C("ul"),
+		C("button", ["onclick", popups.closePopup], "Cerrar")
+	));
+	
+	for (var i in lista.almacenes) {
+		var almacen;
+		C(arbolContainer,
+			C("li",
+				"Almacén",
+				C("input", ["type", "text", "value", lista.almacenes[i].nombre]),
+				almacen = C("ul")
+			)
+		);
+		
+		for (var j in lista.secciones) {
+			if (lista.secciones[j].id_almacen == lista.almacenes[i].id) {
+				C(almacen,
+					C("li",
+						"Sección",
+						C("input", ["type", "text", "value", lista.secciones[j].nombre])
+					)
+				);
+			}
+		}
+		
+		C(almacen,
+			C("li",
+				C("button", "Añadir Sección")
+			)
+		);
+	}
+	
+	C(arbolContainer,
+		C("li",
+			C("button", "Añadir Almacén")
+		)
+	);
+	
 }
 </script>
 

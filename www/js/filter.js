@@ -24,9 +24,9 @@ var FilterSearch = (function(){
 			for (var j = 0; !found && j < search.length; j++)
 				found = TestCustomKeyword(search[j], objetos[i]);
 			if (!found)
-				found = Test(search, objetos[i].nombre);
+				found = TestAll(search, objetos[i].nombre);
 			for (var j = 0; !found && j < objetos[i].tags.length; j++)
-				found = Test(search, objetos[i].tags[j]);
+				found = TestAny(search, objetos[i].tags[j]);
 			
 			// Execute callbacks
 			var callback = found ? callbackShow : callbackHide;
@@ -34,14 +34,22 @@ var FilterSearch = (function(){
 		}
 	}
 	
-	// True if text contains all of the strings in the search array. False otherwise
-	function Test(search, text) {
+	function TestAll(search, text) {
 		text = text.latinize().toLowerCase();
 		for (var i = 0; i < search.length; i++)
 			if (text.indexOf(search[i]) == -1)
 				return false;
 		
 		return true;
+	}
+	
+	function TestAny(search, text) {
+		text = text.latinize().toLowerCase();
+		for (var i = 0; i < search.length; i++)
+			if (text.indexOf(search[i]) != -1)
+				return true;
+		
+		return false;
 	}
 	
 	
