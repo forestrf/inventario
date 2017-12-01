@@ -263,7 +263,7 @@ function edit(objeto, updateListObject) {
 							)
 						)
 					),
-					C("div", ["class", "btn btn-primary add", "onclick", function(){
+					C("div", ["class", "btn btn-primary add", "onclick", function() {
 						objetoLocal.secciones[objetoLocal.secciones.length] = {cantidad: 0, id_seccion: Object.keys(lista.secciones)[0]};
 						C(cantidades, DrawCantidadInput(objetoLocal.secciones[objetoLocal.secciones.length - 1]));
 					}], "+ Añadir a otro lugar"),
@@ -339,7 +339,7 @@ function edit(objeto, updateListObject) {
 				}])
 			),
 			C("div", ["class", "borrar"],
-				C("div", ["class", "btn btn-danger", "onclick", function(){
+				C("div", ["class", "btn btn-danger", "onclick", function() {
 					objetoLocal.secciones.splice(Array.prototype.indexOf.call(cantidadBlock.parentNode.childNodes, cantidadBlock) - 1, 1); // -1 porque el indice 0 esta ocupado por la cabecera de la tabla
 					cantidadBlock.parentNode.removeChild(cantidadBlock);
 					UpdateROCantidad();
@@ -464,36 +464,36 @@ function GetImagenObjeto(objeto) {
 
 function ListarAlmacenesSecciones() {
 	var arbolContainer;
-	popups.showPopup(C("div",
-		arbolContainer = C("ul"),
+	popups.showPopup(C("div", ["class", "lista-almacenes-secciones"],
+		arbolContainer = C("div"),
 		C("button", ["onclick", popups.closePopup], "Cerrar")
 	));
 	
 	for (var i in lista.almacenes) {
-		var almacen;
+		var contenedor;
 		C(arbolContainer,
-			C("li",
-				"Almacén",
-				C("input", ["type", "text", "value", lista.almacenes[i].nombre]),
-				almacen = C("ul")
+			contenedor = C("div", ["class", "almacen"],
+				C("div", ["class", "header first"], "Almacén"),
+				C("input", ["type", "text", "class", "form-control", "value", lista.almacenes[i].nombre]),
+				C("div", ["class", "header"], "Secciones")
 			)
 		);
 		
 		for (var j in lista.secciones) {
 			if (lista.secciones[j].id_almacen == lista.almacenes[i].id) {
-				C(almacen,
-					C("li",
-						"Sección",
-						C("input", ["type", "text", "value", lista.secciones[j].nombre])
+				C(contenedor,
+					C("div", ["class", "seccion"],
+						C("input", ["type", "text", "class", "form-control", "value", lista.secciones[j].nombre]),
+						C("div", ["class", "btn btn-danger", "onclick", function() {}], "X")
 					)
 				);
 			}
 		}
 		
-		C(almacen,
-			C("li",
-				C("button", "Añadir Sección")
-			)
+		C(contenedor,
+			C("div", ["class", "btn btn-primary", "onclick", function() {}], "Añadir Sección"),
+			C("br"),
+			C("div", ["class", "btn btn-danger borraalmacen", "onclick", function() {}], "Borrar Almacen"),
 		);
 	}
 	
