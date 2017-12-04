@@ -111,8 +111,18 @@ div.buscador {
 }
 .popup > .msg > div {
 	background-color: #fff;
+	box-shadow: 0 0 40px 10px #000;
 	overflow-y: auto;
 	max-height: 100%;
+}
+.popup + .popup > .msg {
+	padding: 4%;
+}
+.popup + .popup + .popup > .msg {
+	padding: 6%;
+}
+.popup + .popup + .popup + .popup > .msg {
+	padding: 8%;
 }
 
 .popup > .msg form {
@@ -298,17 +308,22 @@ div.buscador {
 	margin: 0;
 }
 .popup > .msg .lista-almacenes-secciones .almacen {
-    background-color: #eee;
-    vertical-align: top;
-    display: inline-block;
-    padding: 5px;
-    border: 1px solid;
-    margin: 5px;
-    width: auto;
+	background-color: #eee;
+	vertical-align: top;
+	position: relative;
+	overflow: hidden;
+	display: inline-block;
+	padding: 5px;
+	border: 1px solid #000;
+	margin: 5px;
+	width: auto;
 }
 .popup > .msg .lista-almacenes-secciones .form-control {
 	margin-bottom: 3px;
 	display: inline-block;
+}
+.popup > .msg .lista-almacenes-secciones .form-control,
+.popup > .msg .lista-almacenes-secciones .btn.addseccion {
 	width: 250px;
 }
 .popup > .msg .lista-almacenes-secciones .header {
@@ -336,10 +351,20 @@ div.buscador {
 	width: 20px;
 }
 .popup > .msg .lista-almacenes-secciones .btn.borraalmacen {
-	padding: 0 3px;
-	border-radius: 0;
-	margin: 5px -5px -5px -5px;
+	border-radius: 0px 0px 0 20px;
+	position: absolute;
+	padding: 0 4px 0 10px;
 	display: block;
+	border: 1px solid #000;
+	border-right: 0;
+	border-top: 0;
+	right: 0;
+	top: 0;
+}
+.popup > .msg .lista-almacenes-secciones .btn.guarda {
+	display: block;
+	margin: 15px -5px -5px -5px;
+	border-radius: 0;
 }
 
 .has-help {

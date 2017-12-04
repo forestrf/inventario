@@ -284,7 +284,7 @@ function edit(objeto, updateListObject) {
 			C("button", ["type", "button", "class", "btn btn-success guarda", "onclick", guardarCambios], "Guardar cambios"),
 			C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", popups.closePopup], "Cerrar"),
 			C("div", ["class", "borra"],
-				C("button", ["type", "button", "class", "btn btn-danger borra", "onclick", abrirBorrarVentana], 
+				C("button", ["type", "button", "class", "btn btn-danger borra", "onclick", function() { abrirBorrarVentana(objetoLocal.onRemove) }], 
 					"Borrar"
 				)
 			),
@@ -428,16 +428,16 @@ function edit(objeto, updateListObject) {
 			form.poked = undefined;
 		}, 10000);
 	}
+}
 	
-	function abrirBorrarVentana() {
-		popups.showPopup(C("div", ["class", "confirmBorrar"],
-			C("div", ["class", "titulo"], "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"),
-			C("div", ["class", "botonesAceptarCancelar"],
-				C("button", ["type", "button", "class", "btn btn-danger borra", "onclick", objetoLocal.onRemove], "Borrar"),
-				C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", popups.closePopup], "Cancelar")
-			)
-		));
-	}
+function abrirBorrarVentana(onRemoveCallback) {
+	popups.showPopup(C("div", ["class", "confirmBorrar"],
+		C("div", ["class", "titulo"], "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"),
+		C("div", ["class", "botonesAceptarCancelar"],
+			C("button", ["type", "button", "class", "btn btn-danger borra", "onclick", onRemoveCallback], "Borrar"),
+			C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", popups.closePopup], "Cancelar")
+		)
+	));
 }
 
 function addObjeto() {
@@ -469,32 +469,11 @@ function ListarAlmacenesSecciones() {
 		C("button", ["onclick", popups.closePopup], "Cerrar")
 	));
 	
-	for (var i in lista.almacenes) {
-		var contenedor;
-		C(arbolContainer,
-			contenedor = C("div", ["class", "almacen"],
-				C("div", ["class", "header first"], "Almacén"),
-				C("input", ["type", "text", "class", "form-control", "value", lista.almacenes[i].nombre]),
-				C("div", ["class", "header"], "Secciones")
-			)
-		);
-		
-		for (var j in lista.secciones) {
-			if (lista.secciones[j].id_almacen == lista.almacenes[i].id) {
-				C(contenedor,
-					C("div", ["class", "seccion"],
-						C("input", ["type", "text", "class", "form-control", "value", lista.secciones[j].nombre]),
-						C("div", ["class", "btn btn-danger", "onclick", function() {}], "X")
-					)
-				);
-			}
-		}
-		
-		C(contenedor,
-			C("div", ["class", "btn btn-primary", "onclick", function() {}], "Añadir Sección"),
-			C("br"),
-			C("div", ["class", "btn btn-danger borraalmacen", "onclick", function() {}], "Borrar Almacen"),
-		);
+	var almacenes = JSON.parse(JSON.stringify(lista.almacenes));
+	var secciones = JSON.parse(JSON.stringify(lista.secciones));
+	
+	for (var i in almacenes) {
+		DrawAlmacen(almacenes[i]);
 	}
 	
 	C(arbolContainer,
@@ -503,6 +482,57 @@ function ListarAlmacenesSecciones() {
 		)
 	);
 	
+	
+	function DrawAlmacen(almacen) {
+		var contenedor;
+		var seccionesContainer;
+		C(arbolContainer,
+			contenedor = C("div", ["class", "almacen"],
+				C("div", ["class", "header first"], "Almacén"),
+				C("input", ["type", "text", "class", "form-control", "value", almacen.nombre]),
+				C("div", ["class", "header"], "Secciones"),
+				seccionesContainer = C("div"),
+				C("div", ["class", "btn addseccion btn-primary", "onclick", addSeccion], "Añadir Sección"),
+				C("div", ["class", "btn guarda btn-success", "onclick", function() {}], "Guardar"),
+				C("div", ["class", "btn btn-danger borraalmacen", "onclick", function() { abrirBorrarVentana(null) }], "Borrar Almacen")
+			)
+		);
+		
+		RedibujarSecciones();
+		
+		function addSeccion() {
+			var keys = Object.keys(secciones).sort();
+			var id = keys[keys.length - 1] + 1;
+			secciones[id] = {
+				id: id,
+				id_almacen: almacen.id,
+				nombre: "",
+				descripcion: ""
+			};
+			console.log(secciones);
+			
+			RedibujarSecciones();
+		}
+		
+		function RedibujarSecciones() {
+			seccionesContainer.innerHTML = "";
+			
+			for (var j in secciones) {
+				if (secciones[j].id_almacen == almacen.id) {
+					C(seccionesContainer,
+						C("div", ["class", "seccion"],
+							C("input", ["type", "text", "class", "form-control", "value", secciones[j].nombre, "onchange", OnChangeInput, "onkeyup", OnChangeInput]),
+							C("div", ["class", "btn btn-danger", "onclick", function() { abrirBorrarVentana(null) }], "X")
+						)
+					);
+				}
+			}
+			
+			function OnChangeInput(ev) {
+				secciones[j].nombre = ev.target.value;
+			}
+		}
+	}
 }
 </script>
 
