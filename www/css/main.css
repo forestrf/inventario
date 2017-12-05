@@ -310,7 +310,7 @@ div.buscador {
 .popup > .msg .lista-almacenes-secciones .almacen {
 	background-color: #eee;
 	vertical-align: top;
-	box-shadow: 2px 2px 2px #999;
+	box-shadow: 2px 2px 2px #bbb;
 	position: relative;
 	overflow: hidden;
 	display: inline-block;
