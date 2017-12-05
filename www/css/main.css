@@ -310,6 +310,7 @@ div.buscador {
 .popup > .msg .lista-almacenes-secciones .almacen {
 	background-color: #eee;
 	vertical-align: top;
+	box-shadow: 2px 2px 2px #999;
 	position: relative;
 	overflow: hidden;
 	display: inline-block;
@@ -325,6 +326,9 @@ div.buscador {
 .popup > .msg .lista-almacenes-secciones .form-control,
 .popup > .msg .lista-almacenes-secciones .btn.addseccion {
 	width: 250px;
+}
+.popup > .msg .lista-almacenes-secciones .btn.addseccion {
+    margin-bottom: 15px;
 }
 .popup > .msg .lista-almacenes-secciones .header {
 	border-bottom: 1px solid #989898;
@@ -361,10 +365,13 @@ div.buscador {
 	right: 0;
 	top: 0;
 }
-.popup > .msg .lista-almacenes-secciones .btn.guarda {
-	display: block;
-	margin: 15px -5px -5px -5px;
-	border-radius: 0;
+.popup > .msg .lista-almacenes-secciones .addAlmacenContainer {
+	background-color: #f7f7f7;
+	padding: 10px;
+	text-align: center;
+	margin-bottom: -10px;
+	margin-top: 10px;
+	border: 2px dashed #eaeaea;
 }
 
 .has-help {

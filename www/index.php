@@ -63,9 +63,6 @@ Poner un listado editable por todos con búsquedas preparadas (por ejemplo: boli
 		var clases = dom.className.split(" ");
 		clases.push(className);
 		dom.className = clases.filter(onlyUnique).join(" ");
-		function onlyUnique(value, index, self) { 
-			return self.indexOf(value) === index;
-		}
 	}
 	function RemoveClass(dom, className) {
 		dom.className = dom.className.split(" ").filter(function(c) { return c != className; }).join(" ");
@@ -96,6 +93,14 @@ Poner un listado editable por todos con búsquedas preparadas (por ejemplo: boli
 			}
 		}
 	})([]);
+	
+	function onlyUnique(value, index, self) { 
+		return self.indexOf(value) === index;
+	}
+	
+	function GetKeysOfObjectAsSortedNumberArray(obj) {
+		return Object.keys(obj).map(function(x) { return parseInt(x) }).sort(function(a, b){ return a - b });
+	}
 </script>
 
 <script>
@@ -280,16 +285,7 @@ function edit(objeto, updateListObject) {
 			),
 			C("div", ["class", "clear"])
 		),
-		C("div", ["class", "botonesAceptarCancelar"],
-			C("button", ["type", "button", "class", "btn btn-success guarda", "onclick", guardarCambios], "Guardar cambios"),
-			C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", popups.closePopup], "Cerrar"),
-			C("div", ["class", "borra"],
-				C("button", ["type", "button", "class", "btn btn-danger borra", "onclick", function() { abrirBorrarVentana(objetoLocal.onRemove) }], 
-					"Borrar"
-				)
-			),
-			C("div", ["style", "text-align: left; display: none;"], "ID: ", objetoLocal.id)
-		)
+		PieGuardarCancelar("Guardar cambios", guardarCambios, "Cerrar", popups.closePopup, true, "Borrar", function() { abrirBorrarVentana(objetoLocal.onRemove) })
 	);
 	
 	for (var i = 0; i < objetoLocal.secciones.length; i++) {
@@ -462,26 +458,54 @@ function GetImagenObjeto(objeto) {
 	return objeto.imagen === null ? "http://via.placeholder.com/128x128" : "php/ajax.php?action=getfile&id=" + objeto.imagen;
 }
 
+function PieGuardarCancelar(guardarStr, guardarFunc, cerrarStr, cerrarFunc, mostrarBorrar, borrarStr, borrarFunc) {
+	var pie = C("div", ["class", "botonesAceptarCancelar"],
+		C("button", ["type", "button", "class", "btn btn-success guarda", "onclick", guardarFunc], guardarStr),
+		C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", cerrarFunc], cerrarStr)
+	);
+	if (mostrarBorrar) {
+		C(pie, C("div", ["class", "borra"],
+			C("button", ["type", "button", "class", "btn btn-danger borra", "onclick", borrarFunc], borrarStr)
+		));
+	}
+	return pie;
+}
+
 function ListarAlmacenesSecciones() {
 	var arbolContainer;
 	popups.showPopup(C("div", ["class", "lista-almacenes-secciones"],
 		arbolContainer = C("div"),
-		C("button", ["onclick", popups.closePopup], "Cerrar")
+		C("div", ["class", "addAlmacenContainer"], C("button", ["class", "btn btn-primary", "onclick", AddAlmacen], "Añadir Almacén")),
+		PieGuardarCancelar("Guardar cambios", null, "Cancelar", popups.closePopup, false)
 	));
 	
 	var almacenes = JSON.parse(JSON.stringify(lista.almacenes));
 	var secciones = JSON.parse(JSON.stringify(lista.secciones));
 	
+	// No queremos crear secciones iguales a secciones borradas justo ahora para evitar mover cantidades en lugar de borrarlas.
+	// TO DO: Borrar un almacen o una sección, qué hace con los objetos que usaban dicha sección o almacen? Avisar al borrar una sección o almacen de que hay cosas en el y que borrarlo eliminará esa cantidad de cosas
+	var almacenesUsados = GetKeysOfObjectAsSortedNumberArray(almacenes);
+	var seccionesUsados = GetKeysOfObjectAsSortedNumberArray(secciones);
+	
 	for (var i in almacenes) {
 		DrawAlmacen(almacenes[i]);
 	}
 	
-	C(arbolContainer,
-		C("li",
-			C("button", "Añadir Almacén")
-		)
-	);
+	function GetFirstFreeID(ids) {
+		var id = 1;
+		while (ids.indexOf(id) !== -1) id++;
+		return id;
+	}
 	
+	function AddAlmacen() {
+		var keys = GetKeysOfObjectAsSortedNumberArray(almacenes).concat(almacenesUsados).filter(onlyUnique);
+		var id = GetFirstFreeID(keys);
+		almacenes[id] = {
+			id: id,
+			nombre: "Almacen " + id
+		};
+		DrawAlmacen(almacenes[id]);
+	}
 	
 	function DrawAlmacen(almacen) {
 		var contenedor;
@@ -493,7 +517,6 @@ function ListarAlmacenesSecciones() {
 				C("div", ["class", "header"], "Secciones"),
 				seccionesContainer = C("div"),
 				C("div", ["class", "btn addseccion btn-primary", "onclick", addSeccion], "Añadir Sección"),
-				C("div", ["class", "btn guarda btn-success", "onclick", function() {}], "Guardar"),
 				C("div", ["class", "btn btn-danger borraalmacen", "onclick", function() { abrirBorrarVentana(null) }], "Borrar Almacen")
 			)
 		);
@@ -501,15 +524,13 @@ function ListarAlmacenesSecciones() {
 		RedibujarSecciones();
 		
 		function addSeccion() {
-			var keys = Object.keys(secciones).sort();
-			var id = keys[keys.length - 1] + 1;
+			var keys = GetKeysOfObjectAsSortedNumberArray(secciones).concat(seccionesUsados).filter(onlyUnique);
+			var id = GetFirstFreeID(keys);
 			secciones[id] = {
 				id: id,
 				id_almacen: almacen.id,
-				nombre: "",
-				descripcion: ""
+				nombre: "Sección " + id
 			};
-			console.log(secciones);
 			
 			RedibujarSecciones();
 		}
@@ -519,17 +540,23 @@ function ListarAlmacenesSecciones() {
 			
 			for (var j in secciones) {
 				if (secciones[j].id_almacen == almacen.id) {
-					C(seccionesContainer,
-						C("div", ["class", "seccion"],
-							C("input", ["type", "text", "class", "form-control", "value", secciones[j].nombre, "onchange", OnChangeInput, "onkeyup", OnChangeInput]),
-							C("div", ["class", "btn btn-danger", "onclick", function() { abrirBorrarVentana(null) }], "X")
-						)
-					);
+					(function (seccion) {
+						C(seccionesContainer,
+							C("div", ["class", "seccion"],
+								C("input", ["type", "text", "class", "form-control", "value", seccion.nombre, "onchange", OnChangeInput, "onkeyup", OnChangeInput]),
+								C("div", ["class", "btn btn-danger", "onclick", OnRemoveSeccion], "X")
+							)
+						);						
+						
+						function OnChangeInput(ev) {
+							seccion.nombre = ev.target.value;
+						}
+						function OnRemoveSeccion() {
+							delete secciones[seccion.id];
+							RedibujarSecciones();
+						}
+					})(secciones[j]);
 				}
-			}
-			
-			function OnChangeInput(ev) {
-				secciones[j].nombre = ev.target.value;
 			}
 		}
 	}
