@@ -517,7 +517,7 @@ function ListarAlmacenesSecciones() {
 				C("div", ["class", "header"], "Secciones"),
 				seccionesContainer = C("div"),
 				C("div", ["class", "btn addseccion btn-primary", "onclick", addSeccion], "Añadir Sección"),
-				C("div", ["class", "btn btn-danger borraalmacen", "onclick", function() { abrirBorrarVentana(null) }], "Borrar Almacen")
+				C("div", ["class", "btn btn-danger borraalmacen", "onclick", borrarAlmacen], "Borrar Almacen")
 			)
 		);
 		
@@ -558,6 +558,17 @@ function ListarAlmacenesSecciones() {
 					})(secciones[j]);
 				}
 			}
+		}
+		
+		function borrarAlmacen() {
+			delete almacenes[almacen.id];
+			var seccionesToDelete = [];
+			for (var i in secciones)
+				if (secciones[i].id_almacen == almacen.id)
+					seccionesToDelete.push(i);
+			for (var i = 0; i < seccionesToDelete.length; i++)
+				delete secciones[seccionesToDelete[i]];
+			arbolContainer.removeChild(contenedor);
 		}
 	}
 }
