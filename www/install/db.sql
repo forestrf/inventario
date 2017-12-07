@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 28-11-2017 a las 12:05:10
+-- Tiempo de generación: 07-12-2017 a las 12:14:52
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -27,8 +27,6 @@ SET time_zone = "+00:00";
 --
 -- Estructura de tabla para la tabla `acceso`
 --
--- Creación: 24-07-2017 a las 11:24:50
---
 
 CREATE TABLE `acceso` (
   `clave` text COLLATE utf8_bin NOT NULL COMMENT 'password',
@@ -50,13 +48,10 @@ CREATE TABLE `acceso` (
 --
 -- Estructura de tabla para la tabla `almacen`
 --
--- Creación: 24-07-2017 a las 10:21:31
---
 
 CREATE TABLE `almacen` (
   `id` int(11) NOT NULL,
-  `nombre` text COLLATE utf8_bin NOT NULL,
-  `descripcion` text COLLATE utf8_bin NOT NULL
+  `nombre` text COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
@@ -67,8 +62,6 @@ CREATE TABLE `almacen` (
 
 --
 -- Estructura de tabla para la tabla `files`
---
--- Creación: 28-11-2017 a las 11:01:15
 --
 
 CREATE TABLE `files` (
@@ -92,8 +85,6 @@ CREATE TABLE `files` (
 --
 -- Estructura de tabla para la tabla `historico_objeto`
 --
--- Creación: 24-07-2017 a las 10:27:52
---
 
 CREATE TABLE `historico_objeto` (
   `id_objeto` int(11) NOT NULL,
@@ -111,8 +102,6 @@ CREATE TABLE `historico_objeto` (
 
 --
 -- Estructura de tabla para la tabla `objeto`
---
--- Creación: 13-10-2017 a las 10:09:34
 --
 
 CREATE TABLE `objeto` (
@@ -134,8 +123,6 @@ CREATE TABLE `objeto` (
 --
 -- Estructura de tabla para la tabla `objeto_seccion`
 --
--- Creación: 22-09-2017 a las 09:11:51
---
 
 CREATE TABLE `objeto_seccion` (
   `id_objeto` int(11) NOT NULL,
@@ -156,13 +143,10 @@ CREATE TABLE `objeto_seccion` (
 --
 -- Estructura de tabla para la tabla `seccion`
 --
--- Creación: 14-11-2017 a las 11:18:48
---
 
 CREATE TABLE `seccion` (
   `id` int(11) NOT NULL,
   `nombre` text COLLATE utf8_bin NOT NULL,
-  `descripcion` text COLLATE utf8_bin NOT NULL,
   `id_almacen` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
