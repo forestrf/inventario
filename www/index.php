@@ -101,6 +101,12 @@ Poner un listado editable por todos con búsquedas preparadas (por ejemplo: boli
 	function GetKeysOfObjectAsSortedNumberArray(obj) {
 		return Object.keys(obj).map(function(x) { return parseInt(x) }).sort(function(a, b){ return a - b });
 	}
+	
+	function GetFirstFreeID(ids) {
+		var id = 1;
+		while (ids.indexOf(id) !== -1) id++;
+		return id;
+	}
 </script>
 
 <script>
@@ -476,7 +482,7 @@ function ListarAlmacenesSecciones() {
 	popups.showPopup(C("div", ["class", "lista-almacenes-secciones"],
 		arbolContainer = C("div"),
 		C("div", ["class", "addAlmacenContainer"], C("button", ["class", "btn btn-primary", "onclick", AddAlmacen], "Añadir Almacén")),
-		PieGuardarCancelar("Guardar cambios", null, "Cancelar", popups.closePopup, false)
+		PieGuardarCancelar("Guardar cambios", Guardar, "Cancelar", popups.closePopup, false)
 	));
 	
 	var almacenes = JSON.parse(JSON.stringify(lista.almacenes));
@@ -491,10 +497,10 @@ function ListarAlmacenesSecciones() {
 		DrawAlmacen(almacenes[i]);
 	}
 	
-	function GetFirstFreeID(ids) {
-		var id = 1;
-		while (ids.indexOf(id) !== -1) id++;
-		return id;
+	
+	
+	function Guardar() {
+		
 	}
 	
 	function AddAlmacen() {
@@ -522,6 +528,8 @@ function ListarAlmacenesSecciones() {
 		);
 		
 		RedibujarSecciones();
+		
+		
 		
 		function addSeccion() {
 			var keys = GetKeysOfObjectAsSortedNumberArray(secciones).concat(seccionesUsados).filter(onlyUnique);

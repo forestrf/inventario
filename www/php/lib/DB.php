@@ -2,6 +2,7 @@
 
 require_once __DIR__.'/../config.php';
 require_once __DIR__.'/../functions/generic.php';
+
 // All the queries to the database are here. Change the database engine or the queries only have to be done here.
 class DB {
 	// Login data to access the database. change in the config file.
@@ -56,11 +57,12 @@ class DB {
 		}
 		
 		$result = $this->mysqli->query($query, MYSQLI_USE_RESULT);
-		if (strpos($query, 'INSERT') !== false) {
+		if ($result === true && strpos($query, 'INSERT') !== false) {
 			$this->LAST_MYSQL_ID = $this->mysqli->insert_id;
 		} else {
 			$this->LAST_MYSQL_ID = null;
 		}
+		
 		if ($result === false || $result === true) {
 			if($this->d) $this->debug('<span class="info">query</span>: <span class="query">'.$this->query_debug_str($query)."</span>\r\n<span class='info'>result</span>: <b class=\"".($result?'ok">TRUE':'fail">FALSE ('.$this->mysqli->error.')')."</b>\r\n");
 			return $result;
@@ -134,10 +136,13 @@ class DB {
 		$id = mysql_escape_mimic($id);
 		return $this->query("SELECT * FROM objeto WHERE id = {$id}");
 	}
-	
 	function get_objeto_secciones($id_objeto) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		return $this->query("SELECT id_seccion, cantidad FROM objeto_seccion WHERE id_objeto = {$id_objeto}");
+	}
+	function get_file($file_index) {
+		$file_index = mysql_escape_mimic($file_index);
+		return $this->query("SELECT * FROM files WHERE id = '$file_index'");
 	}
 	
 	function add_file($mimetype, $blob, &$file_index) {
@@ -146,12 +151,7 @@ class DB {
 		$blob = mysql_escape_mimic($blob);
 		return $this->query("INSERT INTO files (id, mimetype, bin) VALUES ('$file_index', '$mimetype', '$blob')");
 	}
-	function get_file($file_index) {
-		$file_index = mysql_escape_mimic($file_index);
-		return $this->query("SELECT * FROM files WHERE id = '$file_index'");
-	}
-	
-	function add_object() {
+	function add_empty_object() {
 		return $this->query("INSERT INTO objeto () VALUES ()");
 	}
 	function remove_object($id_objeto) {
@@ -194,13 +194,13 @@ class DB {
 		}
 		return false;
 	}
-	
 	private function objeto_update_historio_cantidades($id_objeto) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		return $this->query("INSERT INTO `historico_objeto` (id_objeto, fecha, cantidad) "
 			. "SELECT id_objeto, NOW(), SUM(`cantidad`) FROM `objeto_seccion` WHERE `objeto_seccion`.`id_objeto` = $id_objeto");
 	}
 }
+
 // Copy of mysql_real_escape_string to use it without an opened connection.
 // http://es1.php.net/mysql_real_escape_string
 function mysql_escape_mimic($inp) {

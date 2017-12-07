@@ -167,7 +167,7 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'create-empty-object':
-			if ($db->add_object()) {
+			if ($db->add_empty_object()) {
 				echo json_encode(array(
 					"STATUS" => "OK",
 					"MESSAGE" => $db->LAST_MYSQL_ID
