@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 07-12-2017 a las 12:14:52
+-- Tiempo de generación: 11-12-2017 a las 11:30:40
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -25,27 +25,6 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `acceso`
---
-
-CREATE TABLE `acceso` (
-  `clave` text COLLATE utf8_bin NOT NULL COMMENT 'password',
-  `fecha` date NOT NULL COMMENT 'cuando se creó',
-  `descripcion` text COLLATE utf8_bin NOT NULL COMMENT 'Para o por qué se creó esta clave con privilegios',
-  `admin_clave` tinyint(1) NOT NULL COMMENT 'Permisos para crear y borrar claves. La clave maestra se encuentra en un php fuera de la base de datos',
-  `admin_almacen` tinyint(1) NOT NULL COMMENT 'crear, modificar y borrar almacenes y secciones',
-  `admin_objeto` tinyint(1) NOT NULL COMMENT 'crear, modificar y borrar objetos',
-  `admin_etiquetas` tinyint(1) NOT NULL COMMENT 'crear, modificar y borrar etiquetas para los objetos',
-  `admin_cantidad` tinyint(1) NOT NULL COMMENT 'cambiar cantidades de objetos en cualquier almacen'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
---
--- RELACIONES PARA LA TABLA `acceso`:
---
-
--- --------------------------------------------------------
-
---
 -- Estructura de tabla para la tabla `almacen`
 --
 
@@ -58,26 +37,106 @@ CREATE TABLE `almacen` (
 -- RELACIONES PARA LA TABLA `almacen`:
 --
 
+--
+-- Disparadores `almacen`
+--
+DELIMITER $$
+CREATE TRIGGER `almacen_delete` AFTER DELETE ON `almacen` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, T1)
+VALUES
+("DELETE ALMACEN", OLD.id, OLD.nombre)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `almacen_insert` AFTER INSERT ON `almacen` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, T1)
+VALUES
+("INSERT ALMACEN", NEW.id, NEW.nombre)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `almacen_update` AFTER UPDATE ON `almacen` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, T1, T2)
+VALUES
+("UPDATE ALMACEN", NEW.id, OLD.nombre, NEW.nombre)
+$$
+DELIMITER ;
+
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `files`
+-- Estructura de tabla para la tabla `file`
 --
 
-CREATE TABLE `files` (
+CREATE TABLE `file` (
   `id` varchar(32) COLLATE utf8_bin NOT NULL COMMENT 'md5 del blob',
   `bin` mediumblob,
   `mimetype` varchar(32) COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
--- TIPOS MIME PARA LA TABLA `files`:
+-- TIPOS MIME PARA LA TABLA `file`:
 --   `bin`
 --       `Image_JPEG`
 --
 
 --
--- RELACIONES PARA LA TABLA `files`:
+-- RELACIONES PARA LA TABLA `file`:
+--
+
+--
+-- Disparadores `file`
+--
+DELIMITER $$
+CREATE TRIGGER `file_delete` AFTER DELETE ON `file` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, B1, T1)
+VALUES
+("DELETE FILE", OLD.id, OLD.bin, OLD.mimetype)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `file_insert` AFTER INSERT ON `file` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, B1, T1)
+VALUES
+("INSERT FILE", NEW.id, NEW.bin, NEW.mimetype)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `file_update` AFTER UPDATE ON `file` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, B1, B2, T1, T2)
+VALUES
+("UPDATE FILE", NEW.id, OLD.bin, NEW.bin, OLD.mimetype, NEW.mimetype)
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `historico`
+--
+
+CREATE TABLE `historico` (
+  `ID` int(11) NOT NULL,
+  `Fecha` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `ACCION` text COLLATE utf8_bin NOT NULL,
+  `T1` text COLLATE utf8_bin,
+  `T2` text COLLATE utf8_bin,
+  `T3` text COLLATE utf8_bin,
+  `T4` text COLLATE utf8_bin,
+  `T5` text COLLATE utf8_bin,
+  `T6` text COLLATE utf8_bin,
+  `I1` int(11) DEFAULT NULL,
+  `I2` int(11) DEFAULT NULL,
+  `I3` int(11) DEFAULT NULL,
+  `I4` int(11) DEFAULT NULL,
+  `I5` int(11) DEFAULT NULL,
+  `I6` int(11) DEFAULT NULL,
+  `B1` blob,
+  `B2` blob
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Toda acción INSERT, DELETE y UPDATE deben de crear una entrada en esta tabla con la consulta realizada y una consulta que desharía el cambio. Ninguna fila debe de borrarse';
+
+--
+-- RELACIONES PARA LA TABLA `historico`:
 --
 
 -- --------------------------------------------------------
@@ -115,8 +174,41 @@ CREATE TABLE `objeto` (
 --
 -- RELACIONES PARA LA TABLA `objeto`:
 --   `imagen`
---       `files` -> `id`
+--       `file` -> `id`
 --
+
+--
+-- Disparadores `objeto`
+--
+DELIMITER $$
+CREATE TRIGGER `objeto_delete` AFTER DELETE ON `objeto` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, T1, I2, T2, T3)
+VALUES
+("DELETE OBJETO", OLD.id, OLD.nombre, OLD.minimo_alerta, OLD.imagen, OLD.tags)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `objeto_insert` AFTER INSERT ON `objeto` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, T1, I2, T2, T3)
+VALUES
+("INSERT OBJETO", NEW.id, NEW.nombre, NEW.minimo_alerta, NEW.imagen, NEW.tags)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `objeto_update` AFTER UPDATE ON `objeto` FOR EACH ROW INSERT INTO historico
+(ACCION, I1,
+ T1, T2,
+ I2, I3,
+ T3, T4,
+ T5, T6)
+VALUES
+("UPDATE OBJETO", NEW.id,
+ OLD.nombre, NEW.nombre,
+ OLD.minimo_alerta, NEW.minimo_alerta,
+ OLD.imagen, NEW.imagen,
+ OLD.tags, NEW.tags)
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -138,6 +230,31 @@ CREATE TABLE `objeto_seccion` (
 --       `seccion` -> `id`
 --
 
+--
+-- Disparadores `objeto_seccion`
+--
+DELIMITER $$
+CREATE TRIGGER `objeto_seccion_delete` AFTER DELETE ON `objeto_seccion` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, I2, I3)
+VALUES
+("DELETE OBJETO_SECCION", OLD.id_objeto, OLD.id_seccion, OLD.cantidad)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `objeto_seccion_insert` AFTER INSERT ON `objeto_seccion` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, I2, I3)
+VALUES
+("INSERT OBJETO_SECCION", NEW.id_objeto, NEW.id_seccion, NEW.cantidad)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `objeto_seccion_update` AFTER UPDATE ON `objeto_seccion` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, I2, I3 ,I4, I5, I6)
+VALUES
+("UPDATE OBJETO_SECCION", OLD.id_objeto, NEW.id_objeto, OLD.id_seccion, NEW.id_seccion, OLD.cantidad, NEW.cantidad)
+$$
+DELIMITER ;
+
 -- --------------------------------------------------------
 
 --
@@ -157,6 +274,31 @@ CREATE TABLE `seccion` (
 --
 
 --
+-- Disparadores `seccion`
+--
+DELIMITER $$
+CREATE TRIGGER `seccion_delete` AFTER DELETE ON `seccion` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, T1, I2)
+VALUES
+("DELETE SECCION", OLD.id, OLD.nombre, OLD.id_almacen)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `seccion_insert` AFTER INSERT ON `seccion` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, T1, I2)
+VALUES
+("INSERT SECCION", NEW.id, NEW.nombre, NEW.id_almacen)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `seccion_update` AFTER UPDATE ON `seccion` FOR EACH ROW INSERT INTO historico
+(ACCION, I1, T1, T2, I2, I3)
+VALUES
+("UPDATE SECCION", NEW.id, OLD.nombre, NEW.nombre, OLD.id_almacen, NEW.id_almacen)
+$$
+DELIMITER ;
+
+--
 -- Índices para tablas volcadas
 --
 
@@ -167,10 +309,16 @@ ALTER TABLE `almacen`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indices de la tabla `files`
+-- Indices de la tabla `file`
 --
-ALTER TABLE `files`
+ALTER TABLE `file`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indices de la tabla `historico`
+--
+ALTER TABLE `historico`
+  ADD PRIMARY KEY (`ID`);
 
 --
 -- Indices de la tabla `historico_objeto`
@@ -209,6 +357,11 @@ ALTER TABLE `seccion`
 ALTER TABLE `almacen`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 --
+-- AUTO_INCREMENT de la tabla `historico`
+--
+ALTER TABLE `historico`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+--
 -- AUTO_INCREMENT de la tabla `objeto`
 --
 ALTER TABLE `objeto`
@@ -232,7 +385,7 @@ ALTER TABLE `historico_objeto`
 -- Filtros para la tabla `objeto`
 --
 ALTER TABLE `objeto`
-  ADD CONSTRAINT `objeto_ibfk_1` FOREIGN KEY (`imagen`) REFERENCES `files` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `objeto_ibfk_1` FOREIGN KEY (`imagen`) REFERENCES `file` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `objeto_seccion`
@@ -262,7 +415,7 @@ USE `phpmyadmin`;
 --
 
 --
--- Metadatos para la tabla files
+-- Metadatos para la tabla file
 --
 
 --

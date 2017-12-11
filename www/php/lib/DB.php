@@ -142,14 +142,14 @@ class DB {
 	}
 	function get_file($file_index) {
 		$file_index = mysql_escape_mimic($file_index);
-		return $this->query("SELECT * FROM files WHERE id = '$file_index'");
+		return $this->query("SELECT * FROM file WHERE id = '$file_index'");
 	}
 	
 	function add_file($mimetype, $blob, &$file_index) {
 		$file_index = md5($blob);
 		$mimetype = mysql_escape_mimic($mimetype);
 		$blob = mysql_escape_mimic($blob);
-		return $this->query("INSERT INTO files (id, mimetype, bin) VALUES ('$file_index', '$mimetype', '$blob')");
+		return $this->query("INSERT INTO file (id, mimetype, bin) VALUES ('$file_index', '$mimetype', '$blob')");
 	}
 	function add_empty_object() {
 		return $this->query("INSERT INTO objeto () VALUES ()");
