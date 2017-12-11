@@ -455,9 +455,7 @@ function addObjeto() {
 			lista.objetos[id].DOM.onclick();
 		}, console.log);
 		
-	}, function(msg) {
-		console.log(msg);
-	});
+	}, console.log);
 }
 
 function GetImagenObjeto(objeto) {
@@ -519,7 +517,7 @@ function ListarAlmacenesSecciones() {
 		C(arbolContainer,
 			contenedor = C("div", ["class", "almacen"],
 				C("div", ["class", "header first"], "Almacén"),
-				C("input", ["type", "text", "class", "form-control", "value", almacen.nombre]),
+				C("input", ["type", "text", "class", "form-control", "value", almacen.nombre, "onchange", OnChangeInput, "onkeyup", OnChangeInput]),
 				C("div", ["class", "header"], "Secciones"),
 				seccionesContainer = C("div"),
 				C("div", ["class", "btn addseccion btn-primary", "onclick", addSeccion], "Añadir Sección"),
@@ -530,6 +528,10 @@ function ListarAlmacenesSecciones() {
 		RedibujarSecciones();
 		
 		
+		
+		function OnChangeInput(ev) {
+			almacen.nombre = ev.target.value;
+		}
 		
 		function addSeccion() {
 			var keys = GetKeysOfObjectAsSortedNumberArray(secciones).concat(seccionesUsados).filter(onlyUnique);
@@ -543,6 +545,17 @@ function ListarAlmacenesSecciones() {
 			RedibujarSecciones();
 		}
 		
+		function borrarAlmacen() {
+			delete almacenes[almacen.id];
+			var seccionesToDelete = [];
+			for (var i in secciones)
+				if (secciones[i].id_almacen == almacen.id)
+					seccionesToDelete.push(i);
+			for (var i = 0; i < seccionesToDelete.length; i++)
+				delete secciones[seccionesToDelete[i]];
+			arbolContainer.removeChild(contenedor);
+		}
+		
 		function RedibujarSecciones() {
 			seccionesContainer.innerHTML = "";
 			
@@ -554,7 +567,7 @@ function ListarAlmacenesSecciones() {
 								C("input", ["type", "text", "class", "form-control", "value", seccion.nombre, "onchange", OnChangeInput, "onkeyup", OnChangeInput]),
 								C("div", ["class", "btn btn-danger", "onclick", OnRemoveSeccion], "X")
 							)
-						);						
+						);
 						
 						function OnChangeInput(ev) {
 							seccion.nombre = ev.target.value;
@@ -566,17 +579,6 @@ function ListarAlmacenesSecciones() {
 					})(secciones[j]);
 				}
 			}
-		}
-		
-		function borrarAlmacen() {
-			delete almacenes[almacen.id];
-			var seccionesToDelete = [];
-			for (var i in secciones)
-				if (secciones[i].id_almacen == almacen.id)
-					seccionesToDelete.push(i);
-			for (var i = 0; i < seccionesToDelete.length; i++)
-				delete secciones[seccionesToDelete[i]];
-			arbolContainer.removeChild(contenedor);
 		}
 	}
 }
