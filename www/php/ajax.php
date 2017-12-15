@@ -194,6 +194,16 @@ if (isset($_GET['action'])) {
 				}
 			}
 			break;
+		case 'update-almacenes-secciones':
+			if (checkOrExit(isset($_POST["almacenes"]), "No se ha enviado el listado de almacenes. Por favor comunica este error a un encargado de la app")
+				&& checkOrExit(isset($_POST["secciones"]), "No se ha enviado el listado de secciones. Por favor comunica este error a un encargado de la app")) {
+				$almacenes = json_decode($_POST["almacenes"]);
+				$secciones = json_decode($_POST["secciones"]);
+				print_r($almacenes);
+				print_r($secciones);
+				
+			}
+			break;
 	}
 }
 

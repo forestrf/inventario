@@ -498,7 +498,12 @@ function ListarAlmacenesSecciones() {
 	
 	
 	function Guardar() {
-		
+		AJAX('php/ajax.php', 'action=update-almacenes-secciones&almacenes=' + JSON.stringify(almacenes) + "&secciones=" + JSON.stringify(secciones), function(msg) {
+			console.log(msg);
+			// Redibujar listado completo de objetos y actualizar listado de almacenes
+		}, console.log);
+		console.log(almacenes);
+		console.log(secciones);
 	}
 	
 	function AddAlmacen() {
