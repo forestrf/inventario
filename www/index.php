@@ -291,7 +291,7 @@ function edit(objeto, updateListObject) {
 			),
 			C("div", ["class", "clear"])
 		),
-		PieGuardarCancelar("Guardar cambios", guardarCambios, "Cerrar", popups.closePopup, true, "Borrar", function() { abrirBorrarVentana(objetoLocal.onRemove) })
+		PieGuardarCancelar("Guardar cambios", guardarCambios, "Cerrar", popups.closePopup, true, "Borrar", function() { abrirBorrarVentana("confirmBorrar", "btn-warning", C("div", "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"), objetoLocal.onRemove) })
 	);
 	
 	for (var i = 0; i < objetoLocal.secciones.length; i++) {
@@ -432,11 +432,11 @@ function edit(objeto, updateListObject) {
 	}
 }
 	
-function abrirBorrarVentana(onRemoveCallback) {
-	popups.showPopup(C("div", ["class", "confirmBorrar"],
-		C("div", ["class", "titulo"], "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"),
+function abrirBorrarVentana(popupClass, btnClass, msg, onRemoveCallback) {
+	popups.showPopup(C("div", ["class", popupClass],
+		C("div", ["class", "titulo"], msg),
 		C("div", ["class", "botonesAceptarCancelar"],
-			C("button", ["type", "button", "class", "btn btn-danger borra", "onclick", onRemoveCallback], "Borrar"),
+			C("button", ["type", "button", "class", "btn " + btnClass + " borra", "onclick", onRemoveCallback], "Borrar"),
 			C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", popups.closePopup], "Cancelar")
 		)
 	));
@@ -497,10 +497,31 @@ function ListarAlmacenesSecciones() {
 	
 	
 	
-	function Guardar() {
-		AJAX('php/ajax.php', 'action=update-almacenes-secciones&almacenes=' + JSON.stringify(almacenes) + "&secciones=" + JSON.stringify(secciones), function(msg) {
+	function Guardar(forzar) {
+		var post = 'action=update-almacenes-secciones&almacenes=' + JSON.stringify(almacenes) + "&secciones=" + JSON.stringify(secciones);
+		if (typeof forzar !== undefined) post += "&forzar=" + forzar;
+		AJAX('php/ajax.php', post, function(msg) {
 			console.log(msg);
-			// Redibujar listado completo de objetos y actualizar listado de almacenes
+			var json = JSON.parse(msg.response);
+			console.log(json);
+			if (json.STATUS === "ASK") {
+				var contenedor = C("div");
+				for (var i in json.MESSAGE) {
+					C(contenedor, C("div", ["class", "aBorrarNombre"], "Objeto: ", C("span", ["class", "var"], lista.objetos[i].nombre)));
+					for (var j in json.MESSAGE[i]) {
+						console.log(json.MESSAGE[i][j]);
+						C(contenedor, C("div", ["class", "aBorrarSeccionCantidad"],
+							"Sección: ",
+							C("span", ["class", "var"], lista.secciones[json.MESSAGE[i][j].id_seccion].nombre),
+							", Stock: ",
+							C("span", ["class", "var"], json.MESSAGE[i][j].cantidad)
+						));
+					}
+				}
+				abrirBorrarVentana("confirmBorrar", "btn-warning", C("div", C("div", "Se van a borrar secciones que contienen objetos. El Stock de los siguientes objetos se borrará:"), contenedor), function() { popups.closePopup(); Guardar(true) });
+			} else {
+				// Redibujar listado completo de objetos y actualizar listado de almacenes
+			}
 		}, console.log);
 		console.log(almacenes);
 		console.log(secciones);

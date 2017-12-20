@@ -263,14 +263,6 @@ div.buscador {
 	max-width: 180px !important;
 }
 
-.popup > .msg .botonesAceptarCancelar {
-	margin-top: 10px;
-	padding-top: 30px;
-	padding-bottom: 15px;
-	text-align: center;
-	background-color: #d7ffa4;
-	position: relative;
-}
 .popup > .msg .confirmBorrar {
 	background-color: #570909;
 }
@@ -278,10 +270,41 @@ div.buscador {
 	background-color: #781d1d;
 }
 .popup > .msg .confirmBorrar .titulo {
-	color: #eee;
 	text-align: center;
 	font-size: 20px;
 	padding: 30px;
+	color: #eee;
+}
+
+/*Error*/
+.popup > .msg .confirmError {
+	background-color: #570909;
+}
+.popup > .msg .confirmError .botonesAceptarCancelar {
+	background-color: #781d1d;
+}
+
+/*Warning*/
+.popup > .msg .confirmBorrar {
+	background-color: #575609;
+}
+.popup > .msg .confirmBorrar .botonesAceptarCancelar {
+	background-color: #78771d;
+}
+
+.popup > .msg .titulo {
+	text-align: center;
+	font-size: 20px;
+	padding: 30px;
+	color: #eee;
+}
+.popup > .msg .botonesAceptarCancelar {
+	background-color: #d7ffa4;
+	padding-bottom: 15px;
+	padding-top: 30px;
+	text-align: center;
+	margin-top: 10px;
+	position: relative;
 }
 .popup > .msg .botonesAceptarCancelar button {
 	margin: 0 5px;
@@ -397,6 +420,25 @@ div.buscador {
 }
 .has-help:hover .desc img {
 	margin-top: 10px;
+}
+
+
+.aBorrarNombre {
+	border: 1px solid #fff;
+	margin-top: 1em;
+	font-size: .8em;
+	background-color: #000;
+}
+.aBorrarSeccionCantidad {
+	border: 1px solid #fff;
+	border-top: 0;
+	font-size: .8em;
+	background-color: #555;
+}
+.aBorrarNombre .var,
+.aBorrarSeccionCantidad .var {
+	font-size: .8em;
+	font-family: verdana;
 }
 
 

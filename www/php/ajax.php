@@ -197,10 +197,49 @@ if (isset($_GET['action'])) {
 		case 'update-almacenes-secciones':
 			if (checkOrExit(isset($_POST["almacenes"]), "No se ha enviado el listado de almacenes. Por favor comunica este error a un encargado de la app")
 				&& checkOrExit(isset($_POST["secciones"]), "No se ha enviado el listado de secciones. Por favor comunica este error a un encargado de la app")) {
-				$almacenes = json_decode($_POST["almacenes"]);
-				$secciones = json_decode($_POST["secciones"]);
-				print_r($almacenes);
-				print_r($secciones);
+				$new_alm = json_decode($_POST["almacenes"], 1);
+				$new_sec = json_decode($_POST["secciones"], 1);
+				
+				// Obtener información de los objetos, almacenes y secciones actuales
+				$old_obj = $db->get_objetos();
+				foreach ($old_obj as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
+				foreach ($db->get_almacenes() as &$almacen) $old_alm[$almacen["id"]] = &$almacen;
+				foreach ($db->get_secciones() as &$seccion) $old_sec[$seccion["id"]] = &$seccion;
+				
+				if (!isset($_POST["forzar"]) || $_POST["forzar"] !== "OK") {
+					// Comprobar si alguno de los objetos usa una sección que ya no existe
+					$obj_sec_borradas = array();
+					foreach ($old_obj as &$obj) {
+						foreach ($obj["secciones"] as &$obj_sec) {
+							$encontrada = intval($obj_sec["cantidad"]) == 0;
+							if (!$encontrada) {
+								foreach ($new_sec as $sec_id => &$sec_content) {
+									if ($obj_sec["id_seccion"] == $sec_id) {
+										$encontrada = true;
+										break;
+									}
+								}
+							}
+							
+							if (!$encontrada) {
+								if (!isset($obj_sec_borradas[$obj["id"]])) $obj_sec_borradas[$obj["id"]] = [];
+								$obj_sec_borradas[$obj["id"]][] = $obj_sec;
+							}
+						}
+					}
+					
+					if (count($obj_sec_borradas) > 0) {
+						echo json_encode(array(
+							"STATUS" => "ASK",
+							"MESSAGE" => $obj_sec_borradas
+						));
+						exit;
+					}
+				}
+				
+				// Aplicar cambios
+				print_r($new_alm);
+				print_r($new_sec);
 				
 			}
 			break;
