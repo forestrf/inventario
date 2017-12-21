@@ -286,10 +286,10 @@ div.buscador {
 
 /*Warning*/
 .popup > .msg .confirmBorrar {
-	background-color: #575609;
+	background-color: #a1a100;
 }
 .popup > .msg .confirmBorrar .botonesAceptarCancelar {
-	background-color: #78771d;
+	background-color: #dbdb00;
 }
 
 .popup > .msg .titulo {

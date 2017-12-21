@@ -511,10 +511,8 @@ function ListarAlmacenesSecciones() {
 					for (var j in json.MESSAGE[i]) {
 						console.log(json.MESSAGE[i][j]);
 						C(contenedor, C("div", ["class", "aBorrarSeccionCantidad"],
-							"Sección: ",
-							C("span", ["class", "var"], lista.secciones[json.MESSAGE[i][j].id_seccion].nombre),
-							", Stock: ",
-							C("span", ["class", "var"], json.MESSAGE[i][j].cantidad)
+							"Sección: ", C("span", ["class", "var"], lista.secciones[json.MESSAGE[i][j].id_seccion].nombre),
+							", Stock: ", C("span", ["class", "var"], json.MESSAGE[i][j].cantidad)
 						));
 					}
 				}
