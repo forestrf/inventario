@@ -118,101 +118,104 @@ function fixObjetoFromJSON(objeto) {
 	return objeto;
 }
 
-AJAX('php/ajax.php?action=getinventario', null, function(msg) {
-	DrawObjeto = function(i) {
-		var objeto = lista.objetos[i];
-		var cantidad, tagsDOM, domObjetoEnLista;
-		return GeneraDomObjeto();
+function DrawObjectList() {
+	document.getElementById("inventario").innerHTML = "";
 
+	AJAX('php/ajax.php?action=getinventario', null, function(msg) {
+		DrawObjeto = function(i) {
+			var objeto = lista.objetos[i];
+			var cantidad, tagsDOM, domObjetoEnLista;
+			return GeneraDomObjeto();
+
+			
+			function GeneraDomObjeto() {
+				cantidad = GetCantidad(objeto);
+				domObjetoEnLista = C("button", ["class", "objeto obj-" + objeto.id, "onclick", function() { edit(objeto, updateListObject); }],
+					C("div", ["class", "titulo"],
+						C("div", ["class", "nombre"], objeto.nombre)
+					),
+					C("div", ["class", "img-container"],
+						C("img", ["class", "img img-" + objeto.id, "src", GetImagenObjeto(objeto)])
+					),
+					C("div", ["class", "info"],
+						C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
+						C("div", ["class", "minimo"], "Mínimo: ", objeto.minimo_alerta),
+						C("div", ["class", "tags"], "Tags: ", tagsDOM = C("span", ["class", "tags-list"]))
+					)
+				);
+				for (var j in objeto.tags) C(tagsDOM, C("span", objeto.tags[j]));
+				(cantidad < parseInt(objeto.minimo_alerta) ? AddClass : RemoveClass)(domObjetoEnLista, "alerta");
+				objeto.onRemove = onRemove;
+				return objeto.DOM = domObjetoEnLista;
+			}
+			
+			function updateListObject() {
+				AJAX('php/ajax.php?action=getinventarioitem&id=' + objeto.id, null, function(msg) {
+					lista.objetos[i] = objeto = fixObjetoFromJSON(JSON.parse(msg.response)[0]);
+					var aBorrar = domObjetoEnLista;
+					domObjetoEnLista.parentNode.insertBefore(GeneraDomObjeto(), aBorrar);
+					domObjetoEnLista.parentNode.removeChild(aBorrar);
+				}, console.log);
+			}
+			
+			function onRemove() {
+				AJAX('php/ajax.php', 'action=remove-object&id-object=' + objeto.id, function(msg) {
+					var json = JSON.parse(msg.response);
+					if (json.STATUS === "OK") {
+						domObjetoEnLista.parentNode.removeChild(domObjetoEnLista);
+						popups.closePopup();
+						popups.closePopup();
+					}
+				}, console.log);
+			}
+		}
 		
-		function GeneraDomObjeto() {
-			cantidad = GetCantidad(objeto);
-			domObjetoEnLista = C("button", ["class", "objeto obj-" + objeto.id, "onclick", function() { edit(objeto, updateListObject); }],
-				C("div", ["class", "titulo"],
-					C("div", ["class", "nombre"], objeto.nombre)
-				),
-				C("div", ["class", "img-container"],
-					C("img", ["class", "img img-" + objeto.id, "src", GetImagenObjeto(objeto)])
-				),
-				C("div", ["class", "info"],
-					C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
-					C("div", ["class", "minimo"], "Mínimo: ", objeto.minimo_alerta),
-					C("div", ["class", "tags"], "Tags: ", tagsDOM = C("span", ["class", "tags-list"]))
-				)
+		
+		lista = JSON.parse(msg.response);
+		
+		var objetosById = {};
+		for (var i in lista.objetos) {
+			objetosById[lista.objetos[i].id] = fixObjetoFromJSON(lista.objetos[i]);
+		}
+		lista.objetos = objetosById;
+		
+		// Dibujar toda la lista en el DOM
+		C(document.getElementById("inventario"), DrawInventory(lista));
+		
+		tagsArrayAutocomplete = GetAutocompleteTags(lista.objetos);
+		
+		// Preparar buscador
+		var buscador = document.getElementById("buscador");
+		buscador.onkeyup = buscador.onchange = function() {
+			FilterSearch.process(buscador.value, lista,
+				TestCustomKeyword,
+				function(DOM) { DOM.style.display = "unset"; },
+				function(DOM) { DOM.style.display = "none"; }
 			);
-			for (var j in objeto.tags) C(tagsDOM, C("span", objeto.tags[j]));
-			(cantidad < parseInt(objeto.minimo_alerta) ? AddClass : RemoveClass)(domObjetoEnLista, "alerta");
-			objeto.onRemove = onRemove;
-			return objeto.DOM = domObjetoEnLista;
+		};
+		
+		
+		
+		function DrawInventory(lista) {
+			contenedorListaObjetos = C("div");
+			for (var i in lista.objetos) C(contenedorListaObjetos, DrawObjeto(i));
+			return contenedorListaObjetos;
 		}
 		
-		function updateListObject() {
-			AJAX('php/ajax.php?action=getinventarioitem&id=' + objeto.id, null, function(msg) {
-				lista.objetos[i] = objeto = fixObjetoFromJSON(JSON.parse(msg.response)[0]);
-				var aBorrar = domObjetoEnLista;
-				domObjetoEnLista.parentNode.insertBefore(GeneraDomObjeto(), aBorrar);
-				domObjetoEnLista.parentNode.removeChild(aBorrar);
-			}, console.log);
+		function TestCustomKeyword(keyword, object) {
+			switch (keyword) {
+				case "minimo":
+					return object.minimo_alerta > GetCantidad(object);
+			}
 		}
 		
-		function onRemove() {
-			AJAX('php/ajax.php', 'action=remove-object&id-object=' + objeto.id, function(msg) {
-				var json = JSON.parse(msg.response);
-				if (json.STATUS === "OK") {
-					domObjetoEnLista.parentNode.removeChild(domObjetoEnLista);
-					popups.closePopup();
-					popups.closePopup();
-				}
-			}, console.log);
+		function GetAutocompleteTags(objetos) {
+			var arr = [];
+			for (var i in objetos) arr = arr.concat(objetos[i].tags.filter(function(x){ return arr.indexOf(x) === -1; }));
+			return arr
 		}
-	}
-	
-	
-	lista = JSON.parse(msg.response);
-	
-	var objetosById = {};
-	for (var i in lista.objetos) {
-		objetosById[lista.objetos[i].id] = fixObjetoFromJSON(lista.objetos[i]);
-	}
-	lista.objetos = objetosById;
-	
-	// Dibujar toda la lista en el DOM
-	C(document.getElementById("inventario"), DrawInventory(lista));
-	
-	tagsArrayAutocomplete = GetAutocompleteTags(lista.objetos);
-	
-	// Preparar buscador
-	var buscador = document.getElementById("buscador");
-	buscador.onkeyup = buscador.onchange = function() {
-		FilterSearch.process(buscador.value, lista,
-			TestCustomKeyword,
-			function(DOM) { DOM.style.display = "unset"; },
-			function(DOM) { DOM.style.display = "none"; }
-		);
-	};
-	
-	
-	
-	function DrawInventory(lista) {
-		contenedorListaObjetos = C("div");
-		for (var i in lista.objetos) C(contenedorListaObjetos, DrawObjeto(i));
-		return contenedorListaObjetos;
-	}
-	
-	function TestCustomKeyword(keyword, object) {
-		switch (keyword) {
-			case "minimo":
-				return object.minimo_alerta > GetCantidad(object);
-		}
-	}
-	
-	function GetAutocompleteTags(objetos) {
-		var arr = [];
-		for (var i in objetos) arr = arr.concat(objetos[i].tags.filter(function(x){ return arr.indexOf(x) === -1; }));
-		return arr
-	}
-}, console.log);
-
+	}, console.log);
+}
 
 	
 function GetCantidad(objeto) {
@@ -519,6 +522,14 @@ function ListarAlmacenesSecciones() {
 				abrirBorrarVentana("confirmBorrar", "btn-warning", C("div", C("div", "Se van a borrar secciones que contienen objetos. El Stock de los siguientes objetos se borrará:"), contenedor), function() { popups.closePopup(); Guardar(true) });
 			} else {
 				// Redibujar listado completo de objetos y actualizar listado de almacenes
+				popups.closePopup();
+				DrawObjectList();
+				popups.showPopup(C("div",
+					C("div", ["class", "titulo", "style", "color: #222"], json.MESSAGE),
+					C("div", ["class", "botonesAceptarCancelar"],
+						C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", popups.closePopup], "Cerrar")
+					)
+				));
 			}
 		}, console.log);
 		console.log(almacenes);
@@ -606,6 +617,8 @@ function ListarAlmacenesSecciones() {
 		}
 	}
 }
+
+DrawObjectList();
 </script>
 
 

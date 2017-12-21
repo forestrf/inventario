@@ -240,26 +240,63 @@ if (isset($_GET['action'])) {
 				// Borrar secciones
 				$new_sec_plain = array();
 				foreach ($new_sec as $sec_id => &$_) $new_sec_plain[] = $sec_id;
-				$db->remove_secciones_not_in($new_sec_plain);
-				
-				// Borrar almacenes
-				$new_alm_plain = array();
-				foreach ($new_alm as $alm_id => &$_) $new_alm_plain[] = $alm_id;
-				$db->remove_almacenes_not_in($new_alm_plain);
-				
-				// Actualizar nombre almacenes + insertar nuevos almacenes
-				foreach ($new_alm as &$alm)
-					$db->add_or_update_almacen($alm["id"], $alm["nombre"]);
-				
-				// Actualizar nombre secciones + insertar nuevas secciones
-				foreach ($new_sec as &$sec)
-					$db->add_or_update_seccion($sec["id"], $sec["nombre"], $sec["id_almacen"]);
+				if ($db->remove_secciones_not_in($new_sec_plain)) {
 					
+					// Borrar almacenes
+					$new_alm_plain = array();
+					foreach ($new_alm as $alm_id => &$_) $new_alm_plain[] = $alm_id;
+					if ($db->remove_almacenes_not_in($new_alm_plain)) {
+						
+						$error = false;
+						
+						// Actualizar nombre almacenes + insertar nuevos almacenes
+						foreach ($new_alm as &$alm) {
+							if (!$db->add_or_update_almacen($alm["id"], $alm["nombre"])) {
+								$error = true;
+								break;
+							}
+						}
+						if ($error) {
+							echo json_encode(array(
+								"STATUS" => "FAIL",
+								"MESSAGE" => "Ha surgido un fallo al actualizar e instertar los nuevos almacenes: " . $db->mysqli->error
+							));
+							exit;
+						}
+						
+						// Actualizar nombre secciones + insertar nuevas secciones
+						foreach ($new_sec as &$sec) {
+							if (!$db->add_or_update_seccion($sec["id"], $sec["nombre"], $sec["id_almacen"])) {
+								$error = true;
+								break;
+							}
+						}
+						if ($error) {
+							echo json_encode(array(
+								"STATUS" => "FAIL",
+								"MESSAGE" => "Ha surgido un fallo al actualizar e instertar las nuevas secciones: " . $db->mysqli->error
+							));
+							exit;
+						}
+					} else {						
+						echo json_encode(array(
+							"STATUS" => "FAIL",
+							"MESSAGE" => "Ha surgido un fallo al borrar almacenes: " . $db->mysqli->error
+						));
+						exit;
+					}
+				} else {						
+					echo json_encode(array(
+						"STATUS" => "FAIL",
+						"MESSAGE" => "Ha surgido un fallo al borrar secciones: " . $db->mysqli->error
+					));
+						exit;
+				}
+				
 				echo json_encode(array(
 					"STATUS" => "OK",
-					"MESSAGE" => ""
+					"MESSAGE" => "Actualizado con éxito."
 				));
-				exit;
 			}
 			break;
 	}

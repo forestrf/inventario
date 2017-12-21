@@ -196,16 +196,17 @@ class DB {
 	}
 	
 	function remove_secciones_not_in($new_sections) {
-		return $this->query("REMOVE FROM seccion WHERE id NOT IN (" . implode(", ", array_map(function($v) { return mysql_escape_mimic($v); }, $new_sections)) . ")");
+		return $this->query("DELETE FROM seccion WHERE id NOT IN (" . implode(", ", array_map(function($v) { return mysql_escape_mimic($v); }, $new_sections)) . ")");
 	}
 	function remove_almacenes_not_in($new_almacenes) {
-		return $this->query("REMOVE FROM almacen WHERE id NOT IN (" . implode(", ", array_map(function($v) { return mysql_escape_mimic($v); }, $new_almacenes)) . ")");
+		return $this->query("DELETE FROM almacen WHERE id NOT IN (" . implode(", ", array_map(function($v) { return mysql_escape_mimic($v); }, $new_almacenes)) . ")");
 	}
 	function add_or_update_almacen($id, $nombre) {
 		$id = mysql_escape_mimic($id);
 		$nombre = mysql_escape_mimic($nombre);
 		return $this->query("INSERT INTO almacen (id, nombre) VALUES ('$id', '$nombre') ON DUPLICATE KEY UPDATE nombre = '$nombre'");
 	}
+	// Se puede actualizar una sección moviéndola a otro almacen, aunque la interfaz web todavía no lo soporta
 	function add_or_update_seccion($id, $nombre, $id_almacen) {
 		$id = mysql_escape_mimic($id);
 		$nombre = mysql_escape_mimic($nombre);
