@@ -67,7 +67,7 @@ if (isset($_GET['action'])) {
 				
 				$file_index = "";
 				if ($db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index)
-					&& $db->set_object_image($_POST["id-object"], $file_index)) {
+					&& $db->set_objeto_image($_POST["id-object"], $file_index)) {
 					echo json_encode(array(
 						"STATUS" => "OK",
 						"MESSAGE" => "Imagen actualizada"
@@ -87,7 +87,7 @@ if (isset($_GET['action'])) {
 				&& checkOrExit(isset($_POST["nombre"]), "No se ha enviado un nombre. Por favor comunica este error a un encargado de la app")
 				&& checkOrExit(strlen($_POST["nombre"]) > 0, "El nombre es demasiado corto")) {
 				
-				if ($db->set_object_name($_POST["id-object"], $_POST["nombre"])) {				
+				if ($db->set_objeto_name($_POST["id-object"], $_POST["nombre"])) {				
 					echo json_encode(array(
 						"STATUS" => "OK",
 						"MESSAGE" => "Nombre actualizado"
@@ -106,7 +106,7 @@ if (isset($_GET['action'])) {
 				&& checkOrExit(isset($_POST["minimo"]), "No se ha enviado una cantidad mínima. Por favor comunica este error a un encargado de la app")
 				&& checkOrExit(intval($_POST["minimo"]) >= 0, "El valor mínimo debe de ser un número mayor o igual que cero")) {
 				
-				if ($db->set_object_minimo($_POST["id-object"], $_POST["minimo"])) {
+				if ($db->set_objeto_minimo($_POST["id-object"], $_POST["minimo"])) {
 					echo json_encode(array(
 						"STATUS" => "OK",
 						"MESSAGE" => "Mínimo actualizado"
@@ -135,7 +135,7 @@ if (isset($_GET['action'])) {
 					}
 				}
 				
-				if ($db->set_object_cantidades($_POST["id-object"], $cantidadesFiltradas)) {				
+				if ($db->set_objeto_cantidades($_POST["id-object"], $cantidadesFiltradas)) {				
 					echo json_encode(array(
 						"STATUS" => "OK",
 						"MESSAGE" => "Cantidades actualizadas"
@@ -153,7 +153,7 @@ if (isset($_GET['action'])) {
 				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
 				&& checkOrExit(isset($_POST["tags"]), "No se ha enviado una lista de tags. Por favor comunica este error a un encargado de la app")) {
 				
-				if ($db->set_object_tags($_POST["id-object"], $_POST["tags"])) {				
+				if ($db->set_objeto_tags($_POST["id-object"], $_POST["tags"])) {				
 					echo json_encode(array(
 						"STATUS" => "OK",
 						"MESSAGE" => "Tags actualizados"
@@ -167,7 +167,7 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'create-empty-object':
-			if ($db->add_empty_object()) {
+			if ($db->add_empty_objeto()) {
 				echo json_encode(array(
 					"STATUS" => "OK",
 					"MESSAGE" => $db->LAST_MYSQL_ID
@@ -181,7 +181,7 @@ if (isset($_GET['action'])) {
 			break;
 		case 'remove-object':
 			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")) {
-				if ($db->remove_object($_POST["id-object"])) {
+				if ($db->remove_objeto($_POST["id-object"])) {
 					echo json_encode(array(
 						"STATUS" => "OK",
 						"MESSAGE" => "Objeto borrado"

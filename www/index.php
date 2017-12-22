@@ -332,12 +332,12 @@ function edit(objeto, updateListObject) {
 		var seccion = lista.secciones[seccionObjeto.id_seccion];
 		var almacen = lista.almacenes[seccion.id_almacen];
 		var rId = random_id_generator();
-		var seccionesSelect, almacenesSelect;
+		var seccionesSelect, almacenesSelect, cantidadInput;
 		var cantidadBlock = C("div", ["class", "cantidad-block"],
 			C("div", ["class", "contenido c1"],
 				almacenesSelect = C("select", ["name", "almacen-" + rId]),
 				seccionesSelect = C("select", ["name", "seccion-" + rId]),
-				C("input", ["name", "cantidad-" + rId, "type", "text", "value", seccionObjeto.cantidad, "class", "form-control", "onchange", function(ev) {
+				cantidadInput = C("input", ["name", "cantidad-" + rId, "type", "text", "value", seccionObjeto.cantidad, "class", "form-control", "onchange", function(ev) {
 					onPositiveNumberChange(ev);
 					seccionObjeto.cantidad = ev.target.value;
 					UpdateROCantidad();
@@ -355,7 +355,10 @@ function edit(objeto, updateListObject) {
 		ToOptions(seccionesSelect, filterSecciones(almacen), seccion);
 		almacenesSelect.onchange = function(ev) {
 			almacen = lista.almacenes[ev.target.value];
-			ToOptions(seccionesSelect, filterSecciones(almacen), seccion);
+			var seccionesDisponibles = filterSecciones(almacen);
+			ToOptions(seccionesSelect, seccionesDisponibles, seccion);
+			cantidadInput.disabled = Object.keys(seccionesDisponibles).length == 0;
+			if (cantidadInput.disabled) cantidadInput.value = "0";
 			
 			var event = new Event('change');
 			seccionesSelect.dispatchEvent(event);
@@ -378,7 +381,7 @@ function edit(objeto, updateListObject) {
 		}
 		for (var i in elementos) {
 			var option = C("option", ["value", elementos[i].id], elementos[i].nombre);
-			if (selected.id === elementos[i].id) option.setAttribute("selected", 1);
+			if (typeof selected !== "undefined" && selected.id === elementos[i].id) option.setAttribute("selected", 1);
 			C(parentElement, option);
 		}
 	}
@@ -430,7 +433,7 @@ function edit(objeto, updateListObject) {
 		form.poked = timeouts.add(function() {
 			RemoveClass(form, className);
 			if (msgDOM !== null) form.removeChild(msgDOM);
-			form.poked = undefined;
+			if (typeof form.poked !== "undefined") delete form.poked;
 		}, 10000);
 	}
 }

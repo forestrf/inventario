@@ -151,35 +151,35 @@ class DB {
 		$blob = mysql_escape_mimic($blob);
 		return $this->query("INSERT INTO file (id, mimetype, bin) VALUES ('$file_index', '$mimetype', '$blob')");
 	}
-	function add_empty_object() {
+	function add_empty_objeto() {
 		return $this->query("INSERT INTO objeto () VALUES ()");
 	}
-	function remove_object($id_objeto) {
+	function remove_objeto($id_objeto) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		return $this->query("DELETE FROM objeto WHERE id = '$id_objeto'");
 	}
-	function set_object_image($id_objeto, $id_file) {
+	function set_objeto_image($id_objeto, $id_file) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$id_file = mysql_escape_mimic($id_file);
 		return $this->query("UPDATE objeto SET imagen = '$id_file' WHERE id = '$id_objeto' LIMIT 1");
 	}
-	function set_object_name($id_objeto, $name) {
+	function set_objeto_name($id_objeto, $name) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$name = mysql_escape_mimic($name);
 		return $this->query("UPDATE objeto SET nombre = '$name' WHERE id = '$id_objeto' LIMIT 1");
 	}
-	function set_object_minimo($id_objeto, $minimo) {
+	function set_objeto_minimo($id_objeto, $minimo) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$minimo = mysql_escape_mimic($minimo);
 		return $this->query("UPDATE objeto SET minimo_alerta = '$minimo' WHERE id = '$id_objeto' LIMIT 1");
 	}
-	function set_object_tags($id_objeto, $tags) {
+	function set_objeto_tags($id_objeto, $tags) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$tags = mysql_escape_mimic($tags);
 		return $this->query("UPDATE objeto SET tags = '$tags' WHERE id = '$id_objeto' LIMIT 1");
 	}
 	// $cantidades es un array que se recorrera con foreach cuyos elementos son otro array con indices seccion y cantidad
-	function set_object_cantidades($id_objeto, $cantidades) {
+	function set_objeto_cantidades($id_objeto, $cantidades) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		if ($this->query("DELETE FROM objeto_seccion WHERE id_objeto = '$id_objeto'")) {
 			foreach ($cantidades as $cantidad) {
@@ -189,7 +189,6 @@ class DB {
 					return false;
 				}
 			}
-			$this->objeto_update_historio_cantidades($id_objeto);
 			return true;
 		}
 		return false;
