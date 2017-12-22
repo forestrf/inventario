@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 11-12-2017 a las 11:30:40
+-- Tiempo de generación: 22-12-2017 a las 12:25:48
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -137,24 +137,6 @@ CREATE TABLE `historico` (
 
 --
 -- RELACIONES PARA LA TABLA `historico`:
---
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `historico_objeto`
---
-
-CREATE TABLE `historico_objeto` (
-  `id_objeto` int(11) NOT NULL,
-  `fecha` datetime NOT NULL,
-  `cantidad` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
---
--- RELACIONES PARA LA TABLA `historico_objeto`:
---   `id_objeto`
---       `objeto` -> `id`
 --
 
 -- --------------------------------------------------------
@@ -319,12 +301,6 @@ ALTER TABLE `file`
 --
 ALTER TABLE `historico`
   ADD PRIMARY KEY (`ID`);
-
---
--- Indices de la tabla `historico_objeto`
---
-ALTER TABLE `historico_objeto`
-  ADD KEY `id_objeto` (`id_objeto`);
 
 --
 -- Indices de la tabla `objeto`
