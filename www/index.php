@@ -19,94 +19,97 @@
 
 
 <div class="buscador">
-	Búsqueda: <input id="buscador" type="text" placeholder="Búsqueda" class="form-control"/>
+	<div class="fixed">
+		Búsqueda: <input id="buscador" type="text" placeholder="Búsqueda" class="form-control"/>
+		<button class="btn btn-primary" onclick="popupBusquedasPreparadas()">Búsquedas preparadas</button>
+	</div>
 </div>
 Poner un listado editable por todos con búsquedas preparadas (por ejemplo: boli, papel, carpeta) y que baste con clicarlas para hacer esa búsqueda<br/>
-<button onclick="buscador.value='minimo';buscador.onchange()">Mostrar objetos bajo mínimo</button>
+<button onclick="buscador.value='mínimo';buscador.onchange()">Mostrar objetos bajo mínimo</button>
 
 <div id="inventario"></div>
 <div class="clearer"></div>
 
-<button onclick="addObjeto()">Nuevo objeto</button><br/>
-<button onclick="ListarAlmacenesSecciones()">Editar Almacenes y secciones</button>Mostrar almacenes y secciones en vista de arbol, editable (o en vista de tabla)<br/>
+<button onclick="addObjeto()" class="btn btn-primary">Nuevo objeto</button><br/>
+<button onclick="ListarAlmacenesSecciones()" class="btn btn-primary">Editar Almacenes y secciones</button>Mostrar almacenes y secciones en vista de arbol, editable (o en vista de tabla)<br/>
 <a href="">Historial</a>
 
 
 
 <script>
-	if (typeof String.prototype.trim !== 'function') {
-		String.prototype.trim = function() {
-			return this.replace(/^\s+|\s+$/g, ''); 
-		}
+if (typeof String.prototype.trim !== 'function') {
+	String.prototype.trim = function() {
+		return this.replace(/^\s+|\s+$/g, ''); 
 	}
-	
-	var timeouts = (function(list) {
-		return {
-			add: function(func, milliseconds) {
-				var id = window.setTimeout(func, milliseconds);
-				list[id] = func;
-				return id;
-			},
-			get: function(id) {
-				return list[id] ? list[id] : null;
-			},
-			del: function(id) {
-				if(list[id]) {
-					window.clearTimeout(list[id]);
-					delete list[id];
-				}
-			}
-		};
-	})({});
-	
-	function AddClass(dom, className) {
-		var clases = dom.className.split(" ");
-		clases.push(className);
-		dom.className = clases.filter(onlyUnique).join(" ");
-	}
-	function RemoveClass(dom, className) {
-		dom.className = dom.className.split(" ").filter(function(c) { return c != className; }).join(" ");
-	}
+}
 
-	function shallowClone(objeto) {
-		var clon = {};
-		for (var i in objeto) clon[i] = objeto[i];
-		return clon;
-	}
-
-	var random_id_generator = (function(c) {
-		return function() { return c++; };
-	})(0);
-	
-	var popups = (function(stack) {
-		return {
-			showPopup: function(contentsDOM) {
-				var dom = C("div", ["class", "popup"],
-					C("div", ["class", "bg"]),
-					C("div", ["class", "msg"], contentsDOM)
-				);
-				document.body.appendChild(dom);
-				stack.push(dom);
-			},
-			closePopup: function() {
-				document.body.removeChild(stack.pop());
+var timeouts = (function(list) {
+	return {
+		add: function(func, milliseconds) {
+			var id = window.setTimeout(func, milliseconds);
+			list[id] = func;
+			return id;
+		},
+		get: function(id) {
+			return list[id] ? list[id] : null;
+		},
+		del: function(id) {
+			if(list[id]) {
+				window.clearTimeout(list[id]);
+				delete list[id];
 			}
 		}
-	})([]);
-	
-	function onlyUnique(value, index, self) { 
-		return self.indexOf(value) === index;
+	};
+})({});
+
+function AddClass(dom, className) {
+	var clases = dom.className.split(" ");
+	clases.push(className);
+	dom.className = clases.filter(onlyUnique).join(" ");
+}
+function RemoveClass(dom, className) {
+	dom.className = dom.className.split(" ").filter(function(c) { return c != className; }).join(" ");
+}
+
+function shallowClone(objeto) {
+	var clon = {};
+	for (var i in objeto) clon[i] = objeto[i];
+	return clon;
+}
+
+var random_id_generator = (function(c) {
+	return function() { return c++; };
+})(0);
+
+var popups = (function(stack) {
+	return {
+		showPopup: function(contentsDOM) {
+			var dom = C("div", ["class", "popup"],
+				C("div", ["class", "bg"]),
+				C("div", ["class", "msg"], contentsDOM)
+			);
+			document.body.appendChild(dom);
+			stack.push(dom);
+		},
+		closePopup: function() {
+			document.body.removeChild(stack.pop());
+		}
 	}
-	
-	function GetKeysOfObjectAsSortedNumberArray(obj) {
-		return Object.keys(obj).map(function(x) { return parseInt(x) }).sort(function(a, b){ return a - b });
-	}
-	
-	function GetFirstFreeID(ids) {
-		var id = 1;
-		while (ids.indexOf(id) !== -1) id++;
-		return id;
-	}
+})([]);
+
+function onlyUnique(value, index, self) { 
+	return self.indexOf(value) === index;
+}
+
+function GetKeysOfObjectAsSortedNumberArray(obj) {
+	return Object.keys(obj).map(function(x) { return parseInt(x) }).sort(function(a, b){ return a - b });
+}
+
+function GetFirstFreeID(ids) {
+	var id = 1;
+	while (ids.indexOf(id) !== -1) id++;
+	return id;
+}
 </script>
 
 <script>
@@ -619,6 +622,10 @@ function ListarAlmacenesSecciones() {
 			}
 		}
 	}
+}
+
+function popupBusquedasPreparadas() {
+	alert("Por hacer");
 }
 
 DrawObjectList();

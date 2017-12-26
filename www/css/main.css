@@ -6,8 +6,17 @@ button {
 }
 
 div.buscador {
-	margin: 1%;
+	margin-bottom: 10px;
+	height: 60px;
+}
+div.buscador .fixed {
+	background-color: #fff;
 	line-height: 30px;
+	box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+	position: fixed;
+	padding: 15px 1% 15px 1%;
+	height: 60px;
+	width: 100%;
 }
 #buscador {
 	line-height: 30px;
