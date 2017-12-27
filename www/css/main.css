@@ -18,6 +18,44 @@ div.buscador .fixed {
 	height: 60px;
 	width: 100%;
 }
+.busquedas {
+	padding: 0;
+	margin: 0;
+}
+.busquedas li {
+	list-style: none;
+}
+.busquedas .handle {
+	background-color: #eee;
+	vertical-align: top;
+	border-radius: 5px;
+	margin-bottom: 5px;
+	margin-right: 5px;
+	text-align: center;
+	font-size: 26px;
+	display: inline-block;
+	cursor: grab;
+	border: 2px dotted #999;
+	height: 34px;
+	color: #444;
+	width: 25px;
+}
+.busquedas .handle:active {
+	cursor: grabbing;
+}
+.busquedas .boton {
+	margin-left: 5px;
+	height: 34px;
+	line-height: 34px;
+	font-size: 17px;
+	padding: 0;
+	width: 34px;
+	text-align: center;
+}
+.editbusqueda {
+	margin: 20px auto;
+	font-size: 1.1em;
+}
 #buscador {
 	line-height: 30px;
 	min-width: 40%;

@@ -123,6 +123,9 @@ class DB {
 	
 	
 	
+	function get_busquedaspreparadas() {
+		return $this->query("SELECT * FROM busquedas_preparadas");
+	}
 	function get_almacenes() {
 		return $this->query("SELECT * FROM almacen");
 	}

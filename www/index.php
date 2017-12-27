@@ -8,9 +8,11 @@
 <script src="js/crel2.js"></script>
 
 <!-- Tokenfield -->
-<script type="text/javascript" src="js/libs/jquery/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="js/libs/jquery/jquery-ui-1.10.3.min.js"></script>
-<script type="text/javascript" src="js/libs/bootstrap-tokenfield/bootstrap-tokenfield.js"></script>
+<script src="js/libs/jquery/jquery-1.9.1.min.js"></script>
+<script src="js/libs/jquery/jquery-ui-1.10.3.min.js"></script>
+<script src="js/libs/bootstrap-tokenfield/bootstrap-tokenfield.js"></script>
+<script src="js/libs/Sortable/Sortable.min.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.2/js/all.js"></script>
 <link href="js/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
 <link href="js/libs/jquery/themes/smoothness/jquery-ui.min.css" type="text/css" rel="stylesheet">
 <link href="js/libs/bootstrap-tokenfield/bootstrap-tokenfield.min.css" type="text/css" rel="stylesheet">
@@ -21,19 +23,18 @@
 <div class="buscador">
 	<div class="fixed">
 		Búsqueda: <input id="buscador" type="text" placeholder="Búsqueda" class="form-control"/>
-		<button class="btn btn-primary" onclick="popupBusquedasPreparadas()">Búsquedas preparadas</button>
+		<button class="btn btn-primary" id="BTN_BUSQUEDAS_PREPARADAS">Búsquedas preparadas</button>
 	</div>
 </div>
 Poner un listado editable por todos con búsquedas preparadas (por ejemplo: boli, papel, carpeta) y que baste con clicarlas para hacer esa búsqueda<br/>
-<button onclick="buscador.value='mínimo';buscador.onchange()">Mostrar objetos bajo mínimo</button>
+
+<button onclick="addObjeto()" class="btn btn-primary">Nuevo objeto</button>
+<button onclick="ListarAlmacenesSecciones()" class="btn btn-primary">Editar Almacenes y secciones</button>
+<a href="">Historial</a>
+
 
 <div id="inventario"></div>
 <div class="clearer"></div>
-
-<button onclick="addObjeto()" class="btn btn-primary">Nuevo objeto</button><br/>
-<button onclick="ListarAlmacenesSecciones()" class="btn btn-primary">Editar Almacenes y secciones</button>Mostrar almacenes y secciones en vista de arbol, editable (o en vista de tabla)<br/>
-<a href="">Historial</a>
-
 
 
 <script>
@@ -624,9 +625,82 @@ function ListarAlmacenesSecciones() {
 	}
 }
 
-function popupBusquedasPreparadas() {
-	alert("Por hacer");
-}
+BTN_BUSQUEDAS_PREPARADAS.style.display = "none";
+AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
+	var busquedasArr = JSON.parse(msg.response);
+	console.log("Busquedas preparadas", busquedasArr);
+	
+	BTN_BUSQUEDAS_PREPARADAS.style.display = "";
+	BTN_BUSQUEDAS_PREPARADAS.onclick = popupBusquedasPreparadas;
+	
+	function popupBusquedasPreparadas() {
+		var busquedas_ul = C("ul", ["class", "busquedas"]);
+		for (var i = 0; i < busquedasArr.length; i++) {
+			AddBusquedapreparada(busquedasArr[i].nombre, busquedasArr[i].busqueda);
+		}
+		popups.showPopup(C("div",
+			busquedas_ul,
+			C("button", ["class", "btn btn-primary", "onclick", add], "Añadir"),
+			PieGuardarCancelar("Guardar cambios", guardar, "Cerrar", popups.closePopup, false)
+		));
+		
+		var sortable = Sortable.create(busquedas_ul, {
+			handle: ".handle"
+		});
+		
+		function add() {
+			AddBusquedapreparada("Nueva búsqueda", "");
+		}
+		
+		function guardar() {
+			
+		}
+		
+		function AddBusquedapreparada(nombre, busqueda) {
+			var li, b1;
+			C(busquedas_ul, li = C("li",
+				C("span", ["class", "handle"], "⬍"),
+				b1 = C("button", ["class", "btn btn-primary", "onclick", click], nombre),
+				C("button", ["class", "btn btn-warning boton", "onclick", edit], C("i", ["class", "far fa-edit"])),
+				C("button", ["class", "btn btn-danger boton", "onclick", borrar], "X")));
+			b1.busqueda = busqueda;
+			
+			
+			function click() {
+				popups.closePopup();
+				buscador.value = b1.busqueda;
+				buscador.onchange();			
+			}
+			
+			function borrar() {
+				busquedas_ul.removeChild(li);
+			}
+		
+			function edit() {
+				var nom, bus;
+				popups.showPopup(C("div",
+					C("table", ["class", "editbusqueda"],
+						C("tr",
+							C("td", "Nombre"),
+							C("td", nom = C("input", ["class", "form-control", "value", nombre]))
+						),
+						C("tr",
+							C("td", "Búsqueda"),
+							C("td", bus = C("input", ["class", "form-control", "value", busqueda]))
+						)
+					),
+					PieGuardarCancelar("Aceptar", aceptar, "Cancelar", popups.closePopup, false)
+				));
+				
+				function aceptar() {
+					b1.innerHTML = nom.value;
+					b1.busqueda = bus.value;
+					popups.closePopup();
+				}
+			}
+		}
+	}
+}, console.log);
 
 DrawObjectList();
 </script>

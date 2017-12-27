@@ -57,6 +57,11 @@ if (isset($_GET['action'])) {
 				}
 			}
 			break;
+		case 'getbusquedaspreparadas':
+			insert_nocache_headers();
+			$busquedas = $db->get_busquedaspreparadas();
+			echo json_encode($busquedas, 1);
+			break;
 	}
 } else {
 	switch($_POST['action']) {
