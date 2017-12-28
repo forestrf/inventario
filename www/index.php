@@ -653,22 +653,33 @@ AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 		}
 		
 		function guardar() {
+			// recorrer todos los LI del UL
+			var busquedas = [];
+			var items = busquedas_ul.getElementsByTagName("li");
+			for (var i = 0; i < items.length; i++) {
+				busquedas.push({nombre: items[i].b.innerHTML, busqueda: items[i].b.busqueda});
+			}
+			console.log(busquedas);
 			
+			AJAX('php/ajax.php', 'action=update-busquedaspreparadas&busquedaspreparadas=' + encodeURIComponent(JSON.stringify(busquedas)), function(msg) {
+				busquedasArr = busquedas;
+			}, console.log);
 		}
 		
 		function AddBusquedapreparada(nombre, busqueda) {
-			var li, b1;
+			var li, b;
 			C(busquedas_ul, li = C("li",
 				C("span", ["class", "handle"], "⬍"),
-				b1 = C("button", ["class", "btn btn-primary", "onclick", click], nombre),
+				b = C("button", ["class", "btn btn-primary", "onclick", click], nombre),
 				C("button", ["class", "btn btn-warning boton", "onclick", edit], C("i", ["class", "far fa-edit"])),
 				C("button", ["class", "btn btn-danger boton", "onclick", borrar], "X")));
-			b1.busqueda = busqueda;
+			b.busqueda = busqueda;
+			li.b = b;
 			
 			
 			function click() {
 				popups.closePopup();
-				buscador.value = b1.busqueda;
+				buscador.value = b.busqueda;
 				buscador.onchange();			
 			}
 			
@@ -693,8 +704,8 @@ AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 				));
 				
 				function aceptar() {
-					b1.innerHTML = nom.value;
-					b1.busqueda = bus.value;
+					b.innerHTML = nom.value;
+					b.busqueda = bus.value;
 					popups.closePopup();
 				}
 			}

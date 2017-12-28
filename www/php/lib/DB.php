@@ -124,8 +124,14 @@ class DB {
 	
 	
 	function get_busquedaspreparadas() {
-		return $this->query("SELECT * FROM busquedas_preparadas");
+		return $this->query("SELECT value FROM variables WHERE name = 'busquedas_preparadas';");
 	}
+	// $busquedas es un array que se recorrera con foreach cuyos elementos son otro array con indices nombre y busqueda
+	function set_busquedaspreparadas($busquedas) {
+		$busquedas = mysql_escape_mimic($busquedas);
+		return $this->query("INSERT INTO variables (name, value) VALUES ('busquedas_preparadas', '$busquedas') ON DUPLICATE KEY UPDATE value = '$busquedas';");
+	}
+	
 	function get_almacenes() {
 		return $this->query("SELECT * FROM almacen");
 	}

@@ -19,7 +19,7 @@ if (isset($_GET['action'])) {
 			foreach ($objetos as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
 			foreach ($db->get_almacenes() as &$almacen) $almacenes[$almacen["id"]] = &$almacen;
 			foreach ($db->get_secciones() as &$seccion) $secciones[$seccion["id"]] = &$seccion;
-			
+
 			echo json_encode(array(
 				"almacenes" => $almacenes,
 				"secciones" => $secciones,
@@ -28,11 +28,11 @@ if (isset($_GET['action'])) {
 			break;
 		case 'getinventarioitem':
 			insert_nocache_headers();
-			if (checkOrExit(isset($_GET["id"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")) {
+			if (checkOrExit(isset($_GET["id"]), "No se ha enviado la id del objeto")) {
 				$objetos = $db->get_objeto($_GET["id"]);
 				foreach ($objetos as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
-				
-				echo json_encode($objetos, 1);	
+
+				echo json_encode($objetos, 1);
 			}
 			break;
 		case 'getfile':
@@ -41,10 +41,10 @@ if (isset($_GET['action'])) {
 				if (isset($file[0])) {
 					$file = $file[0];
 					$etag = base64_encode(md5($file['id']));
-					
+
 					header('Etag: ' . $etag);
 					header('Cache-Control: max-age=120, public'); // 2 min. This is a problem when developing. Force checkOrExit.
-					
+
 					if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && trim($_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
 						header('HTTP/1.1 304 Not Modified');
 						exit;
@@ -60,16 +60,16 @@ if (isset($_GET['action'])) {
 		case 'getbusquedaspreparadas':
 			insert_nocache_headers();
 			$busquedas = $db->get_busquedaspreparadas();
-			echo json_encode($busquedas, 1);
+			echo count($busquedas) == 1 ? $busquedas[0]["value"] : "[]";
 			break;
 	}
 } else {
 	switch($_POST['action']) {
 		case 'update-object-image':
-			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto")
 				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
 				&& checkOrExit(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "", "No se ha enviado una imagen")) {
-				
+
 				$file_index = "";
 				if ($db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index)
 					&& $db->set_objeto_image($_POST["id-object"], $file_index)) {
@@ -83,16 +83,16 @@ if (isset($_GET['action'])) {
 						"MESSAGE" => $db->mysqli->error
 					));
 				}
-				
+
 			}
 			break;
 		case 'update-object-name':
-			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto")
 				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
-				&& checkOrExit(isset($_POST["nombre"]), "No se ha enviado un nombre. Por favor comunica este error a un encargado de la app")
+				&& checkOrExit(isset($_POST["nombre"]), "No se ha enviado un nombre")
 				&& checkOrExit(strlen($_POST["nombre"]) > 0, "El nombre es demasiado corto")) {
-				
-				if ($db->set_objeto_name($_POST["id-object"], $_POST["nombre"])) {				
+
+				if ($db->set_objeto_name($_POST["id-object"], $_POST["nombre"])) {
 					echo json_encode(array(
 						"STATUS" => "OK",
 						"MESSAGE" => "Nombre actualizado"
@@ -106,16 +106,16 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'update-object-minimo':
-			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto")
 				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
-				&& checkOrExit(isset($_POST["minimo"]), "No se ha enviado una cantidad mínima. Por favor comunica este error a un encargado de la app")
+				&& checkOrExit(isset($_POST["minimo"]), "No se ha enviado una cantidad mínima")
 				&& checkOrExit(intval($_POST["minimo"]) >= 0, "El valor mínimo debe de ser un número mayor o igual que cero")) {
-				
+
 				if ($db->set_objeto_minimo($_POST["id-object"], $_POST["minimo"])) {
 					echo json_encode(array(
 						"STATUS" => "OK",
 						"MESSAGE" => "Mínimo actualizado"
-					));					
+					));
 				} else {
 					echo json_encode(array(
 						"STATUS" => "ERROR",
@@ -125,7 +125,7 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'update-object-cantidades':
-			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto")
 				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")) {
 				$cantidades = array();
 				foreach ($_POST as $key => $value) {
@@ -139,8 +139,8 @@ if (isset($_GET['action'])) {
 						$cantidadesFiltradas[] = $cantidad;
 					}
 				}
-				
-				if ($db->set_objeto_cantidades($_POST["id-object"], $cantidadesFiltradas)) {				
+
+				if ($db->set_objeto_cantidades($_POST["id-object"], $cantidadesFiltradas)) {
 					echo json_encode(array(
 						"STATUS" => "OK",
 						"MESSAGE" => "Cantidades actualizadas"
@@ -154,11 +154,11 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'update-object-tags':
-			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")
+			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto")
 				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
-				&& checkOrExit(isset($_POST["tags"]), "No se ha enviado una lista de tags. Por favor comunica este error a un encargado de la app")) {
-				
-				if ($db->set_objeto_tags($_POST["id-object"], $_POST["tags"])) {				
+				&& checkOrExit(isset($_POST["tags"]), "No se ha enviado una lista de tags")) {
+
+				if ($db->set_objeto_tags($_POST["id-object"], $_POST["tags"])) {
 					echo json_encode(array(
 						"STATUS" => "OK",
 						"MESSAGE" => "Tags actualizados"
@@ -185,7 +185,7 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'remove-object':
-			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto. Por favor comunica este error a un encargado de la app")) {
+			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto")) {
 				if ($db->remove_objeto($_POST["id-object"])) {
 					echo json_encode(array(
 						"STATUS" => "OK",
@@ -200,17 +200,17 @@ if (isset($_GET['action'])) {
 			}
 			break;
 		case 'update-almacenes-secciones':
-			if (checkOrExit(isset($_POST["almacenes"]), "No se ha enviado el listado de almacenes. Por favor comunica este error a un encargado de la app")
-				&& checkOrExit(isset($_POST["secciones"]), "No se ha enviado el listado de secciones. Por favor comunica este error a un encargado de la app")) {
+			if (checkOrExit(isset($_POST["almacenes"]), "No se ha enviado el listado de almacenes")
+				&& checkOrExit(isset($_POST["secciones"]), "No se ha enviado el listado de secciones")) {
 				$new_alm = json_decode($_POST["almacenes"], 1);
 				$new_sec = json_decode($_POST["secciones"], 1);
-				
+
 				// Obtener información de los objetos, almacenes y secciones actuales
 				$old_obj = $db->get_objetos();
 				foreach ($old_obj as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
 				foreach ($db->get_almacenes() as &$almacen) $old_alm[$almacen["id"]] = &$almacen;
 				foreach ($db->get_secciones() as &$seccion) $old_sec[$seccion["id"]] = &$seccion;
-				
+
 				if (!isset($_POST["forzar"]) || $_POST["forzar"] !== "OK") {
 					// Comprobar si alguno de los objetos usa una sección que ya no existe
 					$obj_sec_borradas = array();
@@ -225,14 +225,14 @@ if (isset($_GET['action'])) {
 									}
 								}
 							}
-							
+
 							if (!$encontrada) {
 								if (!isset($obj_sec_borradas[$obj["id"]])) $obj_sec_borradas[$obj["id"]] = [];
 								$obj_sec_borradas[$obj["id"]][] = $obj_sec;
 							}
 						}
 					}
-					
+
 					if (count($obj_sec_borradas) > 0) {
 						echo json_encode(array(
 							"STATUS" => "ASK",
@@ -241,19 +241,19 @@ if (isset($_GET['action'])) {
 						exit;
 					}
 				}
-				
+
 				// Borrar secciones
 				$new_sec_plain = array();
 				foreach ($new_sec as $sec_id => &$_) $new_sec_plain[] = $sec_id;
 				if ($db->remove_secciones_not_in($new_sec_plain)) {
-					
+
 					// Borrar almacenes
 					$new_alm_plain = array();
 					foreach ($new_alm as $alm_id => &$_) $new_alm_plain[] = $alm_id;
 					if ($db->remove_almacenes_not_in($new_alm_plain)) {
-						
+
 						$error = false;
-						
+
 						// Actualizar nombre almacenes + insertar nuevos almacenes
 						foreach ($new_alm as &$alm) {
 							if (!$db->add_or_update_almacen($alm["id"], $alm["nombre"])) {
@@ -268,7 +268,7 @@ if (isset($_GET['action'])) {
 							));
 							exit;
 						}
-						
+
 						// Actualizar nombre secciones + insertar nuevas secciones
 						foreach ($new_sec as &$sec) {
 							if (!$db->add_or_update_seccion($sec["id"], $sec["nombre"], $sec["id_almacen"])) {
@@ -283,25 +283,40 @@ if (isset($_GET['action'])) {
 							));
 							exit;
 						}
-					} else {						
+					} else {
 						echo json_encode(array(
 							"STATUS" => "FAIL",
 							"MESSAGE" => "Ha surgido un fallo al borrar almacenes: " . $db->mysqli->error
 						));
 						exit;
 					}
-				} else {						
+				} else {
 					echo json_encode(array(
 						"STATUS" => "FAIL",
 						"MESSAGE" => "Ha surgido un fallo al borrar secciones: " . $db->mysqli->error
 					));
 						exit;
 				}
-				
+
 				echo json_encode(array(
 					"STATUS" => "OK",
 					"MESSAGE" => "Actualizado con éxito."
 				));
+			}
+			break;
+		case 'update-busquedaspreparadas':
+			if (checkOrExit(isset($_POST["busquedaspreparadas"]), "No se ha enviado el nuevo listado de búsquedas preparadas")) {
+				if ($db->set_busquedaspreparadas($_POST["busquedaspreparadas"])) {
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Búsquedas preparadas actualizadas"
+					));
+				} else {
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
+					));
+				}
 			}
 			break;
 	}

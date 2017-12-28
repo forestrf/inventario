@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 22-12-2017 a las 12:25:48
+-- Tiempo de generación: 28-12-2017 a las 12:47:03
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -280,6 +280,21 @@ VALUES
 $$
 DELIMITER ;
 
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `variables`
+--
+
+CREATE TABLE `variables` (
+  `name` varchar(128) COLLATE utf8_bin NOT NULL,
+  `value` text COLLATE utf8_bin NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+--
+-- RELACIONES PARA LA TABLA `variables`:
+--
+
 --
 -- Índices para tablas volcadas
 --
@@ -324,6 +339,12 @@ ALTER TABLE `seccion`
   ADD KEY `id_almacen` (`id_almacen`);
 
 --
+-- Indices de la tabla `variables`
+--
+ALTER TABLE `variables`
+  ADD PRIMARY KEY (`name`);
+
+--
 -- AUTO_INCREMENT de las tablas volcadas
 --
 
@@ -350,12 +371,6 @@ ALTER TABLE `seccion`
 --
 -- Restricciones para tablas volcadas
 --
-
---
--- Filtros para la tabla `historico_objeto`
---
-ALTER TABLE `historico_objeto`
-  ADD CONSTRAINT `historico_objeto_ibfk_1` FOREIGN KEY (`id_objeto`) REFERENCES `objeto` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `objeto`
