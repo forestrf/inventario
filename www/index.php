@@ -6,6 +6,7 @@
 <script src="js/filter.js"></script>
 <script src="js/ajax.js"></script>
 <script src="js/crel2.js"></script>
+<script src="js/libs/jshashtable/hashtable.js"></script>
 
 <!-- Tokenfield -->
 <script src="js/libs/jquery/jquery-1.9.1.min.js"></script>
@@ -26,9 +27,8 @@
 		<button class="btn btn-primary" id="BTN_BUSQUEDAS_PREPARADAS">Búsquedas preparadas</button>
 	</div>
 </div>
-Poner un listado editable por todos con búsquedas preparadas (por ejemplo: boli, papel, carpeta) y que baste con clicarlas para hacer esa búsqueda<br/>
 
-<button onclick="addObjeto()" class="btn btn-primary">Nuevo objeto</button>
+<button onclick="addObjeto()" class="btn btn-primary">Añadir nuevo objeto</button>
 <button onclick="ListarAlmacenesSecciones()" class="btn btn-primary">Editar Almacenes y secciones</button>
 <a href="">Historial</a>
 
@@ -47,21 +47,42 @@ if (typeof String.prototype.trim !== 'function') {
 var timeouts = (function(list) {
 	return {
 		add: function(func, milliseconds) {
-			var id = window.setTimeout(func, milliseconds);
-			list[id] = func;
-			return id;
+			var key = window.setTimeout(function() {
+				delete list[key];
+				func();
+			}, milliseconds);
+			
+			list.put(key, {
+				timeoutId: key,
+				func: func
+			});
+			
+			return key;
 		},
-		get: function(id) {
-			return list[id] ? list[id] : null;
+		addWithKey: function(key, func, milliseconds) {
+			list.put(key, {
+				timeoutId: -1,
+				func: func
+			});
+			
+			list.get(key).timeoutId = window.setTimeout(function() {
+				list.remove(key);
+				func();
+			}, milliseconds);
+			
+			return key;
 		},
-		del: function(id) {
-			if(list[id]) {
-				window.clearTimeout(list[id]);
-				delete list[id];
+		get: function(key) {
+			return list.containsKey(key) ? list.get(key).func : null;
+		},
+		del: function(key) {
+			if(list.containsKey(key)) {
+				window.clearTimeout(list.get(key).timeoutId);
+				list.remove(key);
 			}
 		}
 	};
-})({});
+})(new Hashtable());
 
 function AddClass(dom, className) {
 	var clases = dom.className.split(" ");
@@ -237,13 +258,13 @@ function edit(objeto, updateListObject) {
 	var cantidades;
 	var popupDOM = C("div",
 		C("div", ["style", "padding: 1%", "updateListObject", updateListObject],
-			C("form", ["class", "left_big", "method", "post", "action", "php/ajax.php"],
+			C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
 				C("div", "Nombre"),
 				C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal.nombre, "class", "form-control"])),
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-name"])
 			),
-			C("form", ["class", "right_big img", "method", "post", "action", "php/ajax.php"],
+			C("form", ["class", "ajax right_big img", "method", "post", "action", "php/ajax.php"],
 				C("div", "Imagen"),
 				C("div",
 					C("img", ["src", GetImagenObjeto(objetoLocal), "id", "img_objeto", "class", "img-" + objetoLocal.id]),
@@ -252,7 +273,7 @@ function edit(objeto, updateListObject) {
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-image"])
 			),
-			C("form", ["class", "left_big", "method", "post", "action", "php/ajax.php"],
+			C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
 				C("div", ["class", "has-help"],
 					"Cantidad mínima",
 					C("div", ["class", "desc"],
@@ -264,7 +285,7 @@ function edit(objeto, updateListObject) {
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-minimo"])
 			),
-			C("form", ["class", "left_big", "method", "post", "action", "php/ajax.php"],
+			C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
 				C("div", ["class", "has-help"],
 					"Cantidad",
 					C("div", ["class", "desc"],
@@ -290,7 +311,7 @@ function edit(objeto, updateListObject) {
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-cantidades"])
 			),
-			C("form", ["class", "right_big", "method", "post", "action", "php/ajax.php"],
+			C("form", ["class", "ajax right_big", "method", "post", "action", "php/ajax.php"],
 				C("div", ["class", "has-help"], "Tags", C("div", ["class", "desc"], "Palabras clave para filtrar una búsqueda y encontrar este objeto")),
 				C("div", tags = C("input", ["name", "tags", "type", "text", "value", objetoLocal.tags, "class", "form-control"])),
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
@@ -415,7 +436,7 @@ function edit(objeto, updateListObject) {
 		//for (var key of formData.entries()) console.log(key[0] + ', ' + key[1]);
 		AJAX('php/ajax.php', formData, function(msg) {
 			var json = JSON.parse(msg.response);
-			formPoke(target, json.STATUS, json.MESSAGE);
+			temporarySetStyle(target, json.STATUS, json.MESSAGE);
 			if (json.STATUS === "OK") {
 				// Actualizar y Redibujar
 				target.parentNode.updateListObject();
@@ -425,21 +446,25 @@ function edit(objeto, updateListObject) {
 			alert("ERROR: " + msg.response);
 		});
 	}
+}
 
-	function formPoke(form, className, msg) {
-		if (form.poked !== undefined) {
-			timeouts.get(form.poked)();
-			timeouts.del(form.poked);
-		}
-		AddClass(form, className);
-		var msgDOM;
-		if (msg !== undefined && msg !== null) C(form, msgDOM = C("span", ["class", "msg"], msg));
-		form.poked = timeouts.add(function() {
-			RemoveClass(form, className);
-			if (msgDOM !== null) form.removeChild(msgDOM);
-			if (typeof form.poked !== "undefined") delete form.poked;
-		}, 10000);
+function temporarySetStyle(target, className, msg) {
+	var oldTimeout = timeouts.get(target);
+	if (oldTimeout != null) {
+		oldTimeout();
+		timeouts.del(target);
 	}
+	AddClass(target, className);
+	
+	(function(msgDOM) {
+		C(target, msgDOM);
+		
+		timeouts.addWithKey(target, function() {
+			RemoveClass(target, className);
+			target.removeChild(msgDOM);
+		}, 10000);
+		
+	})(C("span", ["class", "msg"], msg));
 }
 	
 function abrirBorrarVentana(popupClass, btnClass, msg, onRemoveCallback) {
@@ -638,9 +663,12 @@ AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 		for (var i = 0; i < busquedasArr.length; i++) {
 			AddBusquedapreparada(busquedasArr[i].nombre, busquedasArr[i].busqueda);
 		}
+		var contenedorBusquedas;
 		popups.showPopup(C("div",
-			busquedas_ul,
-			C("button", ["class", "btn btn-primary", "onclick", add], "Añadir"),
+			contenedorBusquedas = C("div", ["class", "busquedas-contenedor ajax"],
+				busquedas_ul,
+				C("button", ["class", "btn btn-primary", "onclick", add], "Añadir"),
+			),
 			PieGuardarCancelar("Guardar cambios", guardar, "Cerrar", popups.closePopup, false)
 		));
 		
@@ -662,7 +690,9 @@ AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 			console.log(busquedas);
 			
 			AJAX('php/ajax.php', 'action=update-busquedaspreparadas&busquedaspreparadas=' + encodeURIComponent(JSON.stringify(busquedas)), function(msg) {
+				var json = JSON.parse(msg.response);
 				busquedasArr = busquedas;
+				temporarySetStyle(contenedorBusquedas, json.STATUS, json.MESSAGE);
 			}, console.log);
 		}
 		
@@ -692,11 +722,11 @@ AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 				popups.showPopup(C("div",
 					C("table", ["class", "editbusqueda"],
 						C("tr",
-							C("td", "Nombre"),
+							C("td", "Nombre del botón"),
 							C("td", nom = C("input", ["class", "form-control", "value", nombre]))
 						),
 						C("tr",
-							C("td", "Búsqueda"),
+							C("td", "Texto a buscar"),
 							C("td", bus = C("input", ["class", "form-control", "value", busqueda]))
 						)
 					),

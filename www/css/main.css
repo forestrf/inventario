@@ -18,6 +18,13 @@ div.buscador .fixed {
 	height: 60px;
 	width: 100%;
 }
+.busquedas-contenedor {
+	border: 2px dashed #ddd;
+	margin: 20px;
+	padding: 20px;
+	border-radius: 10px;
+	background-color: #fafafa;
+}
 .busquedas {
 	padding: 0;
 	margin: 0;
@@ -34,6 +41,7 @@ div.buscador .fixed {
 	text-align: center;
 	font-size: 26px;
 	display: inline-block;
+	cursor: -webkit-grab;
 	cursor: grab;
 	border: 2px dotted #999;
 	height: 34px;
@@ -41,6 +49,7 @@ div.buscador .fixed {
 	width: 25px;
 }
 .busquedas .handle:active {
+	cursor: -webkit-grabbing;
 	cursor: grabbing;
 }
 .busquedas .boton {
@@ -68,6 +77,9 @@ div.buscador .fixed {
 .right_big { float: right; }
 .clear { clear: both; }
 
+#inventario { }
+#inventario > div { }
+
 .objeto, .titulo {
 	transition: 0.2s all ease;
 }
@@ -77,7 +89,7 @@ div.buscador .fixed {
 	padding: 0;
 	border: 1px solid #000;
 	margin: 2px;
-	float: left;
+	vertical-align: top;
 }
 .objeto > div > div {
 	padding: 1px 2px 1px 2px;
@@ -182,15 +194,8 @@ div.buscador .fixed {
 	margin: 3px;
 	width: 49%;
 }
-.popup > .msg form.OK {
-	background-color: #48a748;
-	color: #fff;
-}
-.popup > .msg form.ERROR {
-	background-color: #a82c2c;
-	color: #fff;
-}
-.popup > .msg form .msg {
+
+.popup > .msg .msg {
 	position: relative;
 	font-weight: bold;
 	margin-left: 20%;
@@ -486,6 +491,19 @@ div.buscador .fixed {
 .aBorrarSeccionCantidad .var {
 	font-size: .8em;
 	font-family: verdana;
+}
+
+
+.popup > .msg .ajax {
+	transition: .3s all ease;
+}
+.popup > .msg .ajax.OK {
+	background-color: #aeff9e;
+	border-color: #38aa05;
+}
+.popup > .msg .ajax.ERROR {
+	background-color: #eaa1a1;
+	border-color: #b00000;
 }
 
 
