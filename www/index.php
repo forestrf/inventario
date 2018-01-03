@@ -319,7 +319,7 @@ function edit(objeto, updateListObject) {
 			),
 			C("div", ["class", "clear"])
 		),
-		PieGuardarCancelar("Guardar cambios", guardarCambios, "Cerrar", popups.closePopup, true, "Borrar", function() { abrirBorrarVentana("confirmBorrar", "btn-warning", C("div", "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"), objetoLocal.onRemove) })
+		PieGuardarCancelar("Guardar cambios", guardarCambios, "Cerrar", popups.closePopup, true, "Borrar", function() { abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"), objetoLocal.onRemove) })
 	);
 	
 	for (var i = 0; i < objetoLocal.secciones.length; i++) {
@@ -551,7 +551,7 @@ function ListarAlmacenesSecciones() {
 						));
 					}
 				}
-				abrirBorrarVentana("confirmBorrar", "btn-warning", C("div", C("div", "Se van a borrar secciones que contienen objetos. El Stock de los siguientes objetos se borrará:"), contenedor), function() { popups.closePopup(); Guardar(true) });
+				abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", C("div", "Se van a borrar secciones que contienen objetos. El Stock de los siguientes objetos se borrará:"), contenedor), function() { popups.closePopup(); Guardar(true) });
 			} else {
 				// Redibujar listado completo de objetos y actualizar listado de almacenes
 				popups.closePopup();

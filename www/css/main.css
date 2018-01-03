@@ -336,14 +336,6 @@ div.buscador .fixed {
 	background-color: #781d1d;
 }
 
-/*Warning*/
-.popup > .msg .confirmBorrar {
-	background-color: #a1a100;
-}
-.popup > .msg .confirmBorrar .botonesAceptarCancelar {
-	background-color: #dbdb00;
-}
-
 .popup > .msg .titulo {
 	text-align: center;
 	font-size: 20px;
