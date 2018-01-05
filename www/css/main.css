@@ -196,9 +196,9 @@ div.buscador .fixed {
 }
 
 .popup > .msg .msg {
-	position: relative;
 	font-weight: bold;
-	margin-left: 20%;
+	text-align: center;
+	position: relative;
 	display: block;
 }
 .popup > .msg form > div {
@@ -395,7 +395,7 @@ div.buscador .fixed {
 	width: 250px;
 }
 .popup > .msg .lista-almacenes-secciones .btn.addseccion {
-    margin-bottom: 15px;
+	margin-bottom: 15px;
 }
 .popup > .msg .lista-almacenes-secciones .header {
 	border-bottom: 1px solid #989898;
