@@ -180,7 +180,7 @@ class DB {
 	function set_objeto_minimo($id_objeto, $minimo) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$minimo = mysql_escape_mimic($minimo);
-		return $this->query("UPDATE objeto SET minimo_alerta = '$minimo' WHERE id = '$id_objeto' LIMIT 1");
+		return $this->query("UPDATE objeto SET minimo = '$minimo' WHERE id = '$id_objeto' LIMIT 1");
 	}
 	function set_objeto_tags($id_objeto, $tags) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
@@ -192,7 +192,7 @@ class DB {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		if ($this->query("DELETE FROM objeto_seccion WHERE id_objeto = '$id_objeto'")) {
 			foreach ($cantidades as $cantidad) {
-				$id_seccion = mysql_escape_mimic($cantidad["seccion"]);
+				$id_seccion = mysql_escape_mimic($cantidad["id_seccion"]);
 				$cantidad = mysql_escape_mimic($cantidad["cantidad"]);
 				if (!$this->query("INSERT INTO objeto_seccion (id_objeto, id_seccion, cantidad) VALUES ($id_objeto, $id_seccion, $cantidad)")) {
 					return false;

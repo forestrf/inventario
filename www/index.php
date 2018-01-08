@@ -164,12 +164,12 @@ function DrawObjectList() {
 					),
 					C("div", ["class", "info"],
 						C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
-						C("div", ["class", "minimo"], "Mínimo: ", objeto.minimo_alerta),
+						C("div", ["class", "minimo"], "Mínimo: ", objeto.minimo),
 						C("div", ["class", "tags"], "Tags: ", tagsDOM = C("span", ["class", "tags-list"]))
 					)
 				);
 				for (var j in objeto.tags) C(tagsDOM, C("span", objeto.tags[j]));
-				(cantidad < parseInt(objeto.minimo_alerta) ? AddClass : RemoveClass)(domObjetoEnLista, "alerta");
+				(cantidad < parseInt(objeto.minimo) ? AddClass : RemoveClass)(domObjetoEnLista, "alerta");
 				objeto.onRemove = onRemove;
 				return objeto.DOM = domObjetoEnLista;
 			}
@@ -230,7 +230,7 @@ function DrawObjectList() {
 		function TestCustomKeyword(keyword, object) {
 			switch (keyword) {
 				case "minimo":
-					return object.minimo_alerta > GetCantidad(object);
+					return object.minimo > GetCantidad(object);
 			}
 		}
 		
@@ -281,7 +281,7 @@ function edit(objeto, updateListObject) {
 						C("img", ["src", "media/inputs.gif"])
 					)
 				),
-				C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal.minimo_alerta, "class", "form-control", "onchange", onPositiveNumberChange])),
+				C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal.minimo, "class", "form-control", "onchange", onPositiveNumberChange])),
 				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
 				C("input", ["type", "hidden", "name", "action", "value", "update-object-minimo"])
 			),
@@ -361,7 +361,7 @@ function edit(objeto, updateListObject) {
 		var cantidadBlock = C("div", ["class", "cantidad-block"],
 			C("div", ["class", "contenido c1"],
 				almacenesSelect = C("select", ["name", "almacen-" + rId]),
-				seccionesSelect = C("select", ["name", "seccion-" + rId]),
+				seccionesSelect = C("select", ["name", "id_seccion-" + rId]),
 				cantidadInput = C("input", ["name", "cantidad-" + rId, "type", "text", "value", seccionObjeto.cantidad, "class", "form-control", "onchange", function(ev) {
 					onPositiveNumberChange(ev);
 					seccionObjeto.cantidad = ev.target.value;
@@ -436,10 +436,12 @@ function edit(objeto, updateListObject) {
 		//for (var key of formData.entries()) console.log(key[0] + ', ' + key[1]);
 		AJAX('php/ajax.php', formData, function(msg) {
 			var json = JSON.parse(msg.response);
-			temporarySetStyle(target, json.STATUS, json.MESSAGE);
-			if (json.STATUS === "OK") {
-				// Actualizar y Redibujar
-				target.parentNode.updateListObject();
+			if (json.STATUS === "OK" || json.STATUS === "FAIL") {
+				temporarySetStyle(target, json.STATUS, json.MESSAGE);
+				if (json.STATUS === "OK") {
+					// Actualizar y Redibujar
+					target.parentNode.updateListObject();
+				}
 			}
 			//eval(json.EVAL);
 		}, function(msg) {

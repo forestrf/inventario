@@ -148,7 +148,7 @@ CREATE TABLE `historico` (
 CREATE TABLE `objeto` (
   `id` int(11) NOT NULL,
   `nombre` text COLLATE utf8_bin NOT NULL,
-  `minimo_alerta` int(11) NOT NULL,
+  `minimo` int(11) NOT NULL,
   `imagen` varchar(32) COLLATE utf8_bin DEFAULT NULL,
   `tags` text COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
@@ -166,14 +166,14 @@ DELIMITER $$
 CREATE TRIGGER `objeto_delete` AFTER DELETE ON `objeto` FOR EACH ROW INSERT INTO historico
 (ACCION, I1, T1, I2, T2, T3)
 VALUES
-("DELETE OBJETO", OLD.id, OLD.nombre, OLD.minimo_alerta, OLD.imagen, OLD.tags)
+("DELETE OBJETO", OLD.id, OLD.nombre, OLD.minimo, OLD.imagen, OLD.tags)
 $$
 DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `objeto_insert` AFTER INSERT ON `objeto` FOR EACH ROW INSERT INTO historico
 (ACCION, I1, T1, I2, T2, T3)
 VALUES
-("INSERT OBJETO", NEW.id, NEW.nombre, NEW.minimo_alerta, NEW.imagen, NEW.tags)
+("INSERT OBJETO", NEW.id, NEW.nombre, NEW.minimo, NEW.imagen, NEW.tags)
 $$
 DELIMITER ;
 DELIMITER $$
@@ -186,7 +186,7 @@ CREATE TRIGGER `objeto_update` AFTER UPDATE ON `objeto` FOR EACH ROW INSERT INTO
 VALUES
 ("UPDATE OBJETO", NEW.id,
  OLD.nombre, NEW.nombre,
- OLD.minimo_alerta, NEW.minimo_alerta,
+ OLD.minimo, NEW.minimo,
  OLD.imagen, NEW.imagen,
  OLD.tags, NEW.tags)
 $$

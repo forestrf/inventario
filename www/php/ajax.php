@@ -63,13 +63,20 @@ if (isset($_GET['action'])) {
 			echo count($busquedas) == 1 ? $busquedas[0]["value"] : "[]";
 			break;
 	}
-} else {
+}
+else {
 	switch($_POST['action']) {
 		case 'update-object-image':
 			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto")
-				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
-				&& checkOrExit(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "", "No se ha enviado una imagen")) {
+				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")) {
 
+				if (!(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "")) {
+					echo json_encode(array(
+						"STATUS" => "SAME"
+					));
+					break;
+				}
+				
 				$file_index = "";
 				if ($db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index)
 					&& $db->set_objeto_image($_POST["id-object"], $file_index)) {
@@ -92,6 +99,13 @@ if (isset($_GET['action'])) {
 				&& checkOrExit(isset($_POST["nombre"]), "No se ha enviado un nombre")
 				&& checkOrExit(strlen($_POST["nombre"]) > 0, "El nombre es demasiado corto")) {
 
+				if ($_POST["nombre"] == $db->get_objeto($_POST["id-object"])[0]["nombre"]) {
+					echo json_encode(array(
+						"STATUS" => "SAME"
+					));
+					break;
+				}
+				
 				if ($db->set_objeto_name($_POST["id-object"], $_POST["nombre"])) {
 					echo json_encode(array(
 						"STATUS" => "OK",
@@ -111,6 +125,13 @@ if (isset($_GET['action'])) {
 				&& checkOrExit(isset($_POST["minimo"]), "No se ha enviado una cantidad mínima")
 				&& checkOrExit(intval($_POST["minimo"]) >= 0, "El valor mínimo debe de ser un número mayor o igual que cero")) {
 
+				if ($_POST["minimo"] == $db->get_objeto($_POST["id-object"])[0]["minimo"]) {
+					echo json_encode(array(
+						"STATUS" => "SAME"
+					));
+					break;
+				}
+				
 				if ($db->set_objeto_minimo($_POST["id-object"], $_POST["minimo"])) {
 					echo json_encode(array(
 						"STATUS" => "OK",
@@ -129,21 +150,30 @@ if (isset($_GET['action'])) {
 				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")) {
 				$cantidades = array();
 				foreach ($_POST as $key => $value) {
-					if (preg_match('@(seccion|cantidad)-([0-9]+)@', $key, $matches)) {
+					if (preg_match('@(id_seccion|cantidad)-([0-9]+)@', $key, $matches)) {
 						$cantidades[$matches[2]][$matches[1]] = $value;
 					}
 				}
 				$cantidadesFiltradas = array();
 				foreach ($cantidades as $cantidad) {
-					if (checkOrExit(isset($cantidad["seccion"]) && isset($cantidad["cantidad"]), "Una de las entradas del almacen está incompleta")) {
+					if (checkOrExit(isset($cantidad["id_seccion"]) && isset($cantidad["cantidad"]), "Una de las entradas del almacen está incompleta")) {
 						$cantidadesFiltradas[] = $cantidad;
 					}
 				}
 
+				if (json_encode($cantidadesFiltradas) == json_encode($db->get_objeto_secciones($_POST["id-object"]))) {
+					echo json_encode(array(
+						"STATUS" => "SAME"
+					));
+					break;
+				}
+				
 				if ($db->set_objeto_cantidades($_POST["id-object"], $cantidadesFiltradas)) {
 					echo json_encode(array(
 						"STATUS" => "OK",
-						"MESSAGE" => "Cantidades actualizadas"
+						"MESSAGE" => "Cantidades actualizadas",
+						"FIRST" => json_encode($cantidadesFiltradas),
+						"SECOND" => json_encode($db->get_objeto_secciones($_POST["id-object"])),
 					));
 				} else {
 					echo json_encode(array(
@@ -158,6 +188,13 @@ if (isset($_GET['action'])) {
 				&& checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe")
 				&& checkOrExit(isset($_POST["tags"]), "No se ha enviado una lista de tags")) {
 
+				if ($_POST["tags"] == $db->get_objeto($_POST["id-object"])[0]["tags"]) {
+					echo json_encode(array(
+						"STATUS" => "SAME"
+					));
+					break;
+				}
+				
 				if ($db->set_objeto_tags($_POST["id-object"], $_POST["tags"])) {
 					echo json_encode(array(
 						"STATUS" => "OK",
