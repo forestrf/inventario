@@ -35,8 +35,16 @@ var timeouts = (function(list) {
 		get: function(key) {
 			return list.containsKey(key) ? list.get(key).func : null;
 		},
+		finishNow: function(key) {
+			if (list.containsKey(key)) {
+				list.get(key).func();
+				this.del(key);
+				return true;
+			}
+			return false;
+		},
 		del: function(key) {
-			if(list.containsKey(key)) {
+			if (list.containsKey(key)) {
 				window.clearTimeout(list.get(key).timeoutId);
 				list.remove(key);
 			}

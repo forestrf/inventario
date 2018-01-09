@@ -25,7 +25,7 @@
 <div class="buscador">
 	<div class="fixed">
 		Búsqueda: <input id="buscador" type="text" placeholder="Búsqueda" class="form-control"/>
-		<button class="btn btn-primary" id="BTN_BUSQUEDAS_PREPARADAS">Búsquedas preparadas</button>
+		<button class="btn btn-primary" id="BTN_BUSQUEDAS_PREPARADAS">Búsquedas guardadas</button>
 	</div>
 </div>
 
@@ -244,7 +244,7 @@ function edit(objeto, UpdateListObject) {
 			),
 			C("div", ["class", "clear"])
 		),
-		PieGuardarCancelar("Guardar cambios", guardarCambios, "Cerrar", popups.closePopup, true, "Borrar", function() { abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"), objetoLocal.onRemove) })
+		PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardarCambios, "Cerrar", popups.closePopup, true, "Borrar", function() { abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"), objetoLocal.onRemove) })
 	);
 	
 	for (var i = 0; i < objetoLocal.secciones.length; i++) {
@@ -352,9 +352,7 @@ function edit(objeto, UpdateListObject) {
 	}
 	
 	function guardarCambios() {
-		var forms = popupDOM.querySelectorAll("form");
 		for (var i = 0; i < forms.length; i++) {
-			// if form has changes to send, then send
 			forms[i].submitter.click();
 		}
 	}
@@ -370,10 +368,10 @@ function edit(objeto, UpdateListObject) {
 				case "OK":
 					target.parentNode.UpdateListObject();
 				case "ERROR":
-					temporarySetStyle(target, json.STATUS, json.MESSAGE, 10000);
+					TemporalMessage(target, json.STATUS, json.MESSAGE, 10000);
 					break;
 				case "SAME":
-					temporarySetStyle(target, json.STATUS, json.MESSAGE, 2500);
+					TemporalMessage(target, json.STATUS, json.MESSAGE, 2500);
 					break;
 			}
 		}, function(msg) {
@@ -382,12 +380,9 @@ function edit(objeto, UpdateListObject) {
 	}
 }
 
-function temporarySetStyle(target, className, msg, milliseconds) {
-	var oldTimeout = timeouts.get(target);
-	if (oldTimeout != null) {
-		oldTimeout();
-		timeouts.del(target);
-	}
+function TemporalMessage(target, className, msg, milliseconds) {
+	timeouts.finishNow(target);
+	
 	AddClass(target, className);
 	
 	(function(msgDOM) {
@@ -397,33 +392,26 @@ function temporarySetStyle(target, className, msg, milliseconds) {
 			RemoveClass(target, className);
 			target.removeChild(msgDOM);
 		}, milliseconds);
-		
 	})(C("span", ["class", "msg"], msg));
 }
-	
+
 function abrirBorrarVentana(popupClass, btnClass, msg, onRemoveCallback) {
 	popups.showPopup(C("div", ["class", popupClass],
 		C("div", ["class", "titulo"], msg),
-		C("div", ["class", "botonesAceptarCancelar"],
-			C("button", ["type", "button", "class", "btn " + btnClass + " borra", "onclick", onRemoveCallback], "Borrar"),
-			C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", popups.closePopup], "Cancelar")
-		)
+		PieGuardarCancelar("Borrar", btnClass + " borra", onRemoveCallback, "Cancelar", popups.closePopup)
 	));
 }
 
 function addObjeto() {
 	AJAX('php/ajax.php', 'action=create-empty-object', function(msg) {
-		console.log(msg);
 		var json = JSON.parse(msg.response);
 		var id = json.MESSAGE;
-		console.log("ID of the created object: ", id);
 		
 		AJAX('php/ajax.php?action=getinventarioitem&id=' + id, null, function(msg) {
 			lista.objetos[id] = fixObjetoFromJSON(JSON.parse(msg.response)[0]);
 			contenedorListaObjetos.appendChild(DrawObjeto(id));
 			lista.objetos[id].DOM.onclick();
 		}, console.log);
-		
 	}, console.log);
 }
 
@@ -431,9 +419,9 @@ function GetImagenObjeto(objeto) {
 	return objeto.imagen === null ? "http://via.placeholder.com/128x128" : "php/ajax.php?action=getfile&id=" + objeto.imagen;
 }
 
-function PieGuardarCancelar(guardarStr, guardarFunc, cerrarStr, cerrarFunc, mostrarBorrar, borrarStr, borrarFunc) {
+function PieGuardarCancelar(guardarStr, guardarClass, guardarFunc, cerrarStr, cerrarFunc, mostrarBorrar, borrarStr, borrarFunc) {
 	var pie = C("div", ["class", "botonesAceptarCancelar"],
-		C("button", ["type", "button", "class", "btn btn-success guarda", "onclick", guardarFunc], guardarStr),
+		C("button", ["type", "button", "class", "btn " + guardarClass, "onclick", guardarFunc], guardarStr),
 		C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", cerrarFunc], cerrarStr)
 	);
 	if (mostrarBorrar) {
@@ -449,14 +437,13 @@ function ListarAlmacenesSecciones() {
 	popups.showPopup(C("div", ["class", "lista-almacenes-secciones"],
 		arbolContainer = C("div"),
 		C("div", ["class", "addAlmacenContainer"], C("button", ["class", "btn btn-primary", "onclick", AddAlmacen], "Añadir Almacén")),
-		PieGuardarCancelar("Guardar cambios", Guardar, "Cancelar", popups.closePopup, false)
+		PieGuardarCancelar("Guardar cambios", "btn-success guarda", Guardar, "Cancelar", popups.closePopup, false)
 	));
 	
 	var almacenes = JSON.parse(JSON.stringify(lista.almacenes));
 	var secciones = JSON.parse(JSON.stringify(lista.secciones));
 	
 	// No queremos crear secciones iguales a secciones borradas justo ahora para evitar mover cantidades en lugar de borrarlas.
-	// TO DO: Borrar un almacen o una sección, qué hace con los objetos que usaban dicha sección o almacen? Avisar al borrar una sección o almacen de que hay cosas en el y que borrarlo eliminará esa cantidad de cosas
 	var almacenesUsados = GetObjectKeysSorted(almacenes);
 	var seccionesUsados = GetObjectKeysSorted(secciones);
 	
@@ -470,9 +457,7 @@ function ListarAlmacenesSecciones() {
 		var post = 'action=update-almacenes-secciones&almacenes=' + JSON.stringify(almacenes) + "&secciones=" + JSON.stringify(secciones);
 		if (typeof forzar !== undefined) post += "&forzar=" + forzar;
 		AJAX('php/ajax.php', post, function(msg) {
-			console.log(msg);
 			var json = JSON.parse(msg.response);
-			console.log(json);
 			if (json.STATUS === "ASK") {
 				var contenedor = C("div");
 				for (var i in json.MESSAGE) {
@@ -498,8 +483,6 @@ function ListarAlmacenesSecciones() {
 				));
 			}
 		}, console.log);
-		console.log(almacenes);
-		console.log(secciones);
 	}
 	
 	function AddAlmacen() {
@@ -518,7 +501,7 @@ function ListarAlmacenesSecciones() {
 		C(arbolContainer,
 			contenedor = C("div", ["class", "almacen"],
 				C("div", ["class", "header first"], "Almacén"),
-				C("input", ["type", "text", "class", "form-control", "value", almacen.nombre, "onchange", OnChangeInput, "onkeyup", OnChangeInput]),
+				C("input", ["type", "text", "class", "form-control", "value", almacen.nombre, "onchange", OnChangeAlmacen, "onkeyup", OnChangeAlmacen]),
 				C("div", ["class", "header"], "Secciones"),
 				seccionesContainer = C("div"),
 				C("div", ["class", "btn addseccion btn-primary", "onclick", addSeccion], "Añadir Sección"),
@@ -530,7 +513,7 @@ function ListarAlmacenesSecciones() {
 		
 		
 		
-		function OnChangeInput(ev) {
+		function OnChangeAlmacen(ev) {
 			almacen.nombre = ev.target.value;
 		}
 		
@@ -565,12 +548,12 @@ function ListarAlmacenesSecciones() {
 					(function (seccion) {
 						C(seccionesContainer,
 							C("div", ["class", "seccion"],
-								C("input", ["type", "text", "class", "form-control", "value", seccion.nombre, "onchange", OnChangeInput, "onkeyup", OnChangeInput]),
+								C("input", ["type", "text", "class", "form-control", "value", seccion.nombre, "onchange", OnChangeSeccion, "onkeyup", OnChangeSeccion]),
 								C("div", ["class", "btn btn-danger", "onclick", OnRemoveSeccion], "X")
 							)
 						);
 						
-						function OnChangeInput(ev) {
+						function OnChangeSeccion(ev) {
 							seccion.nombre = ev.target.value;
 						}
 						function OnRemoveSeccion() {
@@ -587,7 +570,6 @@ function ListarAlmacenesSecciones() {
 BTN_BUSQUEDAS_PREPARADAS.style.display = "none";
 AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 	var busquedasArr = JSON.parse(msg.response);
-	console.log("Busquedas preparadas", busquedasArr);
 	
 	BTN_BUSQUEDAS_PREPARADAS.style.display = "";
 	BTN_BUSQUEDAS_PREPARADAS.onclick = popupBusquedasPreparadas;
@@ -597,13 +579,13 @@ AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 		for (var i = 0; i < busquedasArr.length; i++) {
 			AddBusquedapreparada(busquedasArr[i].nombre, busquedasArr[i].busqueda);
 		}
-		var contenedorBusquedas;
+		var contenedorBusquedas = C("div", ["class", "busquedas-contenedor ajax"],
+			busquedas_ul,
+			C("button", ["class", "btn btn-default", "onclick", add], "Añadir búsqueda"),
+		);
 		popups.showPopup(C("div",
-			contenedorBusquedas = C("div", ["class", "busquedas-contenedor ajax"],
-				busquedas_ul,
-				C("button", ["class", "btn btn-primary", "onclick", add], "Añadir"),
-			),
-			PieGuardarCancelar("Guardar cambios", guardar, "Cerrar", popups.closePopup, false)
+			contenedorBusquedas,
+			PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardar, "Cerrar", popups.closePopup, false)
 		));
 		
 		var sortable = Sortable.create(busquedas_ul, {
@@ -611,7 +593,7 @@ AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 		});
 		
 		function add() {
-			AddBusquedapreparada("Nueva búsqueda", "");
+			AddBusquedapreparada("Nueva búsqueda", "Texto que buscar");
 		}
 		
 		function guardar() {
@@ -626,7 +608,7 @@ AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 			AJAX('php/ajax.php', 'action=update-busquedaspreparadas&busquedaspreparadas=' + encodeURIComponent(JSON.stringify(busquedas)), function(msg) {
 				var json = JSON.parse(msg.response);
 				busquedasArr = busquedas;
-				temporarySetStyle(contenedorBusquedas, json.STATUS, json.MESSAGE, 10000);
+				TemporalMessage(contenedorBusquedas, json.STATUS, json.MESSAGE, 10000);
 			}, console.log);
 		}
 		
@@ -664,7 +646,7 @@ AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 							C("td", bus = C("input", ["class", "form-control", "value", busqueda]))
 						)
 					),
-					PieGuardarCancelar("Aceptar", aceptar, "Cancelar", popups.closePopup, false)
+					PieGuardarCancelar("Aceptar", "btn-success guarda", aceptar, "Cancelar", popups.closePopup, false)
 				));
 				
 				function aceptar() {

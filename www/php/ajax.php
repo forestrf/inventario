@@ -349,6 +349,13 @@ else {
 			break;
 		case 'update-busquedaspreparadas':
 			if (checkOrExit(isset($_POST["busquedaspreparadas"]), "No se ha enviado el nuevo listado de búsquedas preparadas")) {
+				if ($_POST["busquedaspreparadas"] == $db->get_busquedaspreparadas()[0]["value"]) {
+					echo json_encode(array(
+						"STATUS" => "SAME",
+						"MESSAGE" => $SAME_MSG
+					));
+					break;
+				}
 				if ($db->set_busquedaspreparadas($_POST["busquedaspreparadas"])) {
 					echo json_encode(array(
 						"STATUS" => "OK",
