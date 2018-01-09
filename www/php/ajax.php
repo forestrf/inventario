@@ -1,6 +1,7 @@
 <?php
 require_once 'lib/DB.php';
 
+$SAME_MSG = "Sin cambios";
 
 if (isset($_GET['action']) || isset($_POST['action'])) {
 	$db = new DB();
@@ -72,7 +73,8 @@ else {
 
 				if (!(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "")) {
 					echo json_encode(array(
-						"STATUS" => "SAME"
+						"STATUS" => "SAME",
+						"MESSAGE" => $SAME_MSG
 					));
 					break;
 				}
@@ -101,7 +103,8 @@ else {
 
 				if ($_POST["nombre"] == $db->get_objeto($_POST["id-object"])[0]["nombre"]) {
 					echo json_encode(array(
-						"STATUS" => "SAME"
+						"STATUS" => "SAME",
+						"MESSAGE" => $SAME_MSG
 					));
 					break;
 				}
@@ -127,7 +130,8 @@ else {
 
 				if ($_POST["minimo"] == $db->get_objeto($_POST["id-object"])[0]["minimo"]) {
 					echo json_encode(array(
-						"STATUS" => "SAME"
+						"STATUS" => "SAME",
+						"MESSAGE" => $SAME_MSG
 					));
 					break;
 				}
@@ -163,7 +167,8 @@ else {
 
 				if (json_encode($cantidadesFiltradas) == json_encode($db->get_objeto_secciones($_POST["id-object"]))) {
 					echo json_encode(array(
-						"STATUS" => "SAME"
+						"STATUS" => "SAME",
+						"MESSAGE" => $SAME_MSG
 					));
 					break;
 				}
@@ -190,7 +195,8 @@ else {
 
 				if ($_POST["tags"] == $db->get_objeto($_POST["id-object"])[0]["tags"]) {
 					echo json_encode(array(
-						"STATUS" => "SAME"
+						"STATUS" => "SAME",
+						"MESSAGE" => $SAME_MSG
 					));
 					break;
 				}
@@ -198,7 +204,7 @@ else {
 				if ($db->set_objeto_tags($_POST["id-object"], $_POST["tags"])) {
 					echo json_encode(array(
 						"STATUS" => "OK",
-						"MESSAGE" => "Tags actualizados"
+						"MESSAGE" => "Palabras clave actualizadas"
 					));
 				} else {
 					echo json_encode(array(

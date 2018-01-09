@@ -19,11 +19,11 @@ div.buscador .fixed {
 	width: 100%;
 }
 .busquedas-contenedor {
-	border: 2px dashed #ddd;
-	margin: 20px;
-	padding: 20px;
-	border-radius: 10px;
 	background-color: #fafafa;
+	border-radius: 10px;
+	padding: 20px;
+	margin: 20px;
+	border: 2px dashed #ddd;
 }
 .busquedas {
 	padding: 0;
@@ -33,7 +33,6 @@ div.buscador .fixed {
 	list-style: none;
 }
 .busquedas .handle {
-	background-color: #eee;
 	vertical-align: top;
 	border-radius: 5px;
 	margin-bottom: 5px;
@@ -41,29 +40,37 @@ div.buscador .fixed {
 	text-align: center;
 	font-size: 26px;
 	display: inline-block;
+	padding: 0;
 	cursor: -webkit-grab;
 	cursor: grab;
-	border: 2px dotted #999;
+	border: 1px dotted #999;
 	height: 34px;
-	color: #444;
-	width: 25px;
+	color: #999;
+	width: 20px;
 }
 .busquedas .handle:active {
 	cursor: -webkit-grabbing;
 	cursor: grabbing;
 }
 .busquedas .boton {
-	margin-left: 5px;
-	height: 34px;
 	line-height: 34px;
+	margin-left: 5px;
+	text-align: center;
 	font-size: 17px;
 	padding: 0;
+	height: 34px;
 	width: 34px;
-	text-align: center;
 }
+.busquedas .handle ,
+.busquedas .boton {
+	background-color: #ddd;
+	border-color: #ccc;
+	color: #fff;
+}
+
 .editbusqueda {
-	margin: 20px auto;
 	font-size: 1.1em;
+	margin: 20px auto;
 }
 #buscador {
 	line-height: 30px;
@@ -85,11 +92,11 @@ div.buscador .fixed {
 }
 .objeto {
 	background-color: #ddd;
+	vertical-align: top;
 	text-align: left;
 	padding: 0;
 	border: 1px solid #000;
 	margin: 2px;
-	vertical-align: top;
 }
 .objeto > div > div {
 	padding: 1px 2px 1px 2px;
@@ -165,7 +172,7 @@ div.buscador .fixed {
 	width: 100%;
 }
 .popup > .msg {
-	padding: 2%;
+	padding: 1% 2%;
 	height: 100%;
 }
 .popup > .msg > div {
@@ -203,14 +210,14 @@ div.buscador .fixed {
 }
 .popup > .msg form > div {
 	display: inline-block;
-	margin-right: 1%;
 	vertical-align: top;
+	margin-right: 1%;
 }
 .popup > .msg form > div:nth-child(1) {
-	width: 26%;
+	line-height: 34px;
 	text-align: right;
 	height: 34px;
-	line-height: 34px;
+	width: 26%;
 }
 .popup > .msg form > div:nth-child(2) {
 	width: 72%;
@@ -219,20 +226,20 @@ div.buscador .fixed {
 	width: 100%;
 }
 .popup > .msg form #img_objeto {
-	max-width: 128px;
 	max-height: 128px;
+	max-width: 128px;
 }
 .popup > .msg form.img {
 	height: 180px;
 }
 .popup > .msg form .cantidades .add {
 	margin-bottom: 15px;
+	line-height: 30px;
 	margin-top: 10px;
-	display: block;
 	font-size: 1.2em;
+	display: block;
 	padding: 0;
 	height: 30px;
-	line-height: 30px;
 }
 .popup > .msg form .tabla {
 	background-color: #f6ffd2;
@@ -241,10 +248,10 @@ div.buscador .fixed {
 	border-bottom: 0 solid;
 }
 .popup > .msg form .tabla span {
-	display: inline-block;
 	border-right: 1px solid #cbcbcb;
-	padding: 3px 0;
 	text-align: center;
+	display: inline-block;
+	padding: 3px 0;
 	color: #000;
 }
 .popup > .msg form .cantidad-block {
@@ -286,20 +293,20 @@ div.buscador .fixed {
 }
 .popup > .msg form .cantidad-block select ,
 .popup > .msg form .cantidad-block input {
+	border-radius: 0;
+	border-bottom: 0 none;
 	border-right: 1px solid #cbcbcb;
 	border-left: 0 none;
 	border-top: 0 none;
-	border-bottom: 0 none;
-	border-radius: 0;
 	box-shadow: none;
 }
 .popup > .msg form .cantidad-block .borrar {
-	width: 12%;
 	text-align: center;
+	width: 12%;
 }
 .popup > .msg form .cantidad-block .borrar .btn {
-	padding: 0px 5px;
 	font-weight: bold;
+	padding: 0px 5px;
 }
 
 .popup > .msg form > div:nth-child(2) span > span {
@@ -362,17 +369,17 @@ div.buscador .fixed {
 }
 .popup > .msg .botonesAceptarCancelar > div.borra {
 	position: absolute;
-	right: 0;
-	bottom: 0;
-	width: 100px;
 	height: 30px;
 	margin: 5px;
+	bottom: 0;
+	right: 0;
+	width: 100px;
 }
 .popup > .msg .botonesAceptarCancelar > div.borra button.borra {
 	padding: 0;
 	height: 100%;
-	width: 100%;
 	margin: 0;
+	width: 100%;
 }
 .popup > .msg .lista-almacenes-secciones .almacen {
 	background-color: #eee;
@@ -434,15 +441,16 @@ div.buscador .fixed {
 }
 .popup > .msg .lista-almacenes-secciones .addAlmacenContainer {
 	background-color: #f7f7f7;
-	padding: 10px;
-	text-align: center;
 	margin-bottom: -10px;
+	text-align: center;
 	margin-top: 10px;
+	padding: 10px;
 	border: 2px dashed #eaeaea;
 }
 
 .has-help {
 	position: relative;
+    cursor: help;
 }
 .has-help .desc {
 	display: none;
@@ -468,26 +476,30 @@ div.buscador .fixed {
 
 
 .aBorrarNombre {
-	border: 1px solid #fff;
+	background-color: #000;
 	margin-top: 1em;
 	font-size: .8em;
-	background-color: #000;
+	border: 1px solid #fff;
 }
 .aBorrarSeccionCantidad {
-	border: 1px solid #fff;
+	background-color: #555;
 	border-top: 0;
 	font-size: .8em;
-	background-color: #555;
+	border: 1px solid #fff;
 }
 .aBorrarNombre .var,
 .aBorrarSeccionCantidad .var {
-	font-size: .8em;
 	font-family: verdana;
+	font-size: .8em;
 }
 
 
 .popup > .msg .ajax {
 	transition: .3s all ease;
+}
+.popup > .msg .ajax.SAME {
+	background-color: #f2f5ff;
+	border-color: #8fe4d5;
 }
 .popup > .msg .ajax.OK {
 	background-color: #aeff9e;
@@ -508,4 +520,3 @@ div.buscador .fixed {
 		width: 100%;
 	}
 }
-

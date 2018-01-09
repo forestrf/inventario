@@ -7,6 +7,7 @@
 <script src="js/ajax.js"></script>
 <script src="js/crel2.js"></script>
 <script src="js/libs/jshashtable/hashtable.js"></script>
+<script src="js/utils.js"></script>
 
 <!-- Tokenfield -->
 <script src="js/libs/jquery/jquery-1.9.1.min.js"></script>
@@ -38,71 +39,6 @@
 
 
 <script>
-if (typeof String.prototype.trim !== 'function') {
-	String.prototype.trim = function() {
-		return this.replace(/^\s+|\s+$/g, ''); 
-	}
-}
-
-var timeouts = (function(list) {
-	return {
-		add: function(func, milliseconds) {
-			var key = window.setTimeout(function() {
-				delete list[key];
-				func();
-			}, milliseconds);
-			
-			list.put(key, {
-				timeoutId: key,
-				func: func
-			});
-			
-			return key;
-		},
-		addWithKey: function(key, func, milliseconds) {
-			list.put(key, {
-				timeoutId: -1,
-				func: func
-			});
-			
-			list.get(key).timeoutId = window.setTimeout(function() {
-				list.remove(key);
-				func();
-			}, milliseconds);
-			
-			return key;
-		},
-		get: function(key) {
-			return list.containsKey(key) ? list.get(key).func : null;
-		},
-		del: function(key) {
-			if(list.containsKey(key)) {
-				window.clearTimeout(list.get(key).timeoutId);
-				list.remove(key);
-			}
-		}
-	};
-})(new Hashtable());
-
-function AddClass(dom, className) {
-	var clases = dom.className.split(" ");
-	clases.push(className);
-	dom.className = clases.filter(onlyUnique).join(" ");
-}
-function RemoveClass(dom, className) {
-	dom.className = dom.className.split(" ").filter(function(c) { return c != className; }).join(" ");
-}
-
-function shallowClone(objeto) {
-	var clon = {};
-	for (var i in objeto) clon[i] = objeto[i];
-	return clon;
-}
-
-var random_id_generator = (function(c) {
-	return function() { return c++; };
-})(0);
-
 var popups = (function(stack) {
 	return {
 		showPopup: function(contentsDOM) {
@@ -119,11 +55,7 @@ var popups = (function(stack) {
 	}
 })([]);
 
-function onlyUnique(value, index, self) { 
-	return self.indexOf(value) === index;
-}
-
-function GetKeysOfObjectAsSortedNumberArray(obj) {
+function GetObjectKeysSorted(obj) {
 	return Object.keys(obj).map(function(x) { return parseInt(x) }).sort(function(a, b){ return a - b });
 }
 
@@ -147,7 +79,7 @@ function DrawObjectList() {
 	document.getElementById("inventario").innerHTML = "";
 
 	AJAX('php/ajax.php?action=getinventario', null, function(msg) {
-		DrawObjeto = function(i) {
+		function DrawObjeto(i) {
 			var objeto = lista.objetos[i];
 			var cantidad, tagsDOM, domObjetoEnLista;
 			return GeneraDomObjeto();
@@ -155,7 +87,7 @@ function DrawObjectList() {
 			
 			function GeneraDomObjeto() {
 				cantidad = GetCantidad(objeto);
-				domObjetoEnLista = C("button", ["class", "objeto obj-" + objeto.id, "onclick", function() { edit(objeto, updateListObject); }],
+				domObjetoEnLista = C("button", ["class", "objeto obj-" + objeto.id, "onclick", function() { edit(objeto, UpdateListObject); }],
 					C("div", ["class", "titulo"],
 						C("div", ["class", "nombre"], objeto.nombre)
 					),
@@ -165,32 +97,30 @@ function DrawObjectList() {
 					C("div", ["class", "info"],
 						C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
 						C("div", ["class", "minimo"], "Mínimo: ", objeto.minimo),
-						C("div", ["class", "tags"], "Tags: ", tagsDOM = C("span", ["class", "tags-list"]))
+						C("div", ["class", "tags"], "Palabras clave: ", tagsDOM = C("span", ["class", "tags-list"]))
 					)
 				);
 				for (var j in objeto.tags) C(tagsDOM, C("span", objeto.tags[j]));
 				(cantidad < parseInt(objeto.minimo) ? AddClass : RemoveClass)(domObjetoEnLista, "alerta");
-				objeto.onRemove = onRemove;
+				objeto.onRemove = function() {
+					AJAX('php/ajax.php', 'action=remove-object&id-object=' + objeto.id, function(msg) {
+						var json = JSON.parse(msg.response);
+						if (json.STATUS === "OK") {
+							domObjetoEnLista.parentNode.removeChild(domObjetoEnLista);
+							popups.closePopup();
+							popups.closePopup();
+						}
+					}, console.log);
+				};
 				return objeto.DOM = domObjetoEnLista;
 			}
 			
-			function updateListObject() {
+			function UpdateListObject() {
 				AJAX('php/ajax.php?action=getinventarioitem&id=' + objeto.id, null, function(msg) {
 					lista.objetos[i] = objeto = fixObjetoFromJSON(JSON.parse(msg.response)[0]);
 					var aBorrar = domObjetoEnLista;
 					domObjetoEnLista.parentNode.insertBefore(GeneraDomObjeto(), aBorrar);
 					domObjetoEnLista.parentNode.removeChild(aBorrar);
-				}, console.log);
-			}
-			
-			function onRemove() {
-				AJAX('php/ajax.php', 'action=remove-object&id-object=' + objeto.id, function(msg) {
-					var json = JSON.parse(msg.response);
-					if (json.STATUS === "OK") {
-						domObjetoEnLista.parentNode.removeChild(domObjetoEnLista);
-						popups.closePopup();
-						popups.closePopup();
-					}
 				}, console.log);
 			}
 		}
@@ -236,8 +166,8 @@ function DrawObjectList() {
 		
 		function GetAutocompleteTags(objetos) {
 			var arr = [];
-			for (var i in objetos) arr = arr.concat(objetos[i].tags.filter(function(x){ return arr.indexOf(x) === -1; }));
-			return arr
+			for (var i in objetos) arr = arr.concat(objetos[i].tags);
+			return arr.filter(onlyUnique);
 		}
 	}, console.log);
 }
@@ -250,28 +180,26 @@ function GetCantidad(objeto) {
 	})["cantidad"];
 }
 
-function edit(objeto, updateListObject) {
+function edit(objeto, UpdateListObject) {
 	var objetoLocal = shallowClone(objeto)
 	cantidad = GetCantidad(objetoLocal);
 	var cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
 	var tags;
 	var cantidades;
 	var popupDOM = C("div",
-		C("div", ["style", "padding: 1%", "updateListObject", updateListObject],
+		C("div", ["style", "padding: 1%", "UpdateListObject", UpdateListObject],
 			C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
 				C("div", "Nombre"),
 				C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal.nombre, "class", "form-control"])),
-				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
-				C("input", ["type", "hidden", "name", "action", "value", "update-object-name"])
+				DOMInputAction("update-object-name")
 			),
 			C("form", ["class", "ajax right_big img", "method", "post", "action", "php/ajax.php"],
 				C("div", "Imagen"),
 				C("div",
 					C("img", ["src", GetImagenObjeto(objetoLocal), "id", "img_objeto", "class", "img-" + objetoLocal.id]),
 					C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera"])
-				), 
-				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
-				C("input", ["type", "hidden", "name", "action", "value", "update-object-image"])
+				),
+				DOMInputAction("update-object-image")
 			),
 			C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
 				C("div", ["class", "has-help"],
@@ -282,8 +210,7 @@ function edit(objeto, updateListObject) {
 					)
 				),
 				C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal.minimo, "class", "form-control", "onchange", onPositiveNumberChange])),
-				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
-				C("input", ["type", "hidden", "name", "action", "value", "update-object-minimo"])
+				DOMInputAction("update-object-minimo")
 			),
 			C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
 				C("div", ["class", "has-help"],
@@ -308,14 +235,12 @@ function edit(objeto, updateListObject) {
 					}], "+ Añadir a otro lugar"),
 					C("span", C("span", "Total:"), cantidadROInput)
 				)),
-				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
-				C("input", ["type", "hidden", "name", "action", "value", "update-object-cantidades"])
+				DOMInputAction("update-object-cantidades")
 			),
 			C("form", ["class", "ajax right_big", "method", "post", "action", "php/ajax.php"],
-				C("div", ["class", "has-help"], "Tags", C("div", ["class", "desc"], "Palabras clave para filtrar una búsqueda y encontrar este objeto")),
+				C("div", ["class", "has-help"], "Palabras clave", C("div", ["class", "desc"], "Palabras clave para filtrar una búsqueda y encontrar este objeto")),
 				C("div", tags = C("input", ["name", "tags", "type", "text", "value", objetoLocal.tags, "class", "form-control"])),
-				C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
-				C("input", ["type", "hidden", "name", "action", "value", "update-object-tags"])
+				DOMInputAction("update-object-tags")
 			),
 			C("div", ["class", "clear"])
 		),
@@ -328,8 +253,7 @@ function edit(objeto, updateListObject) {
 	
 	var forms = popupDOM.querySelectorAll("form");
 	for (var i = 0; i < forms.length; i++) {
-		C(forms[i], forms[i].submitter = C("input", ["type", "submit"]));
-		forms[i].submitter.style = "display: none";
+		C(forms[i], forms[i].submitter = C("input", ["type", "submit", "style", "display: none"]));
 		forms[i].onsubmit = update;
 	}
 	
@@ -346,17 +270,23 @@ function edit(objeto, updateListObject) {
 	
 	
 	
+	function DOMInputAction(action) {
+		return C("span",
+			C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
+			C("input", ["type", "hidden", "name", "action", "value", action])
+		);
+	}
 	function onPositiveNumberChange(ev) {
 		var soloNumeros = ev.target.value.replace(/[^0-9 +*/-]/g, ""); // Quitar letras y +
-		var numeroSinCerosDelante = soloNumeros.replace(/^0*/, ""); // Evitar octal quitando en el inicio
+		var numeroSinCerosDelante = soloNumeros.replace(/^0*/, ""); // Evitar octal quitando ceros del inicio
 		var numeroFinal = eval(numeroSinCerosDelante); // Procesar +-*/
-		ev.target.value = isNaN(numeroFinal) || numeroFinal < 0 ? 0 : numeroFinal;
+		ev.target.value = isNaN(numeroFinal) || numeroFinal < 0 ? 0 : numeroFinal; // Hacer positivo
 	}
 	
 	function DrawCantidadInput(seccionObjeto) {
 		var seccion = lista.secciones[seccionObjeto.id_seccion];
 		var almacen = lista.almacenes[seccion.id_almacen];
-		var rId = random_id_generator();
+		var rId = id_generator();
 		var seccionesSelect, almacenesSelect, cantidadInput;
 		var cantidadBlock = C("div", ["class", "cantidad-block"],
 			C("div", ["class", "contenido c1"],
@@ -370,7 +300,7 @@ function edit(objeto, updateListObject) {
 			),
 			C("div", ["class", "borrar"],
 				C("div", ["class", "btn btn-danger", "onclick", function() {
-					objetoLocal.secciones.splice(Array.prototype.indexOf.call(cantidadBlock.parentNode.childNodes, cantidadBlock) - 1, 1); // -1 porque el indice 0 esta ocupado por la cabecera de la tabla
+					objetoLocal.secciones.splice(Array.prototype.indexOf.call(cantidadBlock.parentNode.childNodes, cantidadBlock) - 1, 1); // Indice 0 ocupado por la cabecera de la tabla
 					cantidadBlock.parentNode.removeChild(cantidadBlock);
 					UpdateROCantidad();
 				}], "X")
@@ -436,21 +366,23 @@ function edit(objeto, updateListObject) {
 		//for (var key of formData.entries()) console.log(key[0] + ', ' + key[1]);
 		AJAX('php/ajax.php', formData, function(msg) {
 			var json = JSON.parse(msg.response);
-			if (json.STATUS === "OK" || json.STATUS === "FAIL") {
-				temporarySetStyle(target, json.STATUS, json.MESSAGE);
-				if (json.STATUS === "OK") {
-					// Actualizar y Redibujar
-					target.parentNode.updateListObject();
-				}
+			switch (json.STATUS) {
+				case "OK":
+					target.parentNode.UpdateListObject();
+				case "ERROR":
+					temporarySetStyle(target, json.STATUS, json.MESSAGE, 10000);
+					break;
+				case "SAME":
+					temporarySetStyle(target, json.STATUS, json.MESSAGE, 2500);
+					break;
 			}
-			//eval(json.EVAL);
 		}, function(msg) {
 			alert("ERROR: " + msg.response);
 		});
 	}
 }
 
-function temporarySetStyle(target, className, msg) {
+function temporarySetStyle(target, className, msg, milliseconds) {
 	var oldTimeout = timeouts.get(target);
 	if (oldTimeout != null) {
 		oldTimeout();
@@ -464,7 +396,7 @@ function temporarySetStyle(target, className, msg) {
 		timeouts.addWithKey(target, function() {
 			RemoveClass(target, className);
 			target.removeChild(msgDOM);
-		}, 10000);
+		}, milliseconds);
 		
 	})(C("span", ["class", "msg"], msg));
 }
@@ -525,8 +457,8 @@ function ListarAlmacenesSecciones() {
 	
 	// No queremos crear secciones iguales a secciones borradas justo ahora para evitar mover cantidades en lugar de borrarlas.
 	// TO DO: Borrar un almacen o una sección, qué hace con los objetos que usaban dicha sección o almacen? Avisar al borrar una sección o almacen de que hay cosas en el y que borrarlo eliminará esa cantidad de cosas
-	var almacenesUsados = GetKeysOfObjectAsSortedNumberArray(almacenes);
-	var seccionesUsados = GetKeysOfObjectAsSortedNumberArray(secciones);
+	var almacenesUsados = GetObjectKeysSorted(almacenes);
+	var seccionesUsados = GetObjectKeysSorted(secciones);
 	
 	for (var i in almacenes) {
 		DrawAlmacen(almacenes[i]);
@@ -571,7 +503,7 @@ function ListarAlmacenesSecciones() {
 	}
 	
 	function AddAlmacen() {
-		var keys = GetKeysOfObjectAsSortedNumberArray(almacenes).concat(almacenesUsados).filter(onlyUnique);
+		var keys = GetObjectKeysSorted(almacenes).concat(almacenesUsados).filter(onlyUnique);
 		var id = GetFirstFreeID(keys);
 		almacenes[id] = {
 			id: id,
@@ -603,7 +535,7 @@ function ListarAlmacenesSecciones() {
 		}
 		
 		function addSeccion() {
-			var keys = GetKeysOfObjectAsSortedNumberArray(secciones).concat(seccionesUsados).filter(onlyUnique);
+			var keys = GetObjectKeysSorted(secciones).concat(seccionesUsados).filter(onlyUnique);
 			var id = GetFirstFreeID(keys);
 			secciones[id] = {
 				id: id,
@@ -694,14 +626,14 @@ AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 			AJAX('php/ajax.php', 'action=update-busquedaspreparadas&busquedaspreparadas=' + encodeURIComponent(JSON.stringify(busquedas)), function(msg) {
 				var json = JSON.parse(msg.response);
 				busquedasArr = busquedas;
-				temporarySetStyle(contenedorBusquedas, json.STATUS, json.MESSAGE);
+				temporarySetStyle(contenedorBusquedas, json.STATUS, json.MESSAGE, 10000);
 			}, console.log);
 		}
 		
 		function AddBusquedapreparada(nombre, busqueda) {
 			var li, b;
 			C(busquedas_ul, li = C("li",
-				C("span", ["class", "handle"], "⬍"),
+				C("span", ["class", "btn btn-info handle"], "⬍"),
 				b = C("button", ["class", "btn btn-primary", "onclick", click], nombre),
 				C("button", ["class", "btn btn-warning boton", "onclick", edit], C("i", ["class", "far fa-edit"])),
 				C("button", ["class", "btn btn-danger boton", "onclick", borrar], "X")));
