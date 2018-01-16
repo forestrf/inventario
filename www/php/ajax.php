@@ -29,7 +29,7 @@ if (isset($_GET['action'])) {
 			break;
 		case 'getinventarioitem':
 			insert_nocache_headers();
-			if (checkOrExit(isset($_GET["id"]), "No se ha enviado la id del objeto")) {
+			if (isset($_GET["id"])) {
 				$objetos = $db->get_objeto($_GET["id"]);
 				foreach ($objetos as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
 
@@ -62,6 +62,10 @@ if (isset($_GET['action'])) {
 			insert_nocache_headers();
 			$busquedas = $db->get_busquedaspreparadas();
 			echo count($busquedas) == 1 ? $busquedas[0]["value"] : "[]";
+			break;
+		case 'gethistory':
+			insert_nocache_headers();
+			echo json_encode($db->get_historico(), 1);
 			break;
 	}
 }

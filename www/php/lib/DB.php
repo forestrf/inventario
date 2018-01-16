@@ -133,68 +133,71 @@ class DB {
 	}
 	
 	function get_almacenes() {
-		return $this->query("SELECT * FROM almacen");
+		return $this->query("SELECT * FROM almacen;");
 	}
 	function get_secciones() {
-		return $this->query("SELECT * FROM seccion");
+		return $this->query("SELECT * FROM seccion;");
 	}
 	function get_objetos() {
-		return $this->query("SELECT * FROM objeto");
+		return $this->query("SELECT * FROM objeto;");
 	}
 	function get_objeto($id) {
 		$id = mysql_escape_mimic($id);
-		return $this->query("SELECT * FROM objeto WHERE id = {$id}");
+		return $this->query("SELECT * FROM objeto WHERE id = {$id};");
 	}
 	function get_objeto_secciones($id_objeto) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
-		return $this->query("SELECT id_seccion, cantidad FROM objeto_seccion WHERE id_objeto = {$id_objeto}");
+		return $this->query("SELECT id_seccion, cantidad FROM objeto_seccion WHERE id_objeto = {$id_objeto};");
 	}
 	function get_file($file_index) {
 		$file_index = mysql_escape_mimic($file_index);
-		return $this->query("SELECT * FROM file WHERE id = '$file_index'");
+		return $this->query("SELECT * FROM file WHERE id = '$file_index';");
+	}
+	function get_historico() {
+		return $this->query("SELECT * FROM historico;");
 	}
 	
 	function add_file($mimetype, $blob, &$file_index) {
 		$file_index = md5($blob);
 		$mimetype = mysql_escape_mimic($mimetype);
 		$blob = mysql_escape_mimic($blob);
-		return $this->query("INSERT INTO file (id, mimetype, bin) VALUES ('$file_index', '$mimetype', '$blob')");
+		return $this->query("INSERT INTO file (id, mimetype, bin) VALUES ('$file_index', '$mimetype', '$blob');");
 	}
 	function add_empty_objeto() {
-		return $this->query("INSERT INTO objeto () VALUES ()");
+		return $this->query("INSERT INTO objeto () VALUES ();");
 	}
 	function remove_objeto($id_objeto) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
-		return $this->query("DELETE FROM objeto WHERE id = '$id_objeto'");
+		return $this->query("DELETE FROM objeto WHERE id = '$id_objeto';");
 	}
 	function set_objeto_image($id_objeto, $id_file) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$id_file = mysql_escape_mimic($id_file);
-		return $this->query("UPDATE objeto SET imagen = '$id_file' WHERE id = '$id_objeto' LIMIT 1");
+		return $this->query("UPDATE objeto SET imagen = '$id_file' WHERE id = '$id_objeto' LIMIT 1;");
 	}
 	function set_objeto_name($id_objeto, $name) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$name = mysql_escape_mimic($name);
-		return $this->query("UPDATE objeto SET nombre = '$name' WHERE id = '$id_objeto' LIMIT 1");
+		return $this->query("UPDATE objeto SET nombre = '$name' WHERE id = '$id_objeto' LIMIT 1;");
 	}
 	function set_objeto_minimo($id_objeto, $minimo) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$minimo = mysql_escape_mimic($minimo);
-		return $this->query("UPDATE objeto SET minimo = '$minimo' WHERE id = '$id_objeto' LIMIT 1");
+		return $this->query("UPDATE objeto SET minimo = '$minimo' WHERE id = '$id_objeto' LIMIT 1;");
 	}
 	function set_objeto_tags($id_objeto, $tags) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
 		$tags = mysql_escape_mimic($tags);
-		return $this->query("UPDATE objeto SET tags = '$tags' WHERE id = '$id_objeto' LIMIT 1");
+		return $this->query("UPDATE objeto SET tags = '$tags' WHERE id = '$id_objeto' LIMIT 1;");
 	}
 	// $cantidades es un array que se recorrera con foreach cuyos elementos son otro array con indices seccion y cantidad
 	function set_objeto_cantidades($id_objeto, $cantidades) {
 		$id_objeto = mysql_escape_mimic($id_objeto);
-		if ($this->query("DELETE FROM objeto_seccion WHERE id_objeto = '$id_objeto'")) {
+		if ($this->query("DELETE FROM objeto_seccion WHERE id_objeto = '$id_objeto';")) {
 			foreach ($cantidades as $cantidad) {
 				$id_seccion = mysql_escape_mimic($cantidad["id_seccion"]);
 				$cantidad = mysql_escape_mimic($cantidad["cantidad"]);
-				if (!$this->query("INSERT INTO objeto_seccion (id_objeto, id_seccion, cantidad) VALUES ($id_objeto, $id_seccion, $cantidad)")) {
+				if (!$this->query("INSERT INTO objeto_seccion (id_objeto, id_seccion, cantidad) VALUES ($id_objeto, $id_seccion, $cantidad);")) {
 					return false;
 				}
 			}
@@ -204,22 +207,22 @@ class DB {
 	}
 	
 	function remove_secciones_not_in($new_sections) {
-		return $this->query("DELETE FROM seccion WHERE id NOT IN (" . implode(", ", array_map(function($v) { return mysql_escape_mimic($v); }, $new_sections)) . ")");
+		return $this->query("DELETE FROM seccion WHERE id NOT IN (" . implode(", ", array_map(function($v) { return mysql_escape_mimic($v); }, $new_sections)) . ");");
 	}
 	function remove_almacenes_not_in($new_almacenes) {
-		return $this->query("DELETE FROM almacen WHERE id NOT IN (" . implode(", ", array_map(function($v) { return mysql_escape_mimic($v); }, $new_almacenes)) . ")");
+		return $this->query("DELETE FROM almacen WHERE id NOT IN (" . implode(", ", array_map(function($v) { return mysql_escape_mimic($v); }, $new_almacenes)) . ");");
 	}
 	function add_or_update_almacen($id, $nombre) {
 		$id = mysql_escape_mimic($id);
 		$nombre = mysql_escape_mimic($nombre);
-		return $this->query("INSERT INTO almacen (id, nombre) VALUES ('$id', '$nombre') ON DUPLICATE KEY UPDATE nombre = '$nombre'");
+		return $this->query("INSERT INTO almacen (id, nombre) VALUES ('$id', '$nombre') ON DUPLICATE KEY UPDATE nombre = '$nombre';");
 	}
 	// Se puede actualizar una sección moviéndola a otro almacen, aunque la interfaz web todavía no lo soporta
 	function add_or_update_seccion($id, $nombre, $id_almacen) {
 		$id = mysql_escape_mimic($id);
 		$nombre = mysql_escape_mimic($nombre);
 		$id_almacen = mysql_escape_mimic($id_almacen);
-		return $this->query("INSERT INTO seccion (id, nombre, id_almacen) VALUES ('$id', '$nombre', '$id_almacen') ON DUPLICATE KEY UPDATE nombre = '$nombre', id_almacen = '$id_almacen'");
+		return $this->query("INSERT INTO seccion (id, nombre, id_almacen) VALUES ('$id', '$nombre', '$id_almacen') ON DUPLICATE KEY UPDATE nombre = '$nombre', id_almacen = '$id_almacen';");
 	}
 }
 
