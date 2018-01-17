@@ -669,7 +669,56 @@ function MostrarHistorial() {
 	AJAX('php/ajax.php?action=gethistory', null, function(msg) {
 		var listado = JSON.parse(msg.response);
 		for (var i = 0; i < listado.length; i++) {
-			C(container, listado[i]);
+			switch (listado[i].ACCION) {
+			case "DELETE ALMACEN":
+				// (I1, T1) VALUES (OLD.id, OLD.nombre)
+				break;
+			case "INSERT ALMACEN":
+				// (I1, T1) VALUES (NEW.id, NEW.nombre)
+				break;
+			case "UPDATE ALMACEN":
+				// (I1, T1, T2) VALUES (NEW.id, OLD.nombre, NEW.nombre)
+				break;
+			case "DELETE FILE":
+				// (I1, B1, T1) VALUES (OLD.id, OLD.bin, OLD.mimetype)
+				break;
+			case "INSERT FILE":
+				// (I1, B1, T1) VALUES (NEW.id, NEW.bin, NEW.mimetype)
+				break;
+			case "UPDATE FILE":
+				// (I1, B1, B2, T1, T2) VALUES (NEW.id, OLD.bin, NEW.bin, OLD.mimetype, NEW.mimetype)
+				break;
+			case "DELETE OBJETO":
+				// (I1, T1, I2, T2, T3) VALUES (OLD.id, OLD.nombre, OLD.minimo, OLD.imagen, OLD.tags)
+				break;
+			case "INSERT OBJETO":
+				// (I1, T1, I2, T2, T3) VALUES (NEW.id, NEW.nombre, NEW.minimo, NEW.imagen, NEW.tags)
+				break;
+			case "UPDATE OBJETO":
+				// (I1, T1, T2, I2, I3, T3, T4, T5, T6) VALUES (NEW.id, OLD.nombre, NEW.nombre, OLD.minimo, NEW.minimo, OLD.imagen, NEW.imagen, OLD.tags, NEW.tags)
+				console.log(listado[i].Fecha);
+				break;
+			case "DELETE OBJETO_SECCION":
+				// (I1, I2, I3) VALUES (OLD.id_objeto, OLD.id_seccion, OLD.cantidad)
+				break;
+			case "INSERT OBJETO_SECCION":
+				// (I1, I2, I3) VALUES (NEW.id_objeto, NEW.id_seccion, NEW.cantidad)
+				break;
+			case "UPDATE OBJETO_SECCION":
+				// (I1, I2, I3 ,I4, I5, I6) VALUES (OLD.id_objeto, NEW.id_objeto, OLD.id_seccion, NEW.id_seccion, OLD.cantidad, NEW.cantidad)
+				break;
+			case "DELETE SECCION":
+				// (I1, T1, I2) VALUES (OLD.id, OLD.nombre, OLD.id_almacen)
+				break;
+			case "INSERT SECCION":
+				// (I1, T1, I2) VALUES (NEW.id, NEW.nombre, NEW.id_almacen)
+				break;
+			case "UPDATE SECCION":
+				// (I1, T1, T2, I2, I3) VALUES (NEW.id, OLD.nombre, NEW.nombre, OLD.id_almacen, NEW.id_almacen)
+				break;
+			}
+			
+			C(container, listado[i].toString());
 		}
 	}, console.log);
 	

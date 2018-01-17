@@ -178,17 +178,9 @@ $$
 DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `objeto_update` AFTER UPDATE ON `objeto` FOR EACH ROW INSERT INTO historico
-(ACCION, I1,
- T1, T2,
- I2, I3,
- T3, T4,
- T5, T6)
+(ACCION, I1, T1, T2, I2, I3, T3, T4, T5, T6)
 VALUES
-("UPDATE OBJETO", NEW.id,
- OLD.nombre, NEW.nombre,
- OLD.minimo, NEW.minimo,
- OLD.imagen, NEW.imagen,
- OLD.tags, NEW.tags)
+("UPDATE OBJETO", NEW.id, OLD.nombre, NEW.nombre, OLD.minimo, NEW.minimo, OLD.imagen, NEW.imagen, OLD.tags, NEW.tags)
 $$
 DELIMITER ;
 
