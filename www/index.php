@@ -181,7 +181,7 @@ function GetCantidad(objeto) {
 }
 
 function edit(objeto, UpdateListObject) {
-	var objetoLocal = shallowClone(objeto)
+	var objetoLocal = shallowClone(objeto);
 	cantidad = GetCantidad(objetoLocal);
 	var cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
 	var tags;
