@@ -455,7 +455,7 @@ function ListarAlmacenesSecciones() {
 	
 	function Guardar(forzar) {
 		var post = 'action=update-almacenes-secciones&almacenes=' + JSON.stringify(almacenes) + "&secciones=" + JSON.stringify(secciones);
-		if (typeof forzar !== undefined) post += "&forzar=" + forzar;
+		if (typeof forzar !== undefined) post += "&forzar=" + (true === forzar ? "OK" : "NO");
 		AJAX('php/ajax.php', post, function(msg) {
 			var json = JSON.parse(msg.response);
 			if (json.STATUS === "ASK") {
@@ -660,67 +660,87 @@ AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 
 function MostrarHistorial() {
 	var container;
-	popups.showPopup(C("div", ["class", "lista-almacenes-secciones"],
-		container = C("div", "Cada cambio tiene una id, que se incrementa. Mostrar el historial entero, y si se realiza un deshacer se agrupará los cambios e indicará a qué id se deshizo. La acción de deshacer también se puede deshacer, y deshacer se queda registrado en el historial como una acción. No se puede borrar una acción, por lo que deshacer no deshacer sino que repite acciones pasadas en sentido inverso, creando nuevos eventos. Para dejarlo bonito, cada evento del historial se mostrará sólo o agrupado (dependiendo de qué es lo que se realiza en el), y el evento mostrado será fácil de leer. Por ejemplo, se cambia valor mínimo de objeto tal de esta cantidad a esta otra (que lo puedes clicar si esque existe, y abre el objeto para que lo veas)."),
+	popups.showPopup(C("div", ["class", "historial"],
+		container = C("div", "Cada cambio tiene una id, que se incrementa. Mostrar el historial entero, y si se realiza un deshacer se agrupará los cambios e indicará a qué id se deshizo. La acción de deshacer también se puede deshacer, y deshacer se queda registrado en el historial como una acción. No se puede borrar una acción, por lo que deshacer no deshacer sino que repite acciones pasadas en sentido inverso, creando nuevos eventos. Para dejarlo bonito, cada evento del historial se mostrará sólo o agrupado (dependiendo de qué es lo que se realiza en el), y el evento mostrado será fácil de leer. Por ejemplo, se cambia valor mínimo de objeto tal de esta cantidad a esta otra (que lo puedes clicar si esque existe, y abre el objeto para que lo veas).", C("br")),
 		PieGuardarCancelar("Deshacer cambios", "btn-success guarda", Deshacer, "Cancelar", popups.closePopup, false)
 	));
 	
 	// Obtener listado
 	AJAX('php/ajax.php?action=gethistory', null, function(msg) {
 		var listado = JSON.parse(msg.response);
+		listado = listado.reverse();
 		for (var i = 0; i < listado.length; i++) {
-			switch (listado[i].ACCION) {
-			case "DELETE ALMACEN":
-				// (I1, T1) VALUES (OLD.id, OLD.nombre)
-				break;
-			case "INSERT ALMACEN":
-				// (I1, T1) VALUES (NEW.id, NEW.nombre)
-				break;
-			case "UPDATE ALMACEN":
-				// (I1, T1, T2) VALUES (NEW.id, OLD.nombre, NEW.nombre)
-				break;
-			case "DELETE FILE":
-				// (I1, B1, T1) VALUES (OLD.id, OLD.bin, OLD.mimetype)
-				break;
-			case "INSERT FILE":
-				// (I1, B1, T1) VALUES (NEW.id, NEW.bin, NEW.mimetype)
-				break;
-			case "UPDATE FILE":
-				// (I1, B1, B2, T1, T2) VALUES (NEW.id, OLD.bin, NEW.bin, OLD.mimetype, NEW.mimetype)
-				break;
-			case "DELETE OBJETO":
-				// (I1, T1, I2, T2, T3) VALUES (OLD.id, OLD.nombre, OLD.minimo, OLD.imagen, OLD.tags)
-				break;
-			case "INSERT OBJETO":
-				// (I1, T1, I2, T2, T3) VALUES (NEW.id, NEW.nombre, NEW.minimo, NEW.imagen, NEW.tags)
-				break;
-			case "UPDATE OBJETO":
-				// (I1, T1, T2, I2, I3, T3, T4, T5, T6) VALUES (NEW.id, OLD.nombre, NEW.nombre, OLD.minimo, NEW.minimo, OLD.imagen, NEW.imagen, OLD.tags, NEW.tags)
-				console.log(listado[i].Fecha);
-				break;
-			case "DELETE OBJETO_SECCION":
-				// (I1, I2, I3) VALUES (OLD.id_objeto, OLD.id_seccion, OLD.cantidad)
-				break;
-			case "INSERT OBJETO_SECCION":
-				// (I1, I2, I3) VALUES (NEW.id_objeto, NEW.id_seccion, NEW.cantidad)
-				break;
-			case "UPDATE OBJETO_SECCION":
-				// (I1, I2, I3 ,I4, I5, I6) VALUES (OLD.id_objeto, NEW.id_objeto, OLD.id_seccion, NEW.id_seccion, OLD.cantidad, NEW.cantidad)
-				break;
-			case "DELETE SECCION":
-				// (I1, T1, I2) VALUES (OLD.id, OLD.nombre, OLD.id_almacen)
-				break;
-			case "INSERT SECCION":
-				// (I1, T1, I2) VALUES (NEW.id, NEW.nombre, NEW.id_almacen)
-				break;
-			case "UPDATE SECCION":
-				// (I1, T1, T2, I2, I3) VALUES (NEW.id, OLD.nombre, NEW.nombre, OLD.id_almacen, NEW.id_almacen)
-				break;
+			var step = listado[i];
+			console.log(step);
+			var entrada = C("div", ["class", "entrada"]);			
+			C(entrada, step.ACCION, C("br"));
+			C(entrada, C("div", step.Fecha));
+			
+			switch (step.ACCION) {
+				case "DELETE ALMACEN":
+					// (I1, T1) VALUES (OLD.id, OLD.nombre)
+					break;
+				case "INSERT ALMACEN":
+					// (I1, T1) VALUES (NEW.id, NEW.nombre)
+					break;
+				case "UPDATE ALMACEN":
+					// (I1, T1, T2) VALUES (NEW.id, OLD.nombre, NEW.nombre)
+					break;
+				case "DELETE FILE":
+					// (I1, B1, T1) VALUES (OLD.id, OLD.bin, OLD.mimetype)
+					break;
+				case "INSERT FILE":
+					// (I1, B1, T1) VALUES (NEW.id, NEW.bin, NEW.mimetype)
+					break;
+				case "UPDATE FILE":
+					// (I1, B1, B2, T1, T2) VALUES (NEW.id, OLD.bin, NEW.bin, OLD.mimetype, NEW.mimetype)
+					break;
+				case "DELETE OBJETO":
+					// (I1, T1, I2, T2, T3) VALUES (OLD.id, OLD.nombre, OLD.minimo, OLD.imagen, OLD.tags)
+					break;
+				case "INSERT OBJETO":
+					// (I1, T1, I2, T2, T3) VALUES (NEW.id, NEW.nombre, NEW.minimo, NEW.imagen, NEW.tags)
+					break;
+				case "UPDATE OBJETO":
+					C(entrada, C("div", "Id objeto: " + step.I1));
+					CambioDescription(entrada, "Nombre", step.T1, step.T2);
+					CambioDescription(entrada, "Mínimo", step.I2, step.I3);
+					CambioDescription(entrada, "Id imagen", step.T3, step.T4);
+					CambioDescription(entrada, "Tags", step.T5, step.T6);
+					break;
+				case "DELETE OBJETO_SECCION":
+					C(entrada, C("div", "Id objeto: " + step.I1));
+					C(entrada, C("div", "Id sección: " + step.I2));
+					CambioDescription(entrada, "Cantidad", step.I3, "---");
+					break;
+				case "INSERT OBJETO_SECCION":
+					C(entrada, C("div", "Id objeto: " + step.I1));
+					C(entrada, C("div", "Id sección: " + step.I2));
+					CambioDescription(entrada, "Cantidad", "---", step.I3);
+					break;
+				case "UPDATE OBJETO_SECCION":
+					C(entrada, C("div", "Id objeto: " + step.I1));
+					C(entrada, C("div", "Id sección: " + step.I2));
+					CambioDescription(entrada, "Cantidad", step.I3, step.I4);
+					break;
+				case "DELETE SECCION":
+					// (I1, T1, I2) VALUES (OLD.id, OLD.nombre, OLD.id_almacen)
+					break;
+				case "INSERT SECCION":
+					// (I1, T1, I2) VALUES (NEW.id, NEW.nombre, NEW.id_almacen)
+					break;
+				case "UPDATE SECCION":
+					// (I1, T1, T2, I2, I3) VALUES (NEW.id, OLD.nombre, NEW.nombre, OLD.id_almacen, NEW.id_almacen)
+					break;
 			}
 			
-			C(container, listado[i].toString());
+			C(container, entrada, C("br"));
 		}
 	}, console.log);
+	
+	function CambioDescription(parentNode, txt, valueBefore, valueAfter) {
+		if (valueBefore != valueAfter) C(parentNode, C("div", txt + ": " + valueBefore + " => " + valueAfter));
+	}
 	
 	function Deshacer() {
 		

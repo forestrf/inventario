@@ -510,6 +510,15 @@ div.buscador .fixed {
 	border-color: #b00000;
 }
 
+.historial .entrada {
+	border: 1px solid #000;
+	display: inline-block;
+	padding: 5px;
+	border-radius: 5px;
+	margin: 2px;
+}
+
+
 
 @media (max-width: 1024px) {
 	.left_big,

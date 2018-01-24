@@ -18,7 +18,7 @@ class DB {
 	// Auto inserted id number
 	var $LAST_MYSQL_ID = '';
 	
-	function Open($host=null, $user=null, $pass=null, $bd=null) {
+	function Open($host = null, $user = null, $pass = null, $bd = null) {
 		if($this->d) $this->debug('Opening database');
 		if ($host !== null)
 			$this->host = $host;
@@ -64,13 +64,15 @@ class DB {
 		}
 		
 		if ($result === false || $result === true) {
-			if($this->d) $this->debug('<span class="info">query</span>: <span class="query">'.$this->query_debug_str($query)."</span>\r\n<span class='info'>result</span>: <b class=\"".($result?'ok">TRUE':'fail">FALSE ('.$this->mysqli->error.')')."</b>\r\n");
+			if($this->d) $this->debug('<span class="info">query</span>: <span class="query">' . $this->query_debug_str($query)
+				."</span>\r\n<span class='info'>result</span>: <b class=\"" . ($result ? 'ok">TRUE' : 'fail">FALSE (' . $this->mysqli->error . ')')."</b>\r\n");
 			return $result;
 		}
 		
 		$resultArray = array();
 		while ($rt = $result->fetch_array(MYSQLI_ASSOC)) $resultArray[] = $rt;
-		if($this->d) $this->debug('<span class="info">query</span>: <span class="query">'.$this->query_debug_str($query)."</span>\r\n<span class='info'>result</span>: ".print_r($resultArray)."\r\n");
+		if($this->d) $this->debug('<span class="info">query</span>: <span class="query">' . $this->query_debug_str($query) . "</span>\r\n<span class='info'>result</span>: "
+			. print_r($resultArray) . "\r\n");
 		return $resultArray;
 	}
 	
@@ -128,8 +130,8 @@ class DB {
 	}
 	// $busquedas es un array que se recorrera con foreach cuyos elementos son otro array con indices nombre y busqueda
 	function set_busquedaspreparadas($busquedas) {
-		$busquedas = mysql_escape_mimic($busquedas);
-		return $this->query("INSERT INTO variables (name, value) VALUES ('busquedas_preparadas', '$busquedas') ON DUPLICATE KEY UPDATE value = '$busquedas';");
+		$busquedas = escape($busquedas);
+		return $this->query("INSERT INTO variables (name, value) VALUES ('busquedas_preparadas', '{$busquedas}') ON DUPLICATE KEY UPDATE value = '{$busquedas}';");
 	}
 	
 	function get_almacenes() {
@@ -142,16 +144,16 @@ class DB {
 		return $this->query("SELECT * FROM objeto;");
 	}
 	function get_objeto($id) {
-		$id = mysql_escape_mimic($id);
+		$id = escape($id);
 		return $this->query("SELECT * FROM objeto WHERE id = {$id};");
 	}
 	function get_objeto_secciones($id_objeto) {
-		$id_objeto = mysql_escape_mimic($id_objeto);
+		$id_objeto = escape($id_objeto);
 		return $this->query("SELECT id_seccion, cantidad FROM objeto_seccion WHERE id_objeto = {$id_objeto};");
 	}
 	function get_file($file_index) {
-		$file_index = mysql_escape_mimic($file_index);
-		return $this->query("SELECT * FROM file WHERE id = '$file_index';");
+		$file_index = escape($file_index);
+		return $this->query("SELECT * FROM file WHERE id = '{$file_index}';");
 	}
 	function get_historico() {
 		return $this->query("SELECT * FROM historico;");
@@ -159,45 +161,46 @@ class DB {
 	
 	function add_file($mimetype, $blob, &$file_index) {
 		$file_index = md5($blob);
-		$mimetype = mysql_escape_mimic($mimetype);
-		$blob = mysql_escape_mimic($blob);
-		return $this->query("INSERT INTO file (id, mimetype, bin) VALUES ('$file_index', '$mimetype', '$blob');");
+		$mimetype = escape($mimetype);
+		$blob = escape($blob);
+		return $this->query("INSERT INTO file (id, mimetype, bin) VALUES ('{$file_index}', '{$mimetype}', '{$blob}');");
 	}
 	function add_empty_objeto() {
 		return $this->query("INSERT INTO objeto () VALUES ();");
 	}
 	function remove_objeto($id_objeto) {
-		$id_objeto = mysql_escape_mimic($id_objeto);
-		return $this->query("DELETE FROM objeto WHERE id = '$id_objeto';");
+		$id_objeto = escape($id_objeto);
+		return $this->query("DELETE FROM objeto_seccion WHERE id_objeto = '{$id_objeto}';")
+			&& $this->query("DELETE FROM objeto WHERE id = '{$id_objeto}';");
 	}
 	function set_objeto_image($id_objeto, $id_file) {
-		$id_objeto = mysql_escape_mimic($id_objeto);
-		$id_file = mysql_escape_mimic($id_file);
-		return $this->query("UPDATE objeto SET imagen = '$id_file' WHERE id = '$id_objeto' LIMIT 1;");
+		$id_objeto = escape($id_objeto);
+		$id_file = escape($id_file);
+		return $this->query("UPDATE objeto SET imagen = '{$id_file}' WHERE id = '{$id_objeto}' LIMIT 1;");
 	}
 	function set_objeto_name($id_objeto, $name) {
-		$id_objeto = mysql_escape_mimic($id_objeto);
-		$name = mysql_escape_mimic($name);
-		return $this->query("UPDATE objeto SET nombre = '$name' WHERE id = '$id_objeto' LIMIT 1;");
+		$id_objeto = escape($id_objeto);
+		$name = escape($name);
+		return $this->query("UPDATE objeto SET nombre = '{$name}' WHERE id = '{$id_objeto}' LIMIT 1;");
 	}
 	function set_objeto_minimo($id_objeto, $minimo) {
-		$id_objeto = mysql_escape_mimic($id_objeto);
-		$minimo = mysql_escape_mimic($minimo);
-		return $this->query("UPDATE objeto SET minimo = '$minimo' WHERE id = '$id_objeto' LIMIT 1;");
+		$id_objeto = escape($id_objeto);
+		$minimo = escape($minimo);
+		return $this->query("UPDATE objeto SET minimo = '{$minimo}' WHERE id = '{$id_objeto}' LIMIT 1;");
 	}
 	function set_objeto_tags($id_objeto, $tags) {
-		$id_objeto = mysql_escape_mimic($id_objeto);
-		$tags = mysql_escape_mimic($tags);
-		return $this->query("UPDATE objeto SET tags = '$tags' WHERE id = '$id_objeto' LIMIT 1;");
+		$id_objeto = escape($id_objeto);
+		$tags = escape($tags);
+		return $this->query("UPDATE objeto SET tags = '{$tags}' WHERE id = '{$id_objeto}' LIMIT 1;");
 	}
 	// $cantidades es un array que se recorrera con foreach cuyos elementos son otro array con indices seccion y cantidad
 	function set_objeto_cantidades($id_objeto, $cantidades) {
-		$id_objeto = mysql_escape_mimic($id_objeto);
-		if ($this->query("DELETE FROM objeto_seccion WHERE id_objeto = '$id_objeto';")) {
+		$id_objeto = escape($id_objeto);
+		if ($this->query("DELETE FROM objeto_seccion WHERE id_objeto = '{$id_objeto}' && id_seccion NOT IN (" . ToList($cantidades, function($v) { return $v["id_seccion"]; }) . ");")) {
 			foreach ($cantidades as $cantidad) {
-				$id_seccion = mysql_escape_mimic($cantidad["id_seccion"]);
-				$cantidad = mysql_escape_mimic($cantidad["cantidad"]);
-				if (!$this->query("INSERT INTO objeto_seccion (id_objeto, id_seccion, cantidad) VALUES ($id_objeto, $id_seccion, $cantidad);")) {
+				$id_seccion = escape($cantidad["id_seccion"]);
+				$cantidad = escape($cantidad["cantidad"]);
+			if (!$this->query("INSERT INTO objeto_seccion (id_objeto, id_seccion, cantidad) VALUES ({$id_objeto}, {$id_seccion}, {$cantidad}) ON DUPLICATE KEY UPDATE cantidad = {$cantidad};")) {
 					return false;
 				}
 			}
@@ -207,31 +210,36 @@ class DB {
 	}
 	
 	function remove_secciones_not_in($new_sections) {
-		return $this->query("DELETE FROM seccion WHERE id NOT IN (" . implode(", ", array_map(function($v) { return mysql_escape_mimic($v); }, $new_sections)) . ");");
+		return $this->query("DELETE FROM seccion WHERE id NOT IN (" . ToList($new_sections) . ");");
 	}
 	function remove_almacenes_not_in($new_almacenes) {
-		return $this->query("DELETE FROM almacen WHERE id NOT IN (" . implode(", ", array_map(function($v) { return mysql_escape_mimic($v); }, $new_almacenes)) . ");");
+		return $this->query("DELETE FROM almacen WHERE id NOT IN (" . ToList($new_almacenes) . ");");
 	}
 	function add_or_update_almacen($id, $nombre) {
-		$id = mysql_escape_mimic($id);
-		$nombre = mysql_escape_mimic($nombre);
-		return $this->query("INSERT INTO almacen (id, nombre) VALUES ('$id', '$nombre') ON DUPLICATE KEY UPDATE nombre = '$nombre';");
+		$id = escape($id);
+		$nombre = escape($nombre);
+		return $this->query("INSERT INTO almacen (id, nombre) VALUES ('{$id}', '{$nombre}') ON DUPLICATE KEY UPDATE nombre = '{$nombre}';");
 	}
 	// Se puede actualizar una sección moviéndola a otro almacen, aunque la interfaz web todavía no lo soporta
 	function add_or_update_seccion($id, $nombre, $id_almacen) {
-		$id = mysql_escape_mimic($id);
-		$nombre = mysql_escape_mimic($nombre);
-		$id_almacen = mysql_escape_mimic($id_almacen);
-		return $this->query("INSERT INTO seccion (id, nombre, id_almacen) VALUES ('$id', '$nombre', '$id_almacen') ON DUPLICATE KEY UPDATE nombre = '$nombre', id_almacen = '$id_almacen';");
+		$id = escape($id);
+		$nombre = escape($nombre);
+		$id_almacen = escape($id_almacen);
+		return $this->query("INSERT INTO seccion (id, nombre, id_almacen) VALUES ('{$id}', '{$nombre}', '{$id_almacen}') ON DUPLICATE KEY UPDATE nombre = '{$nombre}', id_almacen = '{$id_almacen}';");
 	}
 }
 
 // Copy of mysql_real_escape_string to use it without an opened connection.
 // http://es1.php.net/mysql_real_escape_string
-function mysql_escape_mimic($inp) {
+function escape($inp) {
 	if (is_array($inp))
 		return array_map(__METHOD__, $inp);
 	if (!empty($inp) && is_string($inp))
 		return str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'), $inp);
 	return $inp;
+}
+
+function ToList($arr, callable $func) {
+	if (is_null($func)) $func = function($v) { return $v; };
+	return implode(", ", array_map(function($v) use(&$func) { return escape($func($v)); }, $arr));
 }
