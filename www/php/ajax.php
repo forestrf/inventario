@@ -91,13 +91,13 @@ else {
 						"STATUS" => "OK",
 						"MESSAGE" => "Imagen actualizada"
 					));
+					$db->add_history_spacing($_POST['action']);
 				} else {
 					echo json_encode(array(
 						"STATUS" => "ERROR",
 						"MESSAGE" => $db->mysqli->error
 					));
 				}
-
 			}
 			break;
 		case 'update-object-name':
@@ -119,6 +119,7 @@ else {
 						"STATUS" => "OK",
 						"MESSAGE" => "Nombre actualizado"
 					));
+					$db->add_history_spacing($_POST['action']);
 				} else {
 					echo json_encode(array(
 						"STATUS" => "ERROR",
@@ -146,6 +147,7 @@ else {
 						"STATUS" => "OK",
 						"MESSAGE" => "Mínimo actualizado"
 					));
+					$db->add_history_spacing($_POST['action']);
 				} else {
 					echo json_encode(array(
 						"STATUS" => "ERROR",
@@ -185,6 +187,7 @@ else {
 						"FIRST" => json_encode($cantidadesFiltradas),
 						"SECOND" => json_encode($db->get_objeto_secciones($_POST["id-object"])),
 					));
+					$db->add_history_spacing($_POST['action']);
 				} else {
 					echo json_encode(array(
 						"STATUS" => "ERROR",
@@ -211,6 +214,7 @@ else {
 						"STATUS" => "OK",
 						"MESSAGE" => "Palabras clave actualizadas"
 					));
+					$db->add_history_spacing($_POST['action']);
 				} else {
 					echo json_encode(array(
 						"STATUS" => "ERROR",
@@ -225,6 +229,7 @@ else {
 					"STATUS" => "OK",
 					"MESSAGE" => $db->LAST_MYSQL_ID
 				));
+				$db->add_history_spacing($_POST['action']);
 			} else {
 				echo json_encode(array(
 					"STATUS" => "ERROR",
@@ -239,6 +244,7 @@ else {
 						"STATUS" => "OK",
 						"MESSAGE" => "Objeto borrado"
 					));
+					$db->add_history_spacing($_POST['action']);
 				} else {
 					echo json_encode(array(
 						"STATUS" => "ERROR",
@@ -343,13 +349,14 @@ else {
 						"STATUS" => "FAIL",
 						"MESSAGE" => "Ha surgido un fallo al borrar secciones: " . $db->mysqli->error
 					));
-						exit;
+					exit;
 				}
 
 				echo json_encode(array(
 					"STATUS" => "OK",
 					"MESSAGE" => "Actualizado con éxito."
 				));
+				$db->add_history_spacing($_POST['action']);
 			}
 			break;
 		case 'update-busquedaspreparadas':
@@ -366,6 +373,7 @@ else {
 						"STATUS" => "OK",
 						"MESSAGE" => "Búsquedas preparadas actualizadas"
 					));
+					$db->add_history_spacing($_POST['action']);
 				} else {
 					echo json_encode(array(
 						"STATUS" => "ERROR",

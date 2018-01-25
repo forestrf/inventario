@@ -44,6 +44,12 @@ class DB {
 		return true;
 	}
 	
+	function add_history_spacing($action) {
+		$action = escape($action);
+		// Marcar como una transacción en el historial
+		$this->query("INSERT INTO historico (ACCION, T1) VALUES ('SPACING', '{$action}')");
+	}
+	
 	// Make a SQL query. Returns false if there is an error, and throws an exception.
 	// Queries are only done here. This way a connection can be opened if necessary
 	// $this->LAST_MYSQL_ID stores the ID of the last insert query

@@ -24,7 +24,7 @@
 
 <div class="buscador">
 	<div class="fixed">
-		Búsqueda: <input id="buscador" type="text" placeholder="Búsqueda" class="form-control"/>
+		Búsqueda: <input id="buscador" type="text" placeholder="Búsqueda" class="form-control" autofocus="autofocus" onfocus="this.select()"/>
 		<button class="btn btn-primary" style="display:none" id="BTN_BUSQUEDAS_PREPARADAS">Búsquedas guardadas</button>
 	</div>
 </div>
@@ -76,57 +76,57 @@ function fixObjetoFromJSON(objeto) {
 	return objeto;
 }
 
+
+function DrawObjeto(i) {
+	var objeto = lista.objetos[i];
+	var cantidad, tagsDOM, domObjetoEnLista;
+	return GeneraDomObjeto();
+
+	
+	function GeneraDomObjeto() {
+		cantidad = GetCantidad(objeto);
+		domObjetoEnLista = C("button", ["class", "objeto obj-" + objeto.id, "onclick", function() { edit(objeto, UpdateListObject); }],
+			C("div", ["class", "titulo"],
+				C("div", ["class", "nombre"], objeto.nombre)
+			),
+			C("div", ["class", "img-container"],
+				C("img", ["class", "img img-" + objeto.id, "src", GetImagenObjeto(objeto)])
+			),
+			C("div", ["class", "info"],
+				C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
+				C("div", ["class", "minimo"], "Mínimo: ", objeto.minimo),
+				C("div", ["class", "tags"], "Palabras clave: ", tagsDOM = C("span", ["class", "tags-list"]))
+			)
+		);
+		for (var j in objeto.tags) C(tagsDOM, C("span", objeto.tags[j]));
+		(cantidad < parseInt(objeto.minimo) ? AddClass : RemoveClass)(domObjetoEnLista, "alerta");
+		objeto.onRemove = function() {
+			AJAX('php/ajax.php', 'action=remove-object&id-object=' + objeto.id, function(msg) {
+				var json = JSON.parse(msg.response);
+				if (json.STATUS === "OK") {
+					domObjetoEnLista.parentNode.removeChild(domObjetoEnLista);
+					popups.closePopup();
+					popups.closePopup();
+				}
+			}, console.log);
+		};
+		return objeto.DOM = domObjetoEnLista;
+	}
+	
+	function UpdateListObject() {
+		AJAX('php/ajax.php?action=getinventarioitem&id=' + objeto.id, null, function(msg) {
+			lista.objetos[i] = objeto = fixObjetoFromJSON(JSON.parse(msg.response)[0]);
+			var aBorrar = domObjetoEnLista;
+			domObjetoEnLista.parentNode.insertBefore(GeneraDomObjeto(), aBorrar);
+			domObjetoEnLista.parentNode.removeChild(aBorrar);
+		}, console.log);
+	}
+}
+
 function DrawObjectList() {
 	document.getElementById("inventario").innerHTML = "";
 
 	AJAX('php/ajax.php?action=getinventario', null, function(msg) {
-		function DrawObjeto(i) {
-			var objeto = lista.objetos[i];
-			var cantidad, tagsDOM, domObjetoEnLista;
-			return GeneraDomObjeto();
-
-			
-			function GeneraDomObjeto() {
-				cantidad = GetCantidad(objeto);
-				domObjetoEnLista = C("button", ["class", "objeto obj-" + objeto.id, "onclick", function() { edit(objeto, UpdateListObject); }],
-					C("div", ["class", "titulo"],
-						C("div", ["class", "nombre"], objeto.nombre)
-					),
-					C("div", ["class", "img-container"],
-						C("img", ["class", "img img-" + objeto.id, "src", GetImagenObjeto(objeto)])
-					),
-					C("div", ["class", "info"],
-						C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
-						C("div", ["class", "minimo"], "Mínimo: ", objeto.minimo),
-						C("div", ["class", "tags"], "Palabras clave: ", tagsDOM = C("span", ["class", "tags-list"]))
-					)
-				);
-				for (var j in objeto.tags) C(tagsDOM, C("span", objeto.tags[j]));
-				(cantidad < parseInt(objeto.minimo) ? AddClass : RemoveClass)(domObjetoEnLista, "alerta");
-				objeto.onRemove = function() {
-					AJAX('php/ajax.php', 'action=remove-object&id-object=' + objeto.id, function(msg) {
-						var json = JSON.parse(msg.response);
-						if (json.STATUS === "OK") {
-							domObjetoEnLista.parentNode.removeChild(domObjetoEnLista);
-							popups.closePopup();
-							popups.closePopup();
-						}
-					}, console.log);
-				};
-				return objeto.DOM = domObjetoEnLista;
-			}
-			
-			function UpdateListObject() {
-				AJAX('php/ajax.php?action=getinventarioitem&id=' + objeto.id, null, function(msg) {
-					lista.objetos[i] = objeto = fixObjetoFromJSON(JSON.parse(msg.response)[0]);
-					var aBorrar = domObjetoEnLista;
-					domObjetoEnLista.parentNode.insertBefore(GeneraDomObjeto(), aBorrar);
-					domObjetoEnLista.parentNode.removeChild(aBorrar);
-				}, console.log);
-			}
-		}
-		
-		
 		lista = JSON.parse(msg.response);
 		
 		var objetosById = {};
@@ -145,6 +145,7 @@ function DrawObjectList() {
 		buscador.onkeyup = buscador.onchange = function() {
 			FilterSearch.process(buscador.value, lista,
 				TestCustomKeyword,
+				true,
 				function(DOM) { DOM.style.display = "unset"; },
 				function(DOM) { DOM.style.display = "none"; }
 			);
@@ -669,95 +670,105 @@ function MostrarHistorial() {
 	AJAX('php/ajax.php?action=gethistory', null, function(msg) {
 		var listado = JSON.parse(msg.response);
 		listado = listado.reverse();
+		
+		var transaccion = C("div");
+		
 		for (var i = 0; i < listado.length; i++) {
 			var step = listado[i];
-			console.log(step);
-			var entrada = C("div", ["class", "entrada"]);			
-			C(entrada, step.ACCION, C("br"));
-			C(entrada, C("div", step.Fecha));
-			
-			switch (step.ACCION) {
-				case "DELETE ALMACEN":
-					C(entrada, C("div", "Id almacén: " + step.I1));
-					C(entrada, C("div", "Nombre: " + step.T1));
-					break;
-				case "INSERT ALMACEN":
-					C(entrada, C("div", "Id almacén: " + step.I1));
-					C(entrada, C("div", "Nombre: " + step.T1));
-					break;
-				case "UPDATE ALMACEN":
-					C(entrada, C("div", "Id almacen: " + step.I1));
-					CambioDescription(entrada, "Nombre", step.T1, step.T2);
-					break;
-				case "DELETE FILE":
-					C(entrada, C("div", "Id file: " + step.I1));
-					C(entrada, C("div", "Binario: " + step.B1));
-					C(entrada, C("div", "Mimetype: " + step.T1));
-					break;
-				case "INSERT FILE":
-					C(entrada, C("div", "Id file: " + step.I1));
-					C(entrada, C("div", "Binario: " + step.B1));
-					C(entrada, C("div", "Mimetype: " + step.T1));
-					break;
-				case "UPDATE FILE":
-					C(entrada, C("div", "Id file: " + step.I1));
-					CambioDescription(entrada, "Binario", step.B1, step.B2);
-					CambioDescription(entrada, "Mimetype", step.T1, step.T2);
-					break;
-				case "DELETE OBJETO":
-					C(entrada, C("div", "Id objeto: " + step.I1));
-					C(entrada, C("div", "Nombre: " + step.T1));
-					C(entrada, C("div", "Mínimo: " + step.I2));
-					C(entrada, C("div", "Imagen: " + step.T2));
-					C(entrada, C("div", "Tags: " + step.T3));
-					break;
-				case "INSERT OBJETO":
-					C(entrada, C("div", "Id objeto: " + step.I1));
-					C(entrada, C("div", "Nombre: " + step.T1));
-					C(entrada, C("div", "Mínimo: " + step.I2));
-					C(entrada, C("div", "Imagen: " + step.T2));
-					C(entrada, C("div", "Tags: " + step.T3));
-					break;
-				case "UPDATE OBJETO":
-					C(entrada, C("div", "Id objeto: " + step.I1));
-					CambioDescription(entrada, "Nombre", step.T1, step.T2);
-					CambioDescription(entrada, "Mínimo", step.I2, step.I3);
-					CambioDescription(entrada, "Id imagen", step.T3, step.T4);
-					CambioDescription(entrada, "Tags", step.T5, step.T6);
-					break;
-				case "DELETE OBJETO_SECCION":
-					C(entrada, C("div", "Id objeto: " + step.I1));
-					C(entrada, C("div", "Id sección: " + step.I2));
-					CambioDescription(entrada, "Cantidad", step.I3, "---");
-					break;
-				case "INSERT OBJETO_SECCION":
-					C(entrada, C("div", "Id objeto: " + step.I1));
-					C(entrada, C("div", "Id sección: " + step.I2));
-					CambioDescription(entrada, "Cantidad", "---", step.I3);
-					break;
-				case "UPDATE OBJETO_SECCION":
-					C(entrada, C("div", "Id objeto: " + step.I1));
-					C(entrada, C("div", "Id sección: " + step.I2));
-					CambioDescription(entrada, "Cantidad", step.I3, step.I4);
-					break;
-				case "DELETE SECCION":
-					C(entrada, C("div", "Id sección: " + step.I1));
-					C(entrada, C("div", "Nombre: " + step.T1));
-					C(entrada, C("div", "Id almacén: " + step.I2));
-					break;
-				case "INSERT SECCION":
-					C(entrada, C("div", "Id sección: " + step.I1));
-					C(entrada, C("div", "Nombre: " + step.T1));
-					C(entrada, C("div", "Id almacén: " + step.I2));
-					break;
-				case "UPDATE SECCION":
-					C(entrada, C("div", "Id sección: " + step.I1));
-					CambioDescription(entrada, "Nombre", step.T1, step.T2);
-					CambioDescription(entrada, "Id almacén", step.I2, step.I3);
-					break;
+			if (step.ACCION === "SPACING") {
+				var entrada = C("div", ["class", "accion"]);
+				C(entrada, step.T1, C("br"));
+				transaccion = C("div");
+				C(entrada, C("div", step.Fecha), transaccion);
+				C(container, entrada, C("br"));
+			} else {
+				var entrada = C("div", ["class", "entrada"]);			
+				C(entrada, step.ACCION, C("br"));
+				//C(entrada, C("div", step.Fecha));
+				
+				switch (step.ACCION) {
+					case "DELETE ALMACEN":
+						C(entrada, C("div", "Id almacén: " + step.I1));
+						C(entrada, C("div", "Nombre: " + step.T1));
+						break;
+					case "INSERT ALMACEN":
+						C(entrada, C("div", "Id almacén: " + step.I1));
+						C(entrada, C("div", "Nombre: " + step.T1));
+						break;
+					case "UPDATE ALMACEN":
+						C(entrada, C("div", "Id almacén: " + step.I1));
+						CambioDescription(entrada, "Nombre", step.T1, step.T2);
+						break;
+					case "DELETE FILE":
+						C(entrada, C("div", "Id file: " + step.I1));
+						C(entrada, C("div", "Binario: " + step.B1));
+						C(entrada, C("div", "Mimetype: " + step.T1));
+						break;
+					case "INSERT FILE":
+						C(entrada, C("div", "Id file: " + step.I1));
+						C(entrada, C("div", "Binario: " + step.B1));
+						C(entrada, C("div", "Mimetype: " + step.T1));
+						break;
+					case "UPDATE FILE":
+						C(entrada, C("div", "Id file: " + step.I1));
+						CambioDescription(entrada, "Binario", step.B1, step.B2);
+						CambioDescription(entrada, "Mimetype", step.T1, step.T2);
+						break;
+					case "DELETE OBJETO":
+						C(entrada, C("div", "Id objeto: " + step.I1));
+						C(entrada, C("div", "Nombre: " + step.T1));
+						C(entrada, C("div", "Mínimo: " + step.I2));
+						C(entrada, C("div", "Imagen: " + step.T2));
+						C(entrada, C("div", "Tags: " + step.T3));
+						break;
+					case "INSERT OBJETO":
+						C(entrada, C("div", "Id objeto: " + step.I1));
+						C(entrada, C("div", "Nombre: " + step.T1));
+						C(entrada, C("div", "Mínimo: " + step.I2));
+						C(entrada, C("div", "Imagen: " + step.T2));
+						C(entrada, C("div", "Tags: " + step.T3));
+						break;
+					case "UPDATE OBJETO":
+						C(entrada, C("div", "Id objeto: " + step.I1));
+						CambioDescription(entrada, "Nombre", step.T1, step.T2);
+						CambioDescription(entrada, "Mínimo", step.I2, step.I3);
+						CambioDescription(entrada, "Id imagen", step.T3, step.T4);
+						CambioDescription(entrada, "Tags", step.T5, step.T6);
+						break;
+					case "DELETE OBJETO_SECCION":
+						C(entrada, C("div", "Id objeto: " + step.I1));
+						C(entrada, C("div", "Id sección: " + step.I2));
+						CambioDescription(entrada, "Cantidad", step.I3, "---");
+						break;
+					case "INSERT OBJETO_SECCION":
+						C(entrada, C("div", "Id objeto: " + step.I1));
+						C(entrada, C("div", "Id sección: " + step.I2));
+						CambioDescription(entrada, "Cantidad", "---", step.I3);
+						break;
+					case "UPDATE OBJETO_SECCION":
+						C(entrada, C("div", "Id objeto: " + step.I1));
+						C(entrada, C("div", "Id sección: " + step.I2));
+						CambioDescription(entrada, "Cantidad", step.I3, step.I4);
+						break;
+					case "DELETE SECCION":
+						C(entrada, C("div", "Id sección: " + step.I1));
+						C(entrada, C("div", "Nombre: " + step.T1));
+						C(entrada, C("div", "Id almacén: " + step.I2));
+						break;
+					case "INSERT SECCION":
+						C(entrada, C("div", "Id sección: " + step.I1));
+						C(entrada, C("div", "Nombre: " + step.T1));
+						C(entrada, C("div", "Id almacén: " + step.I2));
+						break;
+					case "UPDATE SECCION":
+						C(entrada, C("div", "Id sección: " + step.I1));
+						CambioDescription(entrada, "Nombre", step.T1, step.T2);
+						CambioDescription(entrada, "Id almacén", step.I2, step.I3);
+						break;
+				}
+				
+				C(transaccion, entrada, C("br"));
 			}
-			
-			C(container, entrada, C("br"));
 		}
 	}, console.log);
 	
