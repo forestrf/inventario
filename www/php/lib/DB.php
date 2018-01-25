@@ -210,10 +210,15 @@ class DB {
 	}
 	
 	function remove_secciones_not_in($new_sections) {
-		return $this->query("DELETE FROM seccion WHERE id NOT IN (" . ToList($new_sections) . ");");
+		$seccionesList = ToList($new_sections);
+		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion NOT IN (" . $seccionesList . ");")
+			&& $this->query("DELETE FROM seccion WHERE id NOT IN (" . $seccionesList . ");");
 	}
 	function remove_almacenes_not_in($new_almacenes) {
-		return $this->query("DELETE FROM almacen WHERE id NOT IN (" . ToList($new_almacenes) . ");");
+		$almacenesList = ToList($new_almacenes);
+		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion IN (SELECT id FROM seccion WHERE id_almacen NOT IN (" . $almacenesList . "));")
+			&& $this->query("DELETE FROM seccion WHERE id_almacen NOT IN (" . $almacenesList . ");")
+			&& $this->query("DELETE FROM almacen WHERE id NOT IN (" . $almacenesList . ");");
 	}
 	function add_or_update_almacen($id, $nombre) {
 		$id = escape($id);
@@ -239,7 +244,7 @@ function escape($inp) {
 	return $inp;
 }
 
-function ToList($arr, callable $func) {
+function ToList($arr, callable $func = null) {
 	if (is_null($func)) $func = function($v) { return $v; };
 	return implode(", ", array_map(function($v) use(&$func) { return escape($func($v)); }, $arr));
 }

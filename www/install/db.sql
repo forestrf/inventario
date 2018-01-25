@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 28-12-2017 a las 12:47:03
+-- Tiempo de generación: 25-01-2018 a las 11:08:49
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -11,12 +11,6 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Base de datos: `almacen`
@@ -131,8 +125,8 @@ CREATE TABLE `historico` (
   `I4` int(11) DEFAULT NULL,
   `I5` int(11) DEFAULT NULL,
   `I6` int(11) DEFAULT NULL,
-  `B1` blob,
-  `B2` blob
+  `B1` int(11) DEFAULT NULL,
+  `B2` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Toda acción INSERT, DELETE y UPDATE deben de crear una entrada en esta tabla con la consulta realizada y una consulta que desharía el cambio. Ninguna fila debe de borrarse';
 
 --
@@ -155,8 +149,6 @@ CREATE TABLE `objeto` (
 
 --
 -- RELACIONES PARA LA TABLA `objeto`:
---   `imagen`
---       `file` -> `id`
 --
 
 --
@@ -178,9 +170,17 @@ $$
 DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `objeto_update` AFTER UPDATE ON `objeto` FOR EACH ROW INSERT INTO historico
-(ACCION, I1, T1, T2, I2, I3, T3, T4, T5, T6)
+(ACCION, I1,
+ T1, T2,
+ I2, I3,
+ T3, T4,
+ T5, T6)
 VALUES
-("UPDATE OBJETO", NEW.id, OLD.nombre, NEW.nombre, OLD.minimo, NEW.minimo, OLD.imagen, NEW.imagen, OLD.tags, NEW.tags)
+("UPDATE OBJETO", NEW.id,
+ OLD.nombre, NEW.nombre,
+ OLD.minimo, NEW.minimo,
+ OLD.imagen, NEW.imagen,
+ OLD.tags, NEW.tags)
 $$
 DELIMITER ;
 
@@ -198,10 +198,6 @@ CREATE TABLE `objeto_seccion` (
 
 --
 -- RELACIONES PARA LA TABLA `objeto_seccion`:
---   `id_objeto`
---       `objeto` -> `id`
---   `id_seccion`
---       `seccion` -> `id`
 --
 
 --
@@ -223,9 +219,9 @@ $$
 DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `objeto_seccion_update` AFTER UPDATE ON `objeto_seccion` FOR EACH ROW INSERT INTO historico
-(ACCION, I1, I2, I3 ,I4, I5, I6)
+(ACCION, I1, I2, I3, I4)
 VALUES
-("UPDATE OBJETO_SECCION", OLD.id_objeto, NEW.id_objeto, OLD.id_seccion, NEW.id_seccion, OLD.cantidad, NEW.cantidad)
+("UPDATE OBJETO_SECCION", NEW.id_objeto, NEW.id_seccion, OLD.cantidad, NEW.cantidad)
 $$
 DELIMITER ;
 
@@ -243,8 +239,6 @@ CREATE TABLE `seccion` (
 
 --
 -- RELACIONES PARA LA TABLA `seccion`:
---   `id_almacen`
---       `almacen` -> `id`
 --
 
 --
@@ -307,7 +301,9 @@ ALTER TABLE `file`
 -- Indices de la tabla `historico`
 --
 ALTER TABLE `historico`
-  ADD PRIMARY KEY (`ID`);
+  ADD PRIMARY KEY (`ID`),
+  ADD KEY `B1` (`B1`),
+  ADD KEY `B2` (`B2`);
 
 --
 -- Indices de la tabla `objeto`
@@ -344,54 +340,27 @@ ALTER TABLE `variables`
 -- AUTO_INCREMENT de la tabla `almacen`
 --
 ALTER TABLE `almacen`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 --
 -- AUTO_INCREMENT de la tabla `historico`
 --
 ALTER TABLE `historico`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 --
 -- AUTO_INCREMENT de la tabla `objeto`
 --
 ALTER TABLE `objeto`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 --
 -- AUTO_INCREMENT de la tabla `seccion`
 --
 ALTER TABLE `seccion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
---
--- Restricciones para tablas volcadas
---
-
---
--- Filtros para la tabla `objeto`
---
-ALTER TABLE `objeto`
-  ADD CONSTRAINT `objeto_ibfk_1` FOREIGN KEY (`imagen`) REFERENCES `file` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `objeto_seccion`
---
-ALTER TABLE `objeto_seccion`
-  ADD CONSTRAINT `objeto_seccion_ibfk_1` FOREIGN KEY (`id_objeto`) REFERENCES `objeto` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `objeto_seccion_ibfk_2` FOREIGN KEY (`id_seccion`) REFERENCES `seccion` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `seccion`
---
-ALTER TABLE `seccion`
-  ADD CONSTRAINT `seccion_ibfk_1` FOREIGN KEY (`id_almacen`) REFERENCES `almacen` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Metadatos
 --
 USE `phpmyadmin`;
-
---
--- Metadatos para la tabla acceso
---
 
 --
 -- Metadatos para la tabla almacen
@@ -406,10 +375,10 @@ USE `phpmyadmin`;
 --
 
 INSERT INTO `pma__column_info` (`db_name`, `table_name`, `column_name`, `comment`, `mimetype`, `transformation`, `transformation_options`, `input_transformation`, `input_transformation_options`) VALUES
-('almacen', 'files', 'bin', '', 'image_jpeg', 'output/image_jpeg_inline.php', '', '', '');
+('almacen', 'file', 'bin', '', 'image_jpeg', 'output/image_jpeg_inline.php', '', '', '');
 
 --
--- Metadatos para la tabla historico_objeto
+-- Metadatos para la tabla historico
 --
 
 --
@@ -425,10 +394,10 @@ INSERT INTO `pma__column_info` (`db_name`, `table_name`, `column_name`, `comment
 --
 
 --
+-- Metadatos para la tabla variables
+--
+
+--
 -- Metadatos para la base de datos almacen
 --
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

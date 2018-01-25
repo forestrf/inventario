@@ -470,7 +470,7 @@ function ListarAlmacenesSecciones() {
 						));
 					}
 				}
-				abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", C("div", "Se van a borrar secciones que contienen objetos. El Stock de los siguientes objetos se borrará:"), contenedor), function() { popups.closePopup(); Guardar(true) });
+				abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", C("div", "Se van a borrar secciones que contienen objetos. El Stock de los siguientes objetos se borrará:"), contenedor), function() { popups.closePopup(); Guardar(true); });
 			} else {
 				// Redibujar listado completo de objetos y actualizar listado de almacenes
 				popups.closePopup();
@@ -678,28 +678,45 @@ function MostrarHistorial() {
 			
 			switch (step.ACCION) {
 				case "DELETE ALMACEN":
-					// (I1, T1) VALUES (OLD.id, OLD.nombre)
+					C(entrada, C("div", "Id almacén: " + step.I1));
+					C(entrada, C("div", "Nombre: " + step.T1));
 					break;
 				case "INSERT ALMACEN":
-					// (I1, T1) VALUES (NEW.id, NEW.nombre)
+					C(entrada, C("div", "Id almacén: " + step.I1));
+					C(entrada, C("div", "Nombre: " + step.T1));
 					break;
 				case "UPDATE ALMACEN":
-					// (I1, T1, T2) VALUES (NEW.id, OLD.nombre, NEW.nombre)
+					C(entrada, C("div", "Id almacen: " + step.I1));
+					CambioDescription(entrada, "Nombre", step.T1, step.T2);
 					break;
 				case "DELETE FILE":
-					// (I1, B1, T1) VALUES (OLD.id, OLD.bin, OLD.mimetype)
+					C(entrada, C("div", "Id file: " + step.I1));
+					C(entrada, C("div", "Binario: " + step.B1));
+					C(entrada, C("div", "Mimetype: " + step.T1));
 					break;
 				case "INSERT FILE":
-					// (I1, B1, T1) VALUES (NEW.id, NEW.bin, NEW.mimetype)
+					C(entrada, C("div", "Id file: " + step.I1));
+					C(entrada, C("div", "Binario: " + step.B1));
+					C(entrada, C("div", "Mimetype: " + step.T1));
 					break;
 				case "UPDATE FILE":
-					// (I1, B1, B2, T1, T2) VALUES (NEW.id, OLD.bin, NEW.bin, OLD.mimetype, NEW.mimetype)
+					C(entrada, C("div", "Id file: " + step.I1));
+					CambioDescription(entrada, "Binario", step.B1, step.B2);
+					CambioDescription(entrada, "Mimetype", step.T1, step.T2);
 					break;
 				case "DELETE OBJETO":
-					// (I1, T1, I2, T2, T3) VALUES (OLD.id, OLD.nombre, OLD.minimo, OLD.imagen, OLD.tags)
+					C(entrada, C("div", "Id objeto: " + step.I1));
+					C(entrada, C("div", "Nombre: " + step.T1));
+					C(entrada, C("div", "Mínimo: " + step.I2));
+					C(entrada, C("div", "Imagen: " + step.T2));
+					C(entrada, C("div", "Tags: " + step.T3));
 					break;
 				case "INSERT OBJETO":
-					// (I1, T1, I2, T2, T3) VALUES (NEW.id, NEW.nombre, NEW.minimo, NEW.imagen, NEW.tags)
+					C(entrada, C("div", "Id objeto: " + step.I1));
+					C(entrada, C("div", "Nombre: " + step.T1));
+					C(entrada, C("div", "Mínimo: " + step.I2));
+					C(entrada, C("div", "Imagen: " + step.T2));
+					C(entrada, C("div", "Tags: " + step.T3));
 					break;
 				case "UPDATE OBJETO":
 					C(entrada, C("div", "Id objeto: " + step.I1));
@@ -724,13 +741,19 @@ function MostrarHistorial() {
 					CambioDescription(entrada, "Cantidad", step.I3, step.I4);
 					break;
 				case "DELETE SECCION":
-					// (I1, T1, I2) VALUES (OLD.id, OLD.nombre, OLD.id_almacen)
+					C(entrada, C("div", "Id sección: " + step.I1));
+					C(entrada, C("div", "Nombre: " + step.T1));
+					C(entrada, C("div", "Id almacén: " + step.I2));
 					break;
 				case "INSERT SECCION":
-					// (I1, T1, I2) VALUES (NEW.id, NEW.nombre, NEW.id_almacen)
+					C(entrada, C("div", "Id sección: " + step.I1));
+					C(entrada, C("div", "Nombre: " + step.T1));
+					C(entrada, C("div", "Id almacén: " + step.I2));
 					break;
 				case "UPDATE SECCION":
-					// (I1, T1, T2, I2, I3) VALUES (NEW.id, OLD.nombre, NEW.nombre, OLD.id_almacen, NEW.id_almacen)
+					C(entrada, C("div", "Id sección: " + step.I1));
+					CambioDescription(entrada, "Nombre", step.T1, step.T2);
+					CambioDescription(entrada, "Id almacén", step.I2, step.I3);
 					break;
 			}
 			

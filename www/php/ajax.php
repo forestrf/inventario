@@ -6,6 +6,7 @@ $SAME_MSG = "Sin cambios";
 if (isset($_GET['action']) || isset($_POST['action'])) {
 	$db = new DB();
 	$db->open();
+	//$db->debug_mode(true);
 	if ($db->is_away()) {
 		header("HTTP/1.1 503 Service Unavailable");
 		exit;
