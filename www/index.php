@@ -674,101 +674,120 @@ function MostrarHistorial() {
 		var transaccion = C("div");
 		
 		for (var i = 0; i < listado.length; i++) {
-			var step = listado[i];
-			if (step.ACCION === "SPACING") {
-				var entrada = C("div", ["class", "accion"]);
-				C(entrada, step.T1, C("br"));
-				transaccion = C("div");
-				C(entrada, C("div", step.Fecha), transaccion);
-				C(container, entrada, C("br"));
-			} else {
-				var entrada = C("div", ["class", "entrada"]);			
-				C(entrada, step.ACCION, C("br"));
-				//C(entrada, C("div", step.Fecha));
-				
-				switch (step.ACCION) {
-					case "DELETE ALMACEN":
-						C(entrada, C("div", "Id almacén: " + step.I1));
-						C(entrada, C("div", "Nombre: " + step.T1));
-						break;
-					case "INSERT ALMACEN":
-						C(entrada, C("div", "Id almacén: " + step.I1));
-						C(entrada, C("div", "Nombre: " + step.T1));
-						break;
-					case "UPDATE ALMACEN":
-						C(entrada, C("div", "Id almacén: " + step.I1));
-						CambioDescription(entrada, "Nombre", step.T1, step.T2);
-						break;
-					case "DELETE FILE":
-						C(entrada, C("div", "Id file: " + step.I1));
-						C(entrada, C("div", "Binario: " + step.B1));
-						C(entrada, C("div", "Mimetype: " + step.T1));
-						break;
-					case "INSERT FILE":
-						C(entrada, C("div", "Id file: " + step.I1));
-						C(entrada, C("div", "Binario: " + step.B1));
-						C(entrada, C("div", "Mimetype: " + step.T1));
-						break;
-					case "UPDATE FILE":
-						C(entrada, C("div", "Id file: " + step.I1));
-						CambioDescription(entrada, "Binario", step.B1, step.B2);
-						CambioDescription(entrada, "Mimetype", step.T1, step.T2);
-						break;
-					case "DELETE OBJETO":
-						C(entrada, C("div", "Id objeto: " + step.I1));
-						C(entrada, C("div", "Nombre: " + step.T1));
-						C(entrada, C("div", "Mínimo: " + step.I2));
-						C(entrada, C("div", "Imagen: " + step.T2));
-						C(entrada, C("div", "Tags: " + step.T3));
-						break;
-					case "INSERT OBJETO":
-						C(entrada, C("div", "Id objeto: " + step.I1));
-						C(entrada, C("div", "Nombre: " + step.T1));
-						C(entrada, C("div", "Mínimo: " + step.I2));
-						C(entrada, C("div", "Imagen: " + step.T2));
-						C(entrada, C("div", "Tags: " + step.T3));
-						break;
-					case "UPDATE OBJETO":
-						C(entrada, C("div", "Id objeto: " + step.I1));
-						CambioDescription(entrada, "Nombre", step.T1, step.T2);
-						CambioDescription(entrada, "Mínimo", step.I2, step.I3);
-						CambioDescription(entrada, "Id imagen", step.T3, step.T4);
-						CambioDescription(entrada, "Tags", step.T5, step.T6);
-						break;
-					case "DELETE OBJETO_SECCION":
-						C(entrada, C("div", "Id objeto: " + step.I1));
-						C(entrada, C("div", "Id sección: " + step.I2));
-						CambioDescription(entrada, "Cantidad", step.I3, "---");
-						break;
-					case "INSERT OBJETO_SECCION":
-						C(entrada, C("div", "Id objeto: " + step.I1));
-						C(entrada, C("div", "Id sección: " + step.I2));
-						CambioDescription(entrada, "Cantidad", "---", step.I3);
-						break;
-					case "UPDATE OBJETO_SECCION":
-						C(entrada, C("div", "Id objeto: " + step.I1));
-						C(entrada, C("div", "Id sección: " + step.I2));
-						CambioDescription(entrada, "Cantidad", step.I3, step.I4);
-						break;
-					case "DELETE SECCION":
-						C(entrada, C("div", "Id sección: " + step.I1));
-						C(entrada, C("div", "Nombre: " + step.T1));
-						C(entrada, C("div", "Id almacén: " + step.I2));
-						break;
-					case "INSERT SECCION":
-						C(entrada, C("div", "Id sección: " + step.I1));
-						C(entrada, C("div", "Nombre: " + step.T1));
-						C(entrada, C("div", "Id almacén: " + step.I2));
-						break;
-					case "UPDATE SECCION":
-						C(entrada, C("div", "Id sección: " + step.I1));
-						CambioDescription(entrada, "Nombre", step.T1, step.T2);
-						CambioDescription(entrada, "Id almacén", step.I2, step.I3);
-						break;
+			(function(i) {
+				var step = listado[i];
+				if (step.ACCION === "SPACING") {
+					transaccion = C("div");
+					C(container,
+						C("div", ["class", "accion"],
+							C("button", ["class", "btn btn-danger deshacer has-help", "onclick", Undo],
+								"Revertir",
+								C("div", ["class", "desc"],
+									"Clicar en este botón revierte el inventario a cómo estaba a fecha de ", step.Fecha, "."
+								)
+							),
+							C("span", ["class", "id"], step.ID),
+							C("span", ["class", "nombre"], step.T1),
+							C("span", ["class", "fecha"], step.Fecha),
+							C("br"),
+							transaccion
+						),
+						C("br")
+					);
+				} else {
+					var entradaWrapp = C("div", ["class", "entrada"]);			
+					C(entradaWrapp, C("div", ["class", "nombre"], step.ACCION));
+					var entrada = C("div", ["class", "contenido"]);
+					C(entradaWrapp, entrada);
+					
+					switch (step.ACCION) {
+						case "DELETE ALMACEN":
+							C(entrada, C("div", "Id almacén: " + step.I1));
+							C(entrada, C("div", "Nombre: " + step.T1));
+							break;
+						case "INSERT ALMACEN":
+							C(entrada, C("div", "Id almacén: " + step.I1));
+							C(entrada, C("div", "Nombre: " + step.T1));
+							break;
+						case "UPDATE ALMACEN":
+							C(entrada, C("div", "Id almacén: " + step.I1));
+							CambioDescription(entrada, "Nombre", step.T1, step.T2);
+							break;
+						case "DELETE FILE":
+							C(entrada, C("div", "Id file: " + step.I1));
+							C(entrada, C("div", "Binario: " + step.B1));
+							C(entrada, C("div", "Mimetype: " + step.T1));
+							break;
+						case "INSERT FILE":
+							C(entrada, C("div", "Id file: " + step.I1));
+							C(entrada, C("div", "Binario: " + step.B1));
+							C(entrada, C("div", "Mimetype: " + step.T1));
+							break;
+						case "UPDATE FILE":
+							C(entrada, C("div", "Id file: " + step.I1));
+							CambioDescription(entrada, "Binario", step.B1, step.B2);
+							CambioDescription(entrada, "Mimetype", step.T1, step.T2);
+							break;
+						case "DELETE OBJETO":
+							C(entrada, C("div", "Id objeto: " + step.I1));
+							C(entrada, C("div", "Nombre: " + step.T1));
+							C(entrada, C("div", "Mínimo: " + step.I2));
+							C(entrada, C("div", "Imagen: " + step.T2));
+							C(entrada, C("div", "Tags: " + step.T3));
+							break;
+						case "INSERT OBJETO":
+							C(entrada, C("div", "Id objeto: " + step.I1));
+							C(entrada, C("div", "Nombre: " + step.T1));
+							C(entrada, C("div", "Mínimo: " + step.I2));
+							C(entrada, C("div", "Imagen: " + step.T2));
+							C(entrada, C("div", "Tags: " + step.T3));
+							break;
+						case "UPDATE OBJETO":
+							C(entrada, C("div", "Id objeto: " + step.I1));
+							CambioDescription(entrada, "Nombre", step.T1, step.T2);
+							CambioDescription(entrada, "Mínimo", step.I2, step.I3);
+							CambioDescription(entrada, "Id imagen", step.T3, step.T4);
+							CambioDescription(entrada, "Tags", step.T5, step.T6);
+							break;
+						case "DELETE OBJETO_SECCION":
+							C(entrada, C("div", "Id objeto: " + step.I1));
+							C(entrada, C("div", "Id sección: " + step.I2));
+							CambioDescription(entrada, "Cantidad", step.I3, "---");
+							break;
+						case "INSERT OBJETO_SECCION":
+							C(entrada, C("div", "Id objeto: " + step.I1));
+							C(entrada, C("div", "Id sección: " + step.I2));
+							CambioDescription(entrada, "Cantidad", "---", step.I3);
+							break;
+						case "UPDATE OBJETO_SECCION":
+							C(entrada, C("div", "Id objeto: " + step.I1));
+							C(entrada, C("div", "Id sección: " + step.I2));
+							CambioDescription(entrada, "Cantidad", step.I3, step.I4);
+							break;
+						case "DELETE SECCION":
+							C(entrada, C("div", "Id sección: " + step.I1));
+							C(entrada, C("div", "Nombre: " + step.T1));
+							C(entrada, C("div", "Id almacén: " + step.I2));
+							break;
+						case "INSERT SECCION":
+							C(entrada, C("div", "Id sección: " + step.I1));
+							C(entrada, C("div", "Nombre: " + step.T1));
+							C(entrada, C("div", "Id almacén: " + step.I2));
+							break;
+						case "UPDATE SECCION":
+							C(entrada, C("div", "Id sección: " + step.I1));
+							CambioDescription(entrada, "Nombre", step.T1, step.T2);
+							CambioDescription(entrada, "Id almacén", step.I2, step.I3);
+							break;
+					}
+					
+					C(transaccion, entradaWrapp);
 				}
 				
-				C(transaccion, entrada, C("br"));
-			}
+				function Undo() {
+					console.log(step);
+				}
+			})(i);
 		}
 	}, console.log);
 	

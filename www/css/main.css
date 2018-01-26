@@ -510,12 +510,65 @@ div.buscador .fixed {
 	border-color: #b00000;
 }
 
-.historial .entrada {
-	border: 1px solid #000;
+.historial .accion {
+	background-color: #000;
+	border-radius: 5px;
 	display: inline-block;
 	padding: 5px;
-	border-radius: 5px;
+	border: 1px solid #000;
 	margin: 2px;
+	color: #eee;
+}
+.historial .accion .deshacer {
+	float: left;
+	height: 3em;
+	border-radius: 15px;
+	margin-right: 5px;
+}
+.historial .accion .deshacer .desc {
+	width: 250px;
+}
+.historial .accion .id {
+	background-color: #777;
+	border-radius: 15px;
+	text-shadow: 1px 1px 0 #000;
+	box-shadow: 0px 0px 6px 1px #000 inset;
+	padding: 3px;
+	border: 2px solid #fff;
+}
+.historial .accion .fecha {
+	background-color: #470b0b;
+	border-radius: 4px;
+	margin-right: 5px;
+	font-size: .8em;
+	padding: 0 5px;
+	border: 1px solid #b30000;
+	float: right;
+}
+.historial .accion .entrada {
+	background-color: #fff;
+	vertical-align: top;
+	border-radius: 5px;
+	font-size: .9em;
+	display: inline-block;
+	padding: 0px 5px;
+	border: 1px solid #000;
+	margin: 2px;
+	color: #111;
+}
+.historial .accion > .nombre {
+	padding: 2px 30px;
+}
+.historial .accion .entrada .nombre {
+	display: block;
+}
+.historial .accion .entrada .contenido {
+	display: none;
+}
+.historial .accion .entrada:hover .contenido,
+.historial .accion.detallado .entrada .contenido,
+.historial .accion .entrada.detallado .contenido {
+	display: inherit;
 }
 
 
