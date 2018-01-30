@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 25-01-2018 a las 11:08:49
+-- Tiempo de generación: 30-01-2018 a las 13:21:50
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -93,13 +93,6 @@ CREATE TRIGGER `file_insert` AFTER INSERT ON `file` FOR EACH ROW INSERT INTO his
 (ACCION, I1, B1, T1)
 VALUES
 ("INSERT FILE", NEW.id, NEW.bin, NEW.mimetype)
-$$
-DELIMITER ;
-DELIMITER $$
-CREATE TRIGGER `file_update` AFTER UPDATE ON `file` FOR EACH ROW INSERT INTO historico
-(ACCION, I1, B1, B2, T1, T2)
-VALUES
-("UPDATE FILE", NEW.id, OLD.bin, NEW.bin, OLD.mimetype, NEW.mimetype)
 $$
 DELIMITER ;
 
@@ -369,13 +362,6 @@ USE `phpmyadmin`;
 --
 -- Metadatos para la tabla file
 --
-
---
--- Volcado de datos para la tabla `pma__column_info`
---
-
-INSERT INTO `pma__column_info` (`db_name`, `table_name`, `column_name`, `comment`, `mimetype`, `transformation`, `transformation_options`, `input_transformation`, `input_transformation_options`) VALUES
-('almacen', 'file', 'bin', '', 'image_jpeg', 'output/image_jpeg_inline.php', '', '', '');
 
 --
 -- Metadatos para la tabla historico
