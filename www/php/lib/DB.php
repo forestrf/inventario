@@ -44,12 +44,6 @@ class DB {
 		return true;
 	}
 	
-	function add_history_spacing($action) {
-		$action = escape($action);
-		// Marcar como una transacción en el historial
-		$this->query("INSERT INTO historico (ACCION, T1) VALUES ('SPACING', '{$action}')");
-	}
-	
 	// Make a SQL query. Returns false if there is an error, and throws an exception.
 	// Queries are only done here. This way a connection can be opened if necessary
 	// $this->LAST_MYSQL_ID stores the ID of the last insert query
@@ -161,6 +155,10 @@ class DB {
 		$file_index = escape($file_index);
 		return $this->query("SELECT * FROM file WHERE id = '{$file_index}';");
 	}
+	function remove_file($file_index) {
+		$file_index = escape($file_index);
+		return $this->query("DELETE FROM file WHERE id = '{$file_index}';");
+	}
 	function get_historico() {
 		return $this->query("SELECT * FROM historico;");
 	}
@@ -173,6 +171,14 @@ class DB {
 	}
 	function add_empty_objeto() {
 		return $this->query("INSERT INTO objeto () VALUES ();");
+	}
+	function add_or_update_objeto($id, $name, $minimo, $id_file, $tags) {
+		$id = escape($id);
+		$name = escape($name);
+		$minimo = escape($minimo);
+		$id_file = escape($id_file);
+		$tags = escape($tags);
+		return $this->query("INSERT INTO objeto (id, nombre, minimo, imagen, tags) VALUES ({$id}, '{$name}', {$minimo}, '{$id_file}', '{$tags}') ON DUPLICATE KEY UPDATE nombre = '{$name}', minimo = {$minimo}, imagen = '{$id_file}', tags = '{$tags}';");
 	}
 	function remove_objeto($id_objeto) {
 		$id_objeto = escape($id_objeto);
@@ -214,17 +220,39 @@ class DB {
 		}
 		return false;
 	}
+	function add_or_update_objeto_cantidades($id_objeto, $id_seccion, $cantidad) {
+		$id_objeto = escape($id_objeto);
+		$id_seccion = escape($id_seccion);
+		$cantidad = escape($cantidad);
+		return $this->query("INSERT INTO objeto_seccion (id_objeto, id_seccion, cantidad) VALUES ({$id_objeto}, {$id_seccion}, {$cantidad}) ON DUPLICATE KEY UPDATE cantidad = {$cantidad};");
+	}
+	function remove_objeto_cantidades($id_objeto, $id_seccion) {
+		$id_objeto = escape($id_objeto);
+		$id_seccion = escape($id_seccion);
+		return $this->query("DELETE FROM objeto_seccion WHERE id_objeto = {$id_objeto} AND id_seccion = {$id_seccion};");
+	}
 	
 	function remove_secciones_not_in($new_sections) {
 		$seccionesList = ToList($new_sections);
-		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion NOT IN (" . $seccionesList . ");")
-			&& $this->query("DELETE FROM seccion WHERE id NOT IN (" . $seccionesList . ");");
+		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion NOT IN ({$seccionesList});")
+			&& $this->query("DELETE FROM seccion WHERE id NOT IN ({$seccionesList});");
 	}
 	function remove_almacenes_not_in($new_almacenes) {
 		$almacenesList = ToList($new_almacenes);
-		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion IN (SELECT id FROM seccion WHERE id_almacen NOT IN (" . $almacenesList . "));")
-			&& $this->query("DELETE FROM seccion WHERE id_almacen NOT IN (" . $almacenesList . ");")
-			&& $this->query("DELETE FROM almacen WHERE id NOT IN (" . $almacenesList . ");");
+		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion IN (SELECT id FROM seccion WHERE id_almacen NOT IN ({$almacenesList}));")
+			&& $this->query("DELETE FROM seccion WHERE id_almacen NOT IN ({$almacenesList});")
+			&& $this->query("DELETE FROM almacen WHERE id NOT IN ({$almacenesList});");
+	}
+	function remove_seccion($id_seccion) {
+		$id_seccion = escape($id_seccion);
+		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion = {$id_seccion};")
+			&& $this->query("DELETE FROM seccion WHERE id = {$id_seccion};");
+	}
+	function remove_almacen($id_almacen) {
+		$id_almacen = escape($id_almacen);
+		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion IN (SELECT id FROM seccion WHERE id_almacen = {$id_almacen});")
+			&& $this->query("DELETE FROM seccion WHERE id_almacen = {$id_almacen};")
+			&& $this->query("DELETE FROM almacen WHERE id = {$id_almacen};");
 	}
 	function add_or_update_almacen($id, $nombre) {
 		$id = escape($id);
@@ -237,6 +265,22 @@ class DB {
 		$nombre = escape($nombre);
 		$id_almacen = escape($id_almacen);
 		return $this->query("INSERT INTO seccion (id, nombre, id_almacen) VALUES ('{$id}', '{$nombre}', '{$id_almacen}') ON DUPLICATE KEY UPDATE nombre = '{$nombre}', id_almacen = '{$id_almacen}';");
+	}
+	
+	// Undo system
+	function add_history_spacing($action) {
+		$action = escape($action);
+		// Marcar como una transacción en el historial
+		$this->query("INSERT INTO historico (ACCION, T1) VALUES ('SPACING', '{$action}');");
+	}
+	function add_history_spacing_id($action, $id) {
+		$action = escape($action);
+		$id = escape($id);
+		$this->query("INSERT INTO historico (ACCION, T1, I1) VALUES ('SPACING', '{$action}', {$id});");
+	}
+	function get_history_by_ids($id_from) {
+		$id_from = escape($id_from);
+		return $this->query("SELECT * FROM historico WHERE ID >= 1 + (SELECT ID FROM historico WHERE ID < {$id_from} AND ACCION = 'SPACING' ORDER BY ID DESC LIMIT 1);");
 	}
 }
 

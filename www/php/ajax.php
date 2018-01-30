@@ -71,6 +71,7 @@ if (isset($_GET['action'])) {
 	}
 }
 else {
+	// No vamos a usar relaciones con DELETE CASCADE o similar
 	switch($_POST['action']) {
 		case 'update-object-image':
 			if (checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto")
@@ -378,6 +379,69 @@ else {
 					echo json_encode(array(
 						"STATUS" => "ERROR",
 						"MESSAGE" => $db->mysqli->error
+					));
+				}
+			}
+			break;
+		case 'rollback-history':
+			if (checkOrExit(isset($_POST["step"]), "No se ha enviado la id del historial que se debe deshacer")) {
+				$history = $db->get_history_by_ids($_POST["step"]);
+				
+				if (count($history) > 0) {
+					// Ejecutar deshacer
+					foreach ($history as &$step) {
+						var_dump($step["ACCION"]);
+						switch ($step["ACCION"]) {
+							case "DELETE ALMACEN":
+								$db->add_or_update_almacen($step["I1"], $step["T1"]);
+								break;
+							case "INSERT ALMACEN":
+								$db->remove_seccion($step["I1"]);
+								break;
+							case "UPDATE ALMACEN":
+								$db->add_or_update_almacen($step["I1"], $step["T1"]);
+								break;
+							case "DELETE FILE":
+								$file_index = 0;
+								$db->add_file($step["T1"], $step["B1"], $file_index);
+								break;
+							case "INSERT FILE":
+								$db->remove_file($step["I1"]);
+								break;
+							case "DELETE OBJETO":
+								$db->add_or_update_objeto($step["I1"], $step["T1"], $step["I2"], $step["T2"], $step["T3"]);
+								break;
+							case "INSERT OBJETO":
+								$db->remove_objeto($step["I1"]);
+								break;
+							case "UPDATE OBJETO":
+								var_dump($db->add_or_update_objeto($step["I1"], $step["T1"], $step["I2"], $step["T3"], $step["T5"]));
+								break;
+							case "DELETE OBJETO_SECCION":
+								$db->add_or_update_objeto_cantidades($step["I1"], $step["I2"], $step["I3"]);
+								break;
+							case "INSERT OBJETO_SECCION":
+								$db->remove_objeto_cantidades($step["I1"], $step["I2"]);
+								break;
+							case "UPDATE OBJETO_SECCION":
+								$db->add_or_update_objeto_cantidades($step["I1"], $step["I2"], $step["I3"]);
+								break;
+							case "DELETE SECCION":
+								$db->add_or_update_seccion($step["I1"], $step["T1"], $step["I2"]);
+								break;
+							case "INSERT SECCION":
+								$db->remove_seccion($step["I1"]);
+								break;
+							case "UPDATE SECCION":
+								$db->add_or_update_seccion($step["I1"], $step["T1"], $step["I2"]);
+								break;
+						}
+					}
+					// Terminar con un spacing the tipo deshacer
+					$db->add_history_spacing_id($_POST['action'], $_POST['step']);
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Se han deshecho los cambios con éxito."
 					));
 				}
 			}

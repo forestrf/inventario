@@ -662,7 +662,7 @@ AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
 function MostrarHistorial() {
 	var container;
 	popups.showPopup(C("div", ["class", "historial"],
-		container = C("div", "Cada cambio tiene una id, que se incrementa. Mostrar el historial entero, y si se realiza un deshacer se agrupará los cambios e indicará a qué id se deshizo. La acción de deshacer también se puede deshacer, y deshacer se queda registrado en el historial como una acción. No se puede borrar una acción, por lo que deshacer no deshacer sino que repite acciones pasadas en sentido inverso, creando nuevos eventos. Para dejarlo bonito, cada evento del historial se mostrará sólo o agrupado (dependiendo de qué es lo que se realiza en el), y el evento mostrado será fácil de leer. Por ejemplo, se cambia valor mínimo de objeto tal de esta cantidad a esta otra (que lo puedes clicar si esque existe, y abre el objeto para que lo veas).", C("br")),
+		container = C("div", "Si se realiza un deshacer se agrupará los cambios e indicará a qué id se deshizo. La acción de deshacer también se puede deshacer, y deshacer se queda registrado en el historial como una acción. No se puede borrar una acción, por lo que deshacer no deshacer sino que repite acciones pasadas en sentido inverso, creando nuevos eventos. Por ejemplo, se cambia valor mínimo de objeto tal de esta cantidad a esta otra (que lo puedes clicar si esque existe, y abre el objeto para que lo veas).", C("br")),
 		PieGuardarCancelar("Deshacer cambios", "btn-success guarda", Deshacer, "Cancelar", popups.closePopup, false)
 	));
 	
@@ -681,9 +681,9 @@ function MostrarHistorial() {
 					C(container,
 						C("div", ["class", "accion"],
 							C("button", ["class", "btn btn-danger deshacer has-help", "onclick", Undo],
-								"Revertir",
+								"Deshacer",
 								C("div", ["class", "desc"],
-									"Clicar en este botón revierte el inventario a cómo estaba a fecha de ", step.Fecha, "."
+									"Clicar en este botón deshace todos los cambios realizados aquí y posteriores."
 								)
 							),
 							C("span", ["class", "id"], step.ID),
@@ -722,11 +722,6 @@ function MostrarHistorial() {
 							C(entrada, C("div", "Id file: " + step.I1));
 							C(entrada, C("div", "Binario: " + step.B1));
 							C(entrada, C("div", "Mimetype: " + step.T1));
-							break;
-						case "UPDATE FILE":
-							C(entrada, C("div", "Id file: " + step.I1));
-							CambioDescription(entrada, "Binario", step.B1, step.B2);
-							CambioDescription(entrada, "Mimetype", step.T1, step.T2);
 							break;
 						case "DELETE OBJETO":
 							C(entrada, C("div", "Id objeto: " + step.I1));
@@ -785,7 +780,11 @@ function MostrarHistorial() {
 				}
 				
 				function Undo() {
-					console.log(step);
+					//console.log(step);
+					AJAX('php/ajax.php', 'action=rollback-history&step=' + step.ID, function(msg) {
+						console.log(msg);
+						// Reload page
+					}, console.log);
 				}
 			})(i);
 		}
