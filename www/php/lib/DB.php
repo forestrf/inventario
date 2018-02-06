@@ -3,6 +3,10 @@
 require_once __DIR__.'/../config.php';
 require_once __DIR__.'/../functions/generic.php';
 
+define ("DB_OK", 1);
+define ("DB_FAIL", 2);
+define ("DB_VERSION", 3);
+
 // All the queries to the database are here. Change the database engine or the queries only have to be done here.
 class DB {
 	// Login data to access the database. change in the config file.
@@ -17,6 +21,7 @@ class DB {
 	
 	// Auto inserted id number
 	var $LAST_MYSQL_ID = '';
+	var $AFFECTED_ROWS = 0;
 	
 	function Open($host = null, $user = null, $pass = null, $bd = null) {
 		if($this->d) $this->debug('Opening database');
@@ -64,6 +69,9 @@ class DB {
 		}
 		
 		if ($result === false || $result === true) {
+			if (strpos($query, 'UPDATE') !== false) {
+				$this->AFFECTED_ROWS = $this->mysqli->affected_rows;
+			}
 			if($this->d) $this->debug('<span class="info">query</span>: <span class="query">' . $this->query_debug_str($query)
 				."</span>\r\n<span class='info'>result</span>: <b class=\"" . ($result ? 'ok">TRUE' : 'fail">FALSE (' . $this->mysqli->error . ')')."</b>\r\n");
 			return $result;
@@ -126,12 +134,19 @@ class DB {
 	
 	
 	function get_busquedaspreparadas() {
-		return $this->query("SELECT value FROM variables WHERE name = 'busquedas_preparadas';");
+		$busquedas = $this->query("SELECT value, version FROM variables WHERE name = 'busquedas_preparadas' LIMIT 1;");
+		return count($busquedas) === 1 ? $busquedas[0] : false;
 	}
 	// $busquedas es un array que se recorrera con foreach cuyos elementos son otro array con indices nombre y busqueda
-	function set_busquedaspreparadas($busquedas) {
+	function set_busquedaspreparadas($busquedas, $version) {
 		$busquedas = escape($busquedas);
-		return $this->query("INSERT INTO variables (name, value) VALUES ('busquedas_preparadas', '{$busquedas}') ON DUPLICATE KEY UPDATE value = '{$busquedas}';");
+		$version = escape($version);
+		if ($this->query("INSERT INTO variables (name, value) VALUES ('busquedas_preparadas', '{$busquedas}');")) {
+			return DB_OK;
+		} else if ($this->query("UPDATE variables SET value = '{$busquedas}', version = version + 1 WHERE name = 'busquedas_preparadas' AND version = '{$version}';")) {
+			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
+		}
+		return DB_FAIL;
 	}
 	
 	function get_almacenes() {

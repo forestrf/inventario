@@ -509,6 +509,10 @@ div.buscador .fixed {
 	background-color: #eaa1a1;
 	border-color: #b00000;
 }
+.popup > .msg .ajax.RELOAD {
+	background-color: #ffff74;
+	border-color: #b1b100;
+}
 
 .historial .accion {
 	background-color: #000;

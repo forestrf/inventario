@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 30-01-2018 a las 13:21:50
+-- Tiempo de generación: 06-02-2018 a las 11:25:40
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -24,7 +24,8 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `almacen` (
   `id` int(11) NOT NULL,
-  `nombre` text COLLATE utf8_bin NOT NULL
+  `nombre` text COLLATE utf8_bin NOT NULL,
+  `version` int(11) NOT NULL COMMENT 'Variable que se debe incrementar cada vez que se realiza un cambio en la fila para indicar que hay cambios y que otros no los machaquen'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
@@ -137,7 +138,8 @@ CREATE TABLE `objeto` (
   `nombre` text COLLATE utf8_bin NOT NULL,
   `minimo` int(11) NOT NULL,
   `imagen` varchar(32) COLLATE utf8_bin DEFAULT NULL,
-  `tags` text COLLATE utf8_bin NOT NULL
+  `tags` text COLLATE utf8_bin NOT NULL,
+  `version` int(11) NOT NULL COMMENT 'Variable que se debe incrementar cada vez que se realiza un cambio en la fila para indicar que hay cambios y que otros no los machaquen'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
@@ -186,7 +188,8 @@ DELIMITER ;
 CREATE TABLE `objeto_seccion` (
   `id_objeto` int(11) NOT NULL,
   `id_seccion` int(11) NOT NULL,
-  `cantidad` int(11) UNSIGNED NOT NULL
+  `cantidad` int(11) UNSIGNED NOT NULL,
+  `version` int(11) NOT NULL COMMENT 'Variable que se debe incrementar cada vez que se realiza un cambio en la fila para indicar que hay cambios y que otros no los machaquen'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
@@ -227,7 +230,8 @@ DELIMITER ;
 CREATE TABLE `seccion` (
   `id` int(11) NOT NULL,
   `nombre` text COLLATE utf8_bin NOT NULL,
-  `id_almacen` int(11) NOT NULL
+  `id_almacen` int(11) NOT NULL,
+  `version` int(11) NOT NULL COMMENT 'Variable que se debe incrementar cada vez que se realiza un cambio en la fila para indicar que hay cambios y que otros no los machaquen'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
@@ -267,7 +271,8 @@ DELIMITER ;
 
 CREATE TABLE `variables` (
   `name` varchar(128) COLLATE utf8_bin NOT NULL,
-  `value` text COLLATE utf8_bin NOT NULL
+  `value` text COLLATE utf8_bin NOT NULL,
+  `version` int(11) NOT NULL COMMENT 'Variable que se debe incrementar cada vez que se realiza un cambio en la fila para indicar que hay cambios y que otros no los machaquen'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
@@ -324,31 +329,6 @@ ALTER TABLE `seccion`
 --
 ALTER TABLE `variables`
   ADD PRIMARY KEY (`name`);
-
---
--- AUTO_INCREMENT de las tablas volcadas
---
-
---
--- AUTO_INCREMENT de la tabla `almacen`
---
-ALTER TABLE `almacen`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
---
--- AUTO_INCREMENT de la tabla `historico`
---
-ALTER TABLE `historico`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
---
--- AUTO_INCREMENT de la tabla `objeto`
---
-ALTER TABLE `objeto`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
---
--- AUTO_INCREMENT de la tabla `seccion`
---
-ALTER TABLE `seccion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Metadatos

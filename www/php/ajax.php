@@ -62,7 +62,7 @@ if (isset($_GET['action'])) {
 		case 'getbusquedaspreparadas':
 			insert_nocache_headers();
 			$busquedas = $db->get_busquedaspreparadas();
-			echo count($busquedas) == 1 ? $busquedas[0]["value"] : "[]";
+			echo json_encode($busquedas);
 			break;
 		case 'gethistory':
 			insert_nocache_headers();
@@ -360,24 +360,31 @@ else {
 		case 'update-busquedaspreparadas':
 			checkOrExit(isset($_POST["busquedaspreparadas"]), "No se ha enviado el nuevo listado de búsquedas preparadas");
 			
-			if ($_POST["busquedaspreparadas"] == $db->get_busquedaspreparadas()[0]["value"]) {
+			if ($_POST["busquedaspreparadas"] == $db->get_busquedaspreparadas()["value"]) {
 				echo json_encode(array(
 					"STATUS" => "SAME",
 					"MESSAGE" => $SAME_MSG
 				));
 				break;
 			}
-			if ($db->set_busquedaspreparadas($_POST["busquedaspreparadas"])) {
-				echo json_encode(array(
-					"STATUS" => "OK",
-					"MESSAGE" => "Búsquedas preparadas actualizadas"
-				));
-				$db->add_history_spacing($_POST['action']);
-			} else {
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => $db->mysqli->error
-				));
+			switch ($db->set_busquedaspreparadas($_POST["busquedaspreparadas"], $_POST["version"])) {
+				case DB_OK:
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Búsquedas preparadas actualizadas",
+						"NEW_VERSION" => $db->get_busquedaspreparadas()["version"]
+					));
+					$db->add_history_spacing($_POST['action']);
+					break;
+				case DB_FAIL:
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
+					));
+					break;
+				case DB_VERSION:
+					printReload();
+					break;
 			}
 			break;
 		case 'rollback-history':
@@ -458,11 +465,15 @@ function checkOrExit($checkOrExit, $errorMsg) {
 
 function checkOrReload($checkOrReload) {
 	if (!$checkOrReload) {
-		echo json_encode(array(
-			"STATUS" => "RELOAD",
-			"MESSAGE" => "El valor que se esperaba modificar ha sido alterado por otra persona antes que usted. Para evitar sobreescribir los cambios de otras personas, por favor recarga la web."
-		));
+		printReload();
 		exit;
 	}
 	return true;
+}
+
+function printReload() {
+	echo json_encode(array(
+		"STATUS" => "RELOAD",
+		"MESSAGE" => "Los cambios están desactualizados y no se han guardado. Por favor, recarga la página y vuelve a intentarlo."
+	));
 }

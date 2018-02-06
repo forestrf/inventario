@@ -568,96 +568,111 @@ function ListarAlmacenesSecciones() {
 	}
 }
 
-AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
-	var busquedasArr = JSON.parse(msg.response);
-	
-	BTN_BUSQUEDAS_PREPARADAS.style.display = "";
-	BTN_BUSQUEDAS_PREPARADAS.onclick = popupBusquedasPreparadas;
-	
-	function popupBusquedasPreparadas() {
-		var busquedas_ul = C("ul", ["class", "busquedas"]);
-		for (var i = 0; i < busquedasArr.length; i++) {
-			AddBusquedapreparada(busquedasArr[i].nombre, busquedasArr[i].busqueda);
-		}
-		var contenedorBusquedas = C("div", ["class", "busquedas-contenedor ajax"],
-			busquedas_ul,
-			C("button", ["class", "btn btn-default", "onclick", add], "Añadir búsqueda"),
-		);
-		popups.showPopup(C("div",
-			contenedorBusquedas,
-			PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardar, "Cerrar", popups.closePopup, false)
-		));
+function SetupBusquedasPreparadas() {
+	AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
+		var response = JSON.parse(msg.response);
+		if (!response) response = {value: "[]", version: 0};
+		var busquedasArr = JSON.parse(response.value);
 		
-		var sortable = Sortable.create(busquedas_ul, {
-			handle: ".handle"
-		});
+		var version = response.version;
 		
-		function add() {
-			AddBusquedapreparada("Nueva búsqueda", "Texto que buscar");
-		}
+		BTN_BUSQUEDAS_PREPARADAS.style.display = "";
+		BTN_BUSQUEDAS_PREPARADAS.onclick = popupBusquedasPreparadas;
 		
-		function guardar() {
-			// recorrer todos los LI del UL
-			var busquedas = [];
-			var items = busquedas_ul.getElementsByTagName("li");
-			for (var i = 0; i < items.length; i++) {
-				busquedas.push({nombre: items[i].b.innerHTML, busqueda: items[i].b.busqueda});
+		function popupBusquedasPreparadas() {
+			var busquedas_ul = C("ul", ["class", "busquedas"]);
+			for (var i = 0; i < busquedasArr.length; i++) {
+				AddBusquedapreparada(busquedasArr[i].nombre, busquedasArr[i].busqueda);
 			}
-			console.log(busquedas);
+			var contenedorBusquedas = C("div", ["class", "busquedas-contenedor ajax"],
+				busquedas_ul,
+				C("button", ["class", "btn btn-default", "onclick", add], "Añadir búsqueda"),
+			);
+			popups.showPopup(C("div",
+				contenedorBusquedas,
+				PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardar, "Cerrar", popups.closePopup, false)
+			));
 			
-			AJAX('php/ajax.php', 'action=update-busquedaspreparadas&busquedaspreparadas=' + encodeURIComponent(JSON.stringify(busquedas)), function(msg) {
-				var json = JSON.parse(msg.response);
-				busquedasArr = busquedas;
-				TemporalMessage(contenedorBusquedas, json.STATUS, json.MESSAGE, 10000);
-			}, console.log);
-		}
-		
-		function AddBusquedapreparada(nombre, busqueda) {
-			var li, b;
-			C(busquedas_ul, li = C("li",
-				C("span", ["class", "btn btn-info handle"], "⬍"),
-				b = C("button", ["class", "btn btn-primary", "onclick", click], nombre),
-				C("button", ["class", "btn btn-warning boton", "onclick", edit], C("i", ["class", "far fa-edit"])),
-				C("button", ["class", "btn btn-danger boton", "onclick", borrar], "X")));
-			b.busqueda = busqueda;
-			li.b = b;
+			var sortable = Sortable.create(busquedas_ul, {
+				handle: ".handle"
+			});
 			
-			
-			function click() {
-				popups.closePopup();
-				buscador.value = b.busqueda;
-				buscador.onchange();			
+			function add() {
+				AddBusquedapreparada("Nueva búsqueda", "Texto que buscar");
 			}
 			
-			function borrar() {
-				busquedas_ul.removeChild(li);
-			}
-		
-			function edit() {
-				var nom, bus;
-				popups.showPopup(C("div",
-					C("table", ["class", "editbusqueda"],
-						C("tr",
-							C("td", "Nombre del botón"),
-							C("td", nom = C("input", ["class", "form-control", "value", nombre]))
-						),
-						C("tr",
-							C("td", "Texto a buscar"),
-							C("td", bus = C("input", ["class", "form-control", "value", busqueda]))
-						)
-					),
-					PieGuardarCancelar("Aceptar", "btn-success guarda", aceptar, "Cancelar", popups.closePopup, false)
-				));
+			function guardar() {
+				// recorrer todos los LI del UL
+				var busquedas = [];
+				var items = busquedas_ul.getElementsByTagName("li");
+				for (var i = 0; i < items.length; i++) {
+					busquedas.push({nombre: items[i].b.innerHTML, busqueda: items[i].b.busqueda});
+				}
+				console.log(busquedas);
 				
-				function aceptar() {
-					b.innerHTML = nom.value;
-					b.busqueda = bus.value;
+				AJAX('php/ajax.php', 'action=update-busquedaspreparadas&version=' + version + '&busquedaspreparadas=' + encodeURIComponent(JSON.stringify(busquedas)), function(msg) {
+					var json = JSON.parse(msg.response);
+					switch (json.STATUS) {
+						case "OK":
+							version = json.NEW_VERSION;
+							break;
+						case "RELOAD":
+							SetupBusquedasPreparadas();
+							break;
+					}
+					busquedasArr = busquedas;
+					TemporalMessage(contenedorBusquedas, json.STATUS, json.MESSAGE, 10000);
+				}, console.log);
+			}
+			
+			function AddBusquedapreparada(nombre, busqueda) {
+				var li, b;
+				C(busquedas_ul, li = C("li",
+					C("span", ["class", "btn btn-info handle"], "⬍"),
+					b = C("button", ["class", "btn btn-primary", "onclick", click], nombre),
+					C("button", ["class", "btn btn-warning boton", "onclick", edit], C("i", ["class", "far fa-edit"])),
+					C("button", ["class", "btn btn-danger boton", "onclick", borrar], "X")));
+				b.busqueda = busqueda;
+				li.b = b;
+				
+				
+				function click() {
 					popups.closePopup();
+					buscador.value = b.busqueda;
+					buscador.onchange();			
+				}
+				
+				function borrar() {
+					busquedas_ul.removeChild(li);
+				}
+			
+				function edit() {
+					var nom, bus;
+					popups.showPopup(C("div",
+						C("table", ["class", "editbusqueda"],
+							C("tr",
+								C("td", "Nombre del botón"),
+								C("td", nom = C("input", ["class", "form-control", "value", nombre]))
+							),
+							C("tr",
+								C("td", "Texto a buscar"),
+								C("td", bus = C("input", ["class", "form-control", "value", busqueda]))
+							)
+						),
+						PieGuardarCancelar("Aceptar", "btn-success guarda", aceptar, "Cancelar", popups.closePopup, false)
+					));
+					
+					function aceptar() {
+						b.innerHTML = nom.value;
+						b.busqueda = bus.value;
+						popups.closePopup();
+					}
 				}
 			}
 		}
-	}
-}, console.log);
+	}, console.log);
+}
+SetupBusquedasPreparadas();
 
 function MostrarHistorial() {
 	var container;
