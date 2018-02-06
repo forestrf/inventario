@@ -372,7 +372,6 @@ else {
 					"STATUS" => "OK",
 					"MESSAGE" => "Búsquedas preparadas actualizadas"
 				));
-				$db->add_history_spacing($_POST['action']);
 			} else {
 				echo json_encode(array(
 					"STATUS" => "ERROR",
