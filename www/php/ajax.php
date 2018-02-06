@@ -374,7 +374,6 @@ else {
 						"MESSAGE" => "Búsquedas preparadas actualizadas",
 						"NEW_VERSION" => $db->get_busquedaspreparadas()["version"]
 					));
-					$db->add_history_spacing($_POST['action']);
 					break;
 				case DB_FAIL:
 					echo json_encode(array(
