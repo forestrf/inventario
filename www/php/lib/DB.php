@@ -160,7 +160,8 @@ class DB {
 	}
 	function get_objeto($id) {
 		$id = escape($id);
-		return $this->query("SELECT * FROM objeto WHERE id = {$id};");
+		$response = $this->query("SELECT * FROM objeto WHERE id = {$id} LIMIT 1;");
+		return $response !== false && count($response) === 1 ? $response[0] : false;
 	}
 	function get_objeto_secciones($id_objeto) {
 		$id_objeto = escape($id_objeto);
@@ -182,7 +183,7 @@ class DB {
 		$file_index = md5($blob);
 		$mimetype = escape($mimetype);
 		$blob = escape($blob);
-		return $this->query("INSERT INTO file (id, mimetype, bin) VALUES ('{$file_index}', '{$mimetype}', '{$blob}');");
+		$this->query("INSERT INTO file (id, mimetype, bin) VALUES ('{$file_index}', '{$mimetype}', '{$blob}');");
 	}
 	function add_empty_objeto() {
 		return $this->query("INSERT INTO objeto () VALUES ();");
@@ -200,15 +201,23 @@ class DB {
 		return $this->query("DELETE FROM objeto_seccion WHERE id_objeto = '{$id_objeto}';")
 			&& $this->query("DELETE FROM objeto WHERE id = '{$id_objeto}';");
 	}
-	function set_objeto_image($id_objeto, $id_file) {
+	function set_objeto_image($id_objeto, $id_file, $version) {
 		$id_objeto = escape($id_objeto);
 		$id_file = escape($id_file);
-		return $this->query("UPDATE objeto SET imagen = '{$id_file}' WHERE id = '{$id_objeto}' LIMIT 1;");
+		$version = escape($version);
+		if ($this->query("UPDATE objeto SET imagen = '{$id_file}', version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;")) {
+			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
+		}
+		return DB_FAIL;
 	}
-	function set_objeto_name($id_objeto, $name) {
+	function set_objeto_name($id_objeto, $name, $version) {
 		$id_objeto = escape($id_objeto);
 		$name = escape($name);
-		return $this->query("UPDATE objeto SET nombre = '{$name}' WHERE id = '{$id_objeto}' LIMIT 1;");
+		$version = escape($version);
+		if ($this->query("UPDATE objeto SET nombre = '{$name}', version = version + 1  WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;")) {
+			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
+		}
+		return DB_FAIL;
 	}
 	function set_objeto_minimo($id_objeto, $minimo) {
 		$id_objeto = escape($id_objeto);

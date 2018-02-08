@@ -230,7 +230,7 @@ div.buscador .fixed {
 	max-width: 128px;
 }
 .popup > .msg form.img {
-	height: 180px;
+	min-height: 180px;
 }
 .popup > .msg form .cantidades .add {
 	margin-bottom: 15px;

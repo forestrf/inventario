@@ -31,10 +31,10 @@ if (isset($_GET['action'])) {
 		case 'getinventarioitem':
 			insert_nocache_headers();
 			if (isset($_GET["id"])) {
-				$objetos = $db->get_objeto($_GET["id"]);
-				foreach ($objetos as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
+				$objeto = $db->get_objeto($_GET["id"]);
+				$objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
 
-				echo json_encode($objetos, 1);
+				echo json_encode($objeto, 1);
 			}
 			break;
 		case 'getfile':
@@ -76,7 +76,8 @@ else {
 	switch($_POST['action']) {
 		case 'update-object-image':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
-			checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe");
+			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
+			IsUpToDate($db->get_objeto($_POST["id-object"]));
 
 			if (!(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "")) {
 				echo json_encode(array(
@@ -87,27 +88,34 @@ else {
 			}
 			
 			$file_index = "";
-			if ($db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index)
-				&& $db->set_objeto_image($_POST["id-object"], $file_index)) {
-				echo json_encode(array(
-					"STATUS" => "OK",
-					"MESSAGE" => "Imagen actualizada"
-				));
-				$db->add_history_spacing($_POST['action']);
-			} else {
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => $db->mysqli->error
-				));
+			$db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index);
+			switch ($db->set_objeto_image($_POST["id-object"], $file_index, $_POST["version"])) {
+				case DB_OK:
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Imagen actualizada"
+					));
+					$db->add_history_spacing($_POST['action']);
+					break;
+				case DB_FAIL:
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
+					));
+					break;
+				case DB_VERSION:
+					printReload();
+					break;
 			}			
 			break;
 		case 'update-object-name':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
-			checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe");
+			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
 			checkOrExit(isset($_POST["nombre"]), "No se ha enviado un nombre");
 			checkOrExit(strlen($_POST["nombre"]) > 0, "El nombre es demasiado corto");
+			IsUpToDate($db->get_objeto($_POST["id-object"]));
 
-			if ($_POST["nombre"] == $db->get_objeto($_POST["id-object"])[0]["nombre"]) {
+			if ($_POST["nombre"] == $db->get_objeto($_POST["id-object"])["nombre"]) {
 				echo json_encode(array(
 					"STATUS" => "SAME",
 					"MESSAGE" => $SAME_MSG
@@ -115,7 +123,7 @@ else {
 				break;
 			}
 			
-			if ($db->set_objeto_name($_POST["id-object"], $_POST["nombre"])) {
+			if ($db->set_objeto_name($_POST["id-object"], $_POST["nombre"], $_POST["version"])) {
 				echo json_encode(array(
 					"STATUS" => "OK",
 					"MESSAGE" => "Nombre actualizado"
@@ -130,11 +138,12 @@ else {
 			break;
 		case 'update-object-minimo':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
-			checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe");
+			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
 			checkOrExit(isset($_POST["minimo"]), "No se ha enviado una cantidad mínima");
 			checkOrExit(intval($_POST["minimo"]) >= 0, "El valor mínimo debe de ser un número mayor o igual que cero");
+			IsUpToDate($db->get_objeto($_POST["id-object"]));
 
-			if ($_POST["minimo"] == $db->get_objeto($_POST["id-object"])[0]["minimo"]) {
+			if ($_POST["minimo"] == $db->get_objeto($_POST["id-object"])["minimo"]) {
 				echo json_encode(array(
 					"STATUS" => "SAME",
 					"MESSAGE" => $SAME_MSG
@@ -157,7 +166,7 @@ else {
 			break;
 		case 'update-object-cantidades':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
-			checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe");
+			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
 			
 			$cantidades = array();
 			foreach ($_POST as $key => $value) {
@@ -197,10 +206,11 @@ else {
 			break;
 		case 'update-object-tags':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
-			checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe");
+			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
 			checkOrExit(isset($_POST["tags"]), "No se ha enviado una lista de tags");
+			IsUpToDate($db->get_objeto($_POST["id-object"]));
 
-			if ($_POST["tags"] == $db->get_objeto($_POST["id-object"])[0]["tags"]) {
+			if ($_POST["tags"] == $db->get_objeto($_POST["id-object"])["tags"]) {
 				echo json_encode(array(
 					"STATUS" => "SAME",
 					"MESSAGE" => $SAME_MSG
@@ -359,6 +369,7 @@ else {
 			break;
 		case 'update-busquedaspreparadas':
 			checkOrExit(isset($_POST["busquedaspreparadas"]), "No se ha enviado el nuevo listado de búsquedas preparadas");
+			checkOrExit(isset($_POST["version"]), "No se indica una versión");
 			
 			if ($_POST["busquedaspreparadas"] == $db->get_busquedaspreparadas()["value"]) {
 				echo json_encode(array(
@@ -475,4 +486,8 @@ function printReload() {
 		"STATUS" => "RELOAD",
 		"MESSAGE" => "Los cambios están desactualizados y no se han guardado. Por favor, recarga la página y vuelve a intentarlo."
 	));
+}
+
+function IsUpToDate($element) {
+	checkOrReload(isset($_POST["version"]) && $element["version"] === $_POST["version"]);
 }

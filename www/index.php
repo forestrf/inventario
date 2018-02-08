@@ -85,7 +85,7 @@ function DrawObjeto(i) {
 	
 	function GeneraDomObjeto() {
 		cantidad = GetCantidad(objeto);
-		domObjetoEnLista = C("button", ["class", "objeto obj-" + objeto.id, "onclick", function() { edit(objeto, UpdateListObject); }],
+		domObjetoEnLista = C("button", ["class", "objeto obj-" + objeto.id, "onclick", function() { edit(UpdateListObject); }],
 			C("div", ["class", "titulo"],
 				C("div", ["class", "nombre"], objeto.nombre)
 			),
@@ -113,12 +113,13 @@ function DrawObjeto(i) {
 		return objeto.DOM = domObjetoEnLista;
 	}
 	
-	function UpdateListObject() {
+	function UpdateListObject(objetoCallback) {
 		AJAX('php/ajax.php?action=getinventarioitem&id=' + objeto.id, null, function(msg) {
-			lista.objetos[i] = objeto = fixObjetoFromJSON(JSON.parse(msg.response)[0]);
+			lista.objetos[i] = objeto = fixObjetoFromJSON(JSON.parse(msg.response));
 			var aBorrar = domObjetoEnLista;
 			domObjetoEnLista.parentNode.insertBefore(GeneraDomObjeto(), aBorrar);
 			domObjetoEnLista.parentNode.removeChild(aBorrar);
+			if (objetoCallback) objetoCallback(shallowClone(objeto));
 		}, console.log);
 	}
 }
@@ -181,99 +182,109 @@ function GetCantidad(objeto) {
 	})["cantidad"];
 }
 
-function edit(objeto, UpdateListObject) {
-	var objetoLocal = shallowClone(objeto);
-	cantidad = GetCantidad(objetoLocal);
-	var cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
-	var tags;
+function edit(UpdateListObject) {
 	var cantidades;
-	var popupDOM = C("div",
-		C("div", ["style", "padding: 1%", "UpdateListObject", UpdateListObject],
-			C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
-				C("div", "Nombre"),
-				C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal.nombre, "class", "form-control"])),
-				DOMInputAction("update-object-name")
-			),
-			C("form", ["class", "ajax right_big img", "method", "post", "action", "php/ajax.php"],
-				C("div", "Imagen"),
-				C("div",
-					C("img", ["src", GetImagenObjeto(objetoLocal), "id", "img_objeto", "class", "img-" + objetoLocal.id]),
-					C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera"])
+	var tags;
+	var forms;
+	var updaterDOM;
+	var objetoLocal;
+	var cantidadROInput;
+	var popupDOM;
+	UpdateListObject(function(newObjetoLocal) {
+		objetoLocal = newObjetoLocal;
+		cantidad = GetCantidad(objetoLocal);
+		cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
+		
+		popupDOM = C("div",
+			updaterDOM = C("div", ["style", "padding: 1%", "UpdateListObject", UpdateListObject],
+				C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
+					C("div", "Nombre"),
+					C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal.nombre, "class", "form-control"])),
+					DOMInputAction("update-object-name")
 				),
-				DOMInputAction("update-object-image")
-			),
-			C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
-				C("div", ["class", "has-help"],
-					"Cantidad mínima",
-					C("div", ["class", "desc"],
-						"Se mostrará una alerta si la cantidad total de objetos es menor que este valor.",
-						C("img", ["src", "media/inputs.gif"])
-					)
+				C("form", ["class", "ajax right_big img", "method", "post", "action", "php/ajax.php"],
+					C("div", "Imagen"),
+					C("div",
+						C("img", ["src", GetImagenObjeto(objetoLocal), "id", "img_objeto", "class", "img-" + objetoLocal.id]),
+						C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera"])
+					),
+					DOMInputAction("update-object-image")
 				),
-				C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal.minimo, "class", "form-control", "onchange", onPositiveNumberChange])),
-				DOMInputAction("update-object-minimo")
-			),
-			C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
-				C("div", ["class", "has-help"],
-					"Cantidad",
-					C("div", ["class", "desc"],
-						C("img", ["src", "media/inputs.gif"])
-					)
-				),
-				C("div", C("div", ["class", "cantidades"],
-					cantidades = C("div", ["class", "tabla"],
-						C("div", ["class", "cantidad-block"],
-							C("div", ["class", "contenido"],
-								C("span", "Almacen"),
-								C("span", "Sección"),
-								C("span", "Cantidad")
-							)
+				C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
+					C("div", ["class", "has-help"],
+						"Cantidad mínima",
+						C("div", ["class", "desc"],
+							"Se mostrará una alerta si la cantidad total de objetos es menor que este valor.",
+							C("img", ["src", "media/inputs.gif"])
 						)
 					),
-					C("div", ["class", "btn btn-primary add", "onclick", function() {
-						objetoLocal.secciones[objetoLocal.secciones.length] = {cantidad: 0, id_seccion: Object.keys(lista.secciones)[0]};
-						C(cantidades, DrawCantidadInput(objetoLocal.secciones[objetoLocal.secciones.length - 1]));
-					}], "+ Añadir a otro lugar"),
-					C("span", C("span", "Total:"), cantidadROInput)
-				)),
-				DOMInputAction("update-object-cantidades")
+					C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal.minimo, "class", "form-control", "onchange", onPositiveNumberChange])),
+					DOMInputAction("update-object-minimo")
+				),
+				C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
+					C("div", ["class", "has-help"],
+						"Cantidad",
+						C("div", ["class", "desc"],
+							C("img", ["src", "media/inputs.gif"])
+						)
+					),
+					C("div", C("div", ["class", "cantidades"],
+						cantidades = C("div", ["class", "tabla"],
+							C("div", ["class", "cantidad-block"],
+								C("div", ["class", "contenido"],
+									C("span", "Almacen"),
+									C("span", "Sección"),
+									C("span", "Cantidad")
+								)
+							)
+						),
+						C("div", ["class", "btn btn-primary add", "onclick", function() {
+							objetoLocal.secciones[objetoLocal.secciones.length] = {cantidad: 0, id_seccion: Object.keys(lista.secciones)[0]};
+							C(cantidades, DrawCantidadInput(objetoLocal.secciones[objetoLocal.secciones.length - 1]));
+						}], "+ Añadir a otro lugar"),
+						C("span", C("span", "Total:"), cantidadROInput)
+					)),
+					DOMInputAction("update-object-cantidades")
+				),
+				C("form", ["class", "ajax right_big", "method", "post", "action", "php/ajax.php"],
+					C("div", ["class", "has-help"], "Palabras clave", C("div", ["class", "desc"], "Palabras clave para filtrar una búsqueda y encontrar este objeto")),
+					C("div", tags = C("input", ["name", "tags", "type", "text", "value", objetoLocal.tags, "class", "form-control"])),
+					DOMInputAction("update-object-tags")
+				),
+				C("div", ["class", "clear"])
 			),
-			C("form", ["class", "ajax right_big", "method", "post", "action", "php/ajax.php"],
-				C("div", ["class", "has-help"], "Palabras clave", C("div", ["class", "desc"], "Palabras clave para filtrar una búsqueda y encontrar este objeto")),
-				C("div", tags = C("input", ["name", "tags", "type", "text", "value", objetoLocal.tags, "class", "form-control"])),
-				DOMInputAction("update-object-tags")
-			),
-			C("div", ["class", "clear"])
-		),
-		PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardarCambios, "Cerrar", popups.closePopup, true, "Borrar", function() { abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"), objetoLocal.onRemove) })
-	);
-	
-	for (var i = 0; i < objetoLocal.secciones.length; i++) {
-		C(cantidades, DrawCantidadInput(objetoLocal.secciones[i]));
-	}
-	
-	var forms = popupDOM.querySelectorAll("form");
-	for (var i = 0; i < forms.length; i++) {
-		C(forms[i], forms[i].submitter = C("input", ["type", "submit", "style", "display: none"]));
-		forms[i].onsubmit = update;
-	}
-	
-	$(tags).tokenfield({
-		autocomplete: {
-			source: tagsArrayAutocomplete,
-			delay: 100
-		  },
-		showAutocompleteOnFocus: true,
-		allowEditing: true
+			PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardarCambios, "Cerrar", popups.closePopup, true, "Borrar", function() { abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"), objetoLocal.onRemove) })
+		);
+		
+		for (var i = 0; i < objetoLocal.secciones.length; i++) {
+			C(cantidades, DrawCantidadInput(objetoLocal.secciones[i]));
+		}
+		
+		forms = popupDOM.querySelectorAll("form");
+		
+		for (var i = 0; i < forms.length; i++) {
+			C(forms[i], forms[i].submitter = C("input", ["type", "submit", "style", "display: none"]));
+			forms[i].onsubmit = update;
+		}		
+		
+		$(tags).tokenfield({
+			autocomplete: {
+				source: tagsArrayAutocomplete,
+				delay: 100
+			  },
+			showAutocompleteOnFocus: true,
+			allowEditing: true
+		});
+		
+		popups.showPopup(popupDOM);
 	});
-	
-	popups.showPopup(popupDOM);
-	
+		
 	
 	
 	function DOMInputAction(action) {
 		return C("span",
 			C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
+			C("input", ["type", "hidden", "name", "version", "value", objetoLocal.version]),
 			C("input", ["type", "hidden", "name", "action", "value", action])
 		);
 	}
@@ -367,17 +378,33 @@ function edit(objeto, UpdateListObject) {
 			var json = JSON.parse(msg.response);
 			switch (json.STATUS) {
 				case "OK":
-					target.parentNode.UpdateListObject();
+					target.parentNode.UpdateListObject(updateForm);
 				case "ERROR":
 					TemporalMessage(target, json.STATUS, json.MESSAGE, 10000);
 					break;
 				case "SAME":
 					TemporalMessage(target, json.STATUS, json.MESSAGE, 2500);
 					break;
+				case "RELOAD":
+					TemporalMessage(target, json.STATUS, json.MESSAGE, 5000);
+					if (confirm("No se han guardado los cambios porque se han realizado cambios más recientes. ¿Desea recargar la página para que muestre los cambios más recientes en este objeto?")) {
+						target.parentNode.UpdateListObject(function(newObjetoLocal) {
+							popups.closePopup();
+							edit(UpdateListObject);
+						});
+					}
+					break;
 			}
 		}, function(msg) {
 			alert("ERROR: " + msg.response);
 		});
+	}
+	
+	function updateForm(newObjetoLocal) {
+		objetoLocal = newObjetoLocal;
+		var inputs = popupDOM.querySelectorAll("input[name=version]");
+		for (var i = 0; i < inputs.length; i++) inputs[i].value = objetoLocal.version;
+		popupDOM.querySelector("img[id=img_objeto]").setAttribute("src", GetImagenObjeto(objetoLocal));
 	}
 }
 
@@ -409,7 +436,7 @@ function addObjeto() {
 		var id = json.MESSAGE;
 		
 		AJAX('php/ajax.php?action=getinventarioitem&id=' + id, null, function(msg) {
-			lista.objetos[id] = fixObjetoFromJSON(JSON.parse(msg.response)[0]);
+			lista.objetos[id] = fixObjetoFromJSON(JSON.parse(msg.response));
 			contenedorListaObjetos.appendChild(DrawObjeto(id));
 			lista.objetos[id].DOM.onclick();
 		}, console.log);
@@ -807,10 +834,6 @@ function MostrarHistorial() {
 	
 	function CambioDescription(parentNode, txt, valueBefore, valueAfter) {
 		if (valueBefore != valueAfter) C(parentNode, C("div", txt + ": " + valueBefore + " => " + valueAfter));
-	}
-	
-	function Deshacer() {
-		
 	}
 }
 
