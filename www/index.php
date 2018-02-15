@@ -200,7 +200,7 @@ function edit(UpdateListObject) {
 			updaterDOM = C("div", ["style", "padding: 1%", "UpdateListObject", UpdateListObject],
 				C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
 					C("div", "Nombre"),
-					C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal.nombre, "class", "form-control"])),
+					C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal.nombre, "class", "form-control", "SetXHRValue", function(v) { this.value = v }])),
 					C("input", ["name", "old-nombre", "type", "hidden", "value", objetoLocal.nombre]),
 					DOMInputAction("update-object-name")
 				),
@@ -208,8 +208,9 @@ function edit(UpdateListObject) {
 					C("div", "Imagen"),
 					C("div",
 						C("img", ["src", GetImagenObjeto(objetoLocal), "id", "img_objeto", "class", "img-" + objetoLocal.id]),
-						C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera"])
+						C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera", "SetXHRValue", function(v) { }])
 					),
+					C("input", ["name", "old-imagen", "type", "hidden", "value", objetoLocal.imagen]),
 					DOMInputAction("update-object-image")
 				),
 				C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
@@ -220,7 +221,8 @@ function edit(UpdateListObject) {
 							C("img", ["src", "media/inputs.gif"])
 						)
 					),
-					C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal.minimo, "class", "form-control", "onchange", onPositiveNumberChange])),
+					C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal.minimo, "class", "form-control", "onchange", onPositiveNumberChange, "SetXHRValue", function(v) { this.value = v }])),
+					C("input", ["name", "old-minimo", "type", "hidden", "value", objetoLocal.minimo]),
 					DOMInputAction("update-object-minimo")
 				),
 				C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
@@ -246,11 +248,13 @@ function edit(UpdateListObject) {
 						}], "+ Añadir a otro lugar"),
 						C("span", C("span", "Total:"), cantidadROInput)
 					)),
+					C("input", ["name", "old-secciones", "type", "hidden", "value", JSON.stringify(objetoLocal.secciones)]),
 					DOMInputAction("update-object-cantidades")
 				),
 				C("form", ["class", "ajax right_big", "method", "post", "action", "php/ajax.php"],
 					C("div", ["class", "has-help"], "Palabras clave", C("div", ["class", "desc"], "Palabras clave para filtrar una búsqueda y encontrar este objeto")),
-					C("div", tags = C("input", ["name", "tags", "type", "text", "value", objetoLocal.tags, "class", "form-control"])),
+					C("div", tags = C("input", ["name", "tags", "type", "text", "value", objetoLocal.tags, "class", "form-control", "SetXHRValue", function(v) { this.value = v.join(",") }])),
+					C("input", ["name", "old-tags", "type", "hidden", "value", objetoLocal.tags]),
 					DOMInputAction("update-object-tags")
 				),
 				C("div", ["class", "clear"])
@@ -403,6 +407,20 @@ function edit(UpdateListObject) {
 		objetoLocal = newObjetoLocal;
 		popupDOM.querySelector("img[id=img_objeto]").setAttribute("src", GetImagenObjeto(objetoLocal));
 		// Actualizar también listado de unidades del objeto por seccion
+		var allInputs = popupDOM.querySelectorAll("input");
+		var inputs = {};
+		for (var i = 0; i < allInputs.length; i++) {
+			inputs[allInputs[i].name] = allInputs[i];
+		}
+		for (var i in inputs) {
+			if (inputs[i].name.startsWith("old-")) {
+				var name = inputs[i].name.substr(4);
+				if (inputs[name] && inputs[name].type != "file") {
+					inputs[name].SetXHRValue(newObjetoLocal[name]);
+					inputs[name].dispatchEvent(new Event('change'));
+				}
+			}
+		}
 	}
 }
 
@@ -633,7 +651,7 @@ function SetupBusquedasPreparadas() {
 				}
 				console.log(busquedas);
 				
-				AJAX('php/ajax.php', 'action=update-busquedaspreparadas&version=' + version + '&busquedaspreparadas=' + encodeURIComponent(JSON.stringify(busquedas)), function(msg) {
+				AJAX('php/ajax.php', 'action=update-busquedas&version=' + version + '&busquedas=' + encodeURIComponent(JSON.stringify(busquedas)), function(msg) {
 					var json = JSON.parse(msg.response);
 					switch (json.STATUS) {
 						case "OK":

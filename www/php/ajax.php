@@ -123,26 +123,32 @@ else {
 				break;
 			}
 			
-			if ($db->set_objeto_name($_POST["id-object"], $_POST["nombre"], $_POST["version"])) {
-				echo json_encode(array(
-					"STATUS" => "OK",
-					"MESSAGE" => "Nombre actualizado"
-				));
-				$db->add_history_spacing($_POST['action']);
-			} else {
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => $db->mysqli->error
-				));
+			switch ($db->set_objeto_name($_POST["id-object"], $_POST["nombre"], $_POST["old-nombre"])) {
+				case DB_OK:
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Nombre actualizado"
+					));
+					$db->add_history_spacing($_POST['action']);
+					break;
+				case DB_FAIL:
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
+					));
+					break;
+				case DB_VERSION:
+					printReload();
+					break;
 			}
 			break;
 		case 'update-object-minimo':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
 			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
 			checkOrExit(isset($_POST["minimo"]), "No se ha enviado una cantidad mínima");
+			checkOrExit(isset($_POST["old-minimo"]), "No se ha enviado la anterior cantidad mínima");
 			checkOrExit(intval($_POST["minimo"]) >= 0, "El valor mínimo debe de ser un número mayor o igual que cero");
-			IsUpToDate($db->get_objeto($_POST["id-object"]));
-
+			
 			if ($_POST["minimo"] == $db->get_objeto($_POST["id-object"])["minimo"]) {
 				echo json_encode(array(
 					"STATUS" => "SAME",
@@ -151,25 +157,31 @@ else {
 				break;
 			}
 			
-			if ($db->set_objeto_minimo($_POST["id-object"], $_POST["minimo"], $_POST["version"])) {
-				echo json_encode(array(
-					"STATUS" => "OK",
-					"MESSAGE" => "Mínimo actualizado"
-				));
-				$db->add_history_spacing($_POST['action']);
-			} else {
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => $db->mysqli->error
-				));
+			switch ($db->set_objeto_minimo($_POST["id-object"], $_POST["minimo"], $_POST["old-minimo"])) {
+				case DB_OK:
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Mínimo actualizado"
+					));
+					$db->add_history_spacing($_POST['action']);
+					break;
+				case DB_FAIL:
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
+					));
+					break;
+				case DB_VERSION:
+					printReload();
+					break;
 			}
 			break;
 		case 'update-object-cantidades':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
 			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
-			checkOrExit(isset($_POST["oldcantidades"]), "Es necesario enviar el anterior listado de cantidades");
+			checkOrExit(isset($_POST["old-cantidades"]), "Es necesario enviar el anterior listado de cantidades");
 			
-			$oldcantidades = json_decode($_POST["oldcantidades"]);
+			$oldcantidades = json_decode($_POST["old-cantidades"]);
 			$cantidadesUnfiltered = array();
 			foreach ($_POST as $key => $value) {
 				if (preg_match('@(id_seccion|cantidad)-([0-9]+)@', $key, $matches)) {
@@ -196,24 +208,30 @@ else {
 				break;
 			}
 			
-			if ($db->set_objeto_cantidades($_POST["id-object"], $cantidades, $oldcantidades)) {
-				echo json_encode(array(
-					"STATUS" => "OK",
-					"MESSAGE" => "Cantidades actualizadas"
-				));
-				$db->add_history_spacing($_POST['action']);
-			} else {
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => strpos($db->mysqli->error, "Duplicate entry") !== false ? "No se pueden repetir secciones de un almacen" : $db->mysqli->error
-				));
+			switch ($db->set_objeto_cantidades($_POST["id-object"], $cantidades, $oldcantidades)) {
+				case DB_OK:
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Cantidades actualizadas"
+					));
+					$db->add_history_spacing($_POST['action']);				
+					break;
+				case DB_FAIL:
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => strpos($db->mysqli->error, "Duplicate entry") !== false ? "No se pueden repetir secciones de un almacen" : $db->mysqli->error
+					));				
+					break;
+				case DB_VERSION:
+					printReload();
+					break;
 			}
 			break;
 		case 'update-object-tags':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
 			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
 			checkOrExit(isset($_POST["tags"]), "No se ha enviado una lista de tags");
-			IsUpToDate($db->get_objeto($_POST["id-object"]));
+			checkOrExit(isset($_POST["old-tags"]), "No se ha enviado la anterior lista de tags");
 
 			if ($_POST["tags"] == $db->get_objeto($_POST["id-object"])["tags"]) {
 				echo json_encode(array(
@@ -223,17 +241,23 @@ else {
 				break;
 			}
 			
-			if ($db->set_objeto_tags($_POST["id-object"], $_POST["tags"], $_POST["version"])) {
-				echo json_encode(array(
-					"STATUS" => "OK",
-					"MESSAGE" => "Palabras clave actualizadas"
-				));
-				$db->add_history_spacing($_POST['action']);
-			} else {
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => $db->mysqli->error
-				));
+			switch ($db->set_objeto_tags($_POST["id-object"], $_POST["tags"], $_POST["old-tags"])) {
+				case DB_OK:
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Palabras clave actualizadas"
+					));
+					$db->add_history_spacing($_POST['action']);
+					break;
+				case DB_FAIL:
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
+					));
+					break;
+				case DB_VERSION:
+					printReload();
+					break;
 			}
 			break;
 		case 'create-empty-object':
@@ -372,18 +396,18 @@ else {
 			));
 			$db->add_history_spacing($_POST['action']);
 			break;
-		case 'update-busquedaspreparadas':
-			checkOrExit(isset($_POST["busquedaspreparadas"]), "No se ha enviado el nuevo listado de búsquedas preparadas");
-			checkOrExit(isset($_POST["version"]), "No se indica una versión");
+		case 'update-busquedas':
+			checkOrExit(isset($_POST["busquedas"]), "No se ha enviado el nuevo listado de búsquedas preparadas");
+			checkOrExit(isset($_POST["old-busquedas"]), "No se ha enviado el anterior listado de búsquedas");
 			
-			if ($_POST["busquedaspreparadas"] == $db->get_busquedaspreparadas()["value"]) {
+			if ($_POST["busquedas"] == $db->get_busquedaspreparadas()["value"]) {
 				echo json_encode(array(
 					"STATUS" => "SAME",
 					"MESSAGE" => $SAME_MSG
 				));
 				break;
 			}
-			switch ($db->set_busquedaspreparadas($_POST["busquedaspreparadas"], $_POST["version"])) {
+			switch ($db->set_busquedaspreparadas($_POST["busquedas"], $_POST["old-busquedas"])) {
 				case DB_OK:
 					echo json_encode(array(
 						"STATUS" => "OK",
@@ -490,8 +514,4 @@ function printReload() {
 		"STATUS" => "RELOAD",
 		"MESSAGE" => "Los cambios están desactualizados y no se han guardado. Por favor, recarga la página y vuelve a intentarlo."
 	));
-}
-
-function IsUpToDate($element) {
-	checkOrReload(isset($_POST["version"]) && $element["version"] === $_POST["version"]);
 }

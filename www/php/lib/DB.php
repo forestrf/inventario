@@ -138,12 +138,12 @@ class DB {
 		return count($busquedas) === 1 ? $busquedas[0] : false;
 	}
 	// $busquedas es un array que se recorrera con foreach cuyos elementos son otro array con indices nombre y busqueda
-	function set_busquedaspreparadas($busquedas, $version) {
+	function set_busquedas($busquedas, $oldBusquedas) {
 		$busquedas = escape($busquedas);
-		$version = escape($version);
+		$oldBusquedas = escape($oldBusquedas);
 		if ($this->query("INSERT INTO variables (name, value) VALUES ('busquedas_preparadas', '{$busquedas}');")) {
 			return DB_OK;
-		} else if ($this->query("UPDATE variables SET value = '{$busquedas}', version = version + 1 WHERE name = 'busquedas_preparadas' AND version = '{$version}';")) {
+		} else if ($this->query("UPDATE variables SET value = '{$busquedas}' WHERE name = 'busquedas_preparadas' AND value = '{$oldBusquedas}';")) {
 			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
 		}
 		return DB_FAIL;
@@ -160,12 +160,12 @@ class DB {
 	}
 	function get_objeto($id) {
 		$id = escape($id);
-		$response = $this->query("SELECT * FROM objeto WHERE id = {$id} LIMIT 1;");
+		$response = $this->query("SELECT * FROM objeto WHERE id = '{$id}' LIMIT 1;");
 		return $response !== false && count($response) === 1 ? $response[0] : false;
 	}
 	function get_objeto_secciones($id_objeto) {
 		$id_objeto = escape($id_objeto);
-		return $this->query("SELECT id_seccion, cantidad FROM objeto_seccion WHERE id_objeto = {$id_objeto};");
+		return $this->query("SELECT id_seccion, cantidad FROM objeto_seccion WHERE id_objeto = '{$id_objeto}';");
 	}
 	function get_file($file_index) {
 		$file_index = escape($file_index);
@@ -194,42 +194,48 @@ class DB {
 		$minimo = escape($minimo);
 		$id_file = escape($id_file);
 		$tags = escape($tags);
-		return $this->query("INSERT INTO objeto (id, nombre, minimo, imagen, tags) VALUES ({$id}, '{$name}', {$minimo}, '{$id_file}', '{$tags}') ON DUPLICATE KEY UPDATE nombre = '{$name}', minimo = {$minimo}, imagen = '{$id_file}', tags = '{$tags}';");
+		return $this->query("INSERT INTO objeto (id, nombre, minimo, imagen, tags) VALUES ('{$id}', '{$name}', '{$minimo}', '{$id_file}', '{$tags}') ON DUPLICATE KEY UPDATE nombre = '{$name}', minimo = '{$minimo}', imagen = '{$id_file}', tags = '{$tags}';");
 	}
 	function remove_objeto($id_objeto) {
 		$id_objeto = escape($id_objeto);
 		return $this->query("DELETE FROM objeto_seccion WHERE id_objeto = '{$id_objeto}';")
 			&& $this->query("DELETE FROM objeto WHERE id = '{$id_objeto}';");
 	}
-	function set_objeto_image($id_objeto, $id_file, $version) {
+	function set_objeto_image($id_objeto, $id_file, $oldfile) {
 		$id_objeto = escape($id_objeto);
 		$id_file = escape($id_file);
-		$version = escape($version);
-		if ($this->query("UPDATE objeto SET imagen = '{$id_file}', version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;")) {
+		$oldfile = escape($oldfile);
+		if ($this->query("UPDATE objeto SET imagen = '{$id_file}' WHERE id = '{$id_objeto}' AND imagen = '{$oldfile}' LIMIT 1;")) {
 			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
 		}
 		return DB_FAIL;
 	}
-	function set_objeto_name($id_objeto, $name, $version) {
+	function set_objeto_name($id_objeto, $name, $oldname) {
 		$id_objeto = escape($id_objeto);
 		$name = escape($name);
-		$version = escape($version);
-		if ($this->query("UPDATE objeto SET nombre = '{$name}', version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;")) {
+		$oldname = escape($oldname);
+		if ($this->query("UPDATE objeto SET nombre = '{$name}' WHERE id = '{$id_objeto}' AND nombre = '{$oldname}' LIMIT 1;")) {
 			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
 		}
 		return DB_FAIL;
 	}
-	function set_objeto_minimo($id_objeto, $minimo, $version) {
+	function set_objeto_minimo($id_objeto, $minimo, $oldminimo) {
 		$id_objeto = escape($id_objeto);
 		$minimo = escape($minimo);
-		$version = escape($version);
-		return $this->query("UPDATE objeto SET minimo = '{$minimo}', version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;");
+		$oldminimo = escape($oldminimo);
+		if ($this->query("UPDATE objeto SET minimo = '{$minimo}' WHERE id = '{$id_objeto}' AND minimo = '{$oldminimo}' LIMIT 1;")) {
+			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
+		}
+		return DB_FAIL;
 	}
-	function set_objeto_tags($id_objeto, $tags, $version) {
+	function set_objeto_tags($id_objeto, $tags, $oldtags) {
 		$id_objeto = escape($id_objeto);
 		$tags = escape($tags);
-		$version = escape($version);
-		return $this->query("UPDATE objeto SET tags = '{$tags}', version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;");
+		$oldtags = escape($oldtags);
+		if ($this->query("UPDATE objeto SET tags = '{$tags}' WHERE id = '{$id_objeto}' AND tags = '{$oldtags}' LIMIT 1;")) {
+			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
+		}
+		return DB_FAIL;
 	}
 	// $cantidades es un array que se recorrera con foreach cuyos elementos son otro array con indices seccion y cantidad
 	function set_objeto_cantidades($id_objeto, $cantidades) {
@@ -256,35 +262,35 @@ class DB {
 		$id_objeto = escape($id_objeto);
 		$id_seccion = escape($id_seccion);
 		$cantidad = escape($cantidad);
-		return $this->query("INSERT INTO objeto_seccion (id_objeto, id_seccion, cantidad) VALUES ({$id_objeto}, {$id_seccion}, {$cantidad}) ON DUPLICATE KEY UPDATE cantidad = {$cantidad};");
+		return $this->query("INSERT INTO objeto_seccion (id_objeto, id_seccion, cantidad) VALUES ('{$id_objeto}', '{$id_seccion}', '{$cantidad}') ON DUPLICATE KEY UPDATE cantidad = '{$cantidad}';");
 	}
 	function remove_objeto_cantidades($id_objeto, $id_seccion) {
 		$id_objeto = escape($id_objeto);
 		$id_seccion = escape($id_seccion);
-		return $this->query("DELETE FROM objeto_seccion WHERE id_objeto = {$id_objeto} AND id_seccion = {$id_seccion};");
+		return $this->query("DELETE FROM objeto_seccion WHERE id_objeto = '{$id_objeto}' AND id_seccion = '{$id_seccion}';");
 	}
 	
 	function remove_secciones_not_in($new_sections) {
 		$seccionesList = ToList($new_sections);
-		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion NOT IN ({$seccionesList});")
-			&& $this->query("DELETE FROM seccion WHERE id NOT IN ({$seccionesList});");
+		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion NOT IN ('{$seccionesList}');")
+			&& $this->query("DELETE FROM seccion WHERE id NOT IN ('{$seccionesList}');");
 	}
 	function remove_almacenes_not_in($new_almacenes) {
 		$almacenesList = ToList($new_almacenes);
-		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion IN (SELECT id FROM seccion WHERE id_almacen NOT IN ({$almacenesList}));")
-			&& $this->query("DELETE FROM seccion WHERE id_almacen NOT IN ({$almacenesList});")
-			&& $this->query("DELETE FROM almacen WHERE id NOT IN ({$almacenesList});");
+		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion IN (SELECT id FROM seccion WHERE id_almacen NOT IN ('{$almacenesList}'));")
+			&& $this->query("DELETE FROM seccion WHERE id_almacen NOT IN ('{$almacenesList}');")
+			&& $this->query("DELETE FROM almacen WHERE id NOT IN ('{$almacenesList}');");
 	}
 	function remove_seccion($id_seccion) {
 		$id_seccion = escape($id_seccion);
-		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion = {$id_seccion};")
-			&& $this->query("DELETE FROM seccion WHERE id = {$id_seccion};");
+		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion = '{$id_seccion}';")
+			&& $this->query("DELETE FROM seccion WHERE id = '{$id_seccion}';");
 	}
 	function remove_almacen($id_almacen) {
 		$id_almacen = escape($id_almacen);
-		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion IN (SELECT id FROM seccion WHERE id_almacen = {$id_almacen});")
-			&& $this->query("DELETE FROM seccion WHERE id_almacen = {$id_almacen};")
-			&& $this->query("DELETE FROM almacen WHERE id = {$id_almacen};");
+		return $this->query("DELETE FROM objeto_seccion WHERE id_seccion IN (SELECT id FROM seccion WHERE id_almacen = '{$id_almacen}');")
+			&& $this->query("DELETE FROM seccion WHERE id_almacen = '{$id_almacen}';")
+			&& $this->query("DELETE FROM almacen WHERE id = '{$id_almacen}';");
 	}
 	function add_or_update_almacen($id, $nombre) {
 		$id = escape($id);
@@ -308,11 +314,11 @@ class DB {
 	function add_history_spacing_id($action, $id) {
 		$action = escape($action);
 		$id = escape($id);
-		$this->query("INSERT INTO historico (ACCION, T1, I1) VALUES ('SPACING', '{$action}', {$id});");
+		$this->query("INSERT INTO historico (ACCION, T1, I1) VALUES ('SPACING', '{$action}', '{$id}');");
 	}
 	function get_history_by_ids($id_from) {
 		$id_from = escape($id_from);
-		return $this->query("SELECT * FROM historico WHERE ID >= 1 + (SELECT ID FROM historico WHERE ID < {$id_from} AND ACCION = 'SPACING' ORDER BY ID DESC LIMIT 1);");
+		return $this->query("SELECT * FROM historico WHERE ID >= 1 + (SELECT ID FROM historico WHERE ID < '{$id_from}' AND ACCION = 'SPACING' ORDER BY ID DESC LIMIT 1);");
 	}
 }
 
