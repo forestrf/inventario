@@ -24,8 +24,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `almacen` (
   `id` int(11) NOT NULL,
-  `nombre` text COLLATE utf8_bin NOT NULL,
-  `version` int(11) NOT NULL COMMENT 'Variable que se debe incrementar cada vez que se realiza un cambio en la fila para indicar que hay cambios y que otros no los machaquen'
+  `nombre` text COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
@@ -138,8 +137,7 @@ CREATE TABLE `objeto` (
   `nombre` text COLLATE utf8_bin NOT NULL,
   `minimo` int(11) NOT NULL,
   `imagen` varchar(32) COLLATE utf8_bin DEFAULT NULL,
-  `tags` text COLLATE utf8_bin NOT NULL,
-  `version` int(11) NOT NULL COMMENT 'Variable que se debe incrementar cada vez que se realiza un cambio en la fila para indicar que hay cambios y que otros no los machaquen'
+  `tags` text COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
@@ -188,8 +186,7 @@ DELIMITER ;
 CREATE TABLE `objeto_seccion` (
   `id_objeto` int(11) NOT NULL,
   `id_seccion` int(11) NOT NULL,
-  `cantidad` int(11) UNSIGNED NOT NULL,
-  `version` int(11) NOT NULL COMMENT 'Variable que se debe incrementar cada vez que se realiza un cambio en la fila para indicar que hay cambios y que otros no los machaquen'
+  `cantidad` int(11) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
@@ -230,8 +227,7 @@ DELIMITER ;
 CREATE TABLE `seccion` (
   `id` int(11) NOT NULL,
   `nombre` text COLLATE utf8_bin NOT NULL,
-  `id_almacen` int(11) NOT NULL,
-  `version` int(11) NOT NULL COMMENT 'Variable que se debe incrementar cada vez que se realiza un cambio en la fila para indicar que hay cambios y que otros no los machaquen'
+  `id_almacen` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
@@ -271,8 +267,7 @@ DELIMITER ;
 
 CREATE TABLE `variables` (
   `name` varchar(128) COLLATE utf8_bin NOT NULL,
-  `value` text COLLATE utf8_bin NOT NULL,
-  `version` int(11) NOT NULL COMMENT 'Variable que se debe incrementar cada vez que se realiza un cambio en la fila para indicar que hay cambios y que otros no los machaquen'
+  `value` text COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --

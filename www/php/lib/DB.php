@@ -133,8 +133,8 @@ class DB {
 	
 	
 	
-	function get_busquedaspreparadas() {
-		$busquedas = $this->query("SELECT value, version FROM variables WHERE name = 'busquedas_preparadas' LIMIT 1;");
+	function get_busquedas() {
+		$busquedas = $this->query("SELECT value FROM variables WHERE name = 'busquedas_preparadas' LIMIT 1;");
 		return count($busquedas) === 1 ? $busquedas[0] : false;
 	}
 	// $busquedas es un array que se recorrera con foreach cuyos elementos son otro array con indices nombre y busqueda
@@ -214,35 +214,43 @@ class DB {
 		$id_objeto = escape($id_objeto);
 		$name = escape($name);
 		$version = escape($version);
-		if ($this->query("UPDATE objeto SET nombre = '{$name}', version = version + 1  WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;")) {
+		if ($this->query("UPDATE objeto SET nombre = '{$name}', version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;")) {
 			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
 		}
 		return DB_FAIL;
 	}
-	function set_objeto_minimo($id_objeto, $minimo) {
+	function set_objeto_minimo($id_objeto, $minimo, $version) {
 		$id_objeto = escape($id_objeto);
 		$minimo = escape($minimo);
-		return $this->query("UPDATE objeto SET minimo = '{$minimo}' WHERE id = '{$id_objeto}' LIMIT 1;");
+		$version = escape($version);
+		return $this->query("UPDATE objeto SET minimo = '{$minimo}', version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;");
 	}
-	function set_objeto_tags($id_objeto, $tags) {
+	function set_objeto_tags($id_objeto, $tags, $version) {
 		$id_objeto = escape($id_objeto);
 		$tags = escape($tags);
-		return $this->query("UPDATE objeto SET tags = '{$tags}' WHERE id = '{$id_objeto}' LIMIT 1;");
+		$version = escape($version);
+		return $this->query("UPDATE objeto SET tags = '{$tags}', version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;");
 	}
 	// $cantidades es un array que se recorrera con foreach cuyos elementos son otro array con indices seccion y cantidad
 	function set_objeto_cantidades($id_objeto, $cantidades) {
 		$id_objeto = escape($id_objeto);
+		
 		if ($this->query("DELETE FROM objeto_seccion WHERE id_objeto = '{$id_objeto}' && id_seccion NOT IN (" . ToList($cantidades, function($v) { return $v["id_seccion"]; }) . ");")) {
 			foreach ($cantidades as $cantidad) {
 				$id_seccion = escape($cantidad["id_seccion"]);
 				$cantidad = escape($cantidad["cantidad"]);
-			if (!$this->query("INSERT INTO objeto_seccion (id_objeto, id_seccion, cantidad) VALUES ({$id_objeto}, {$id_seccion}, {$cantidad}) ON DUPLICATE KEY UPDATE cantidad = {$cantidad};")) {
-					return false;
+				
+				if ($this->query("INSERT INTO objeto_seccion (id_objeto, id_seccion, cantidad) VALUES ('{$id_objeto}', '{$id_seccion}', '{$cantidad}');")) {
+					// Perfect
+				} else if ($this->query("UPDATE objeto_seccion SET cantidad = '{$cantidad}' WHERE id_objeto = '{$id_objeto}' AND id_seccion = '{$id_seccion}';;")) {
+					if ($this->AFFECTED_ROWS !== 1) return DB_VERSION;
+				} else {
+					return DB_FAIL;					
 				}
 			}
-			return true;
+			return DB_OK;
 		}
-		return false;
+		return DB_FAIL;
 	}
 	function add_or_update_objeto_cantidades($id_objeto, $id_seccion, $cantidad) {
 		$id_objeto = escape($id_objeto);

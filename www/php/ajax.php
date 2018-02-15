@@ -59,9 +59,9 @@ if (isset($_GET['action'])) {
 				}
 			}
 			break;
-		case 'getbusquedaspreparadas':
+		case 'getbusquedas':
 			insert_nocache_headers();
-			$busquedas = $db->get_busquedaspreparadas();
+			$busquedas = $db->get_busquedas();
 			echo json_encode($busquedas);
 			break;
 		case 'gethistory':
@@ -77,8 +77,8 @@ else {
 		case 'update-object-image':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
 			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
-			IsUpToDate($db->get_objeto($_POST["id-object"]));
-
+			checkOrExit(isset($_POST["old-image"]), "No se ha enviado la anterior imagen");
+			
 			if (!(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "")) {
 				echo json_encode(array(
 					"STATUS" => "SAME",
@@ -89,7 +89,7 @@ else {
 			
 			$file_index = "";
 			$db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index);
-			switch ($db->set_objeto_image($_POST["id-object"], $file_index, $_POST["version"])) {
+			switch ($db->set_objeto_image($_POST["id-object"], $file_index, $_POST["old-image"])) {
 				case DB_OK:
 					echo json_encode(array(
 						"STATUS" => "OK",
@@ -112,8 +112,8 @@ else {
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
 			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
 			checkOrExit(isset($_POST["nombre"]), "No se ha enviado un nombre");
+			checkOrExit(isset($_POST["old-nombre"]), "No se ha enviado el anterior nombre");
 			checkOrExit(strlen($_POST["nombre"]) > 0, "El nombre es demasiado corto");
-			IsUpToDate($db->get_objeto($_POST["id-object"]));
 
 			if ($_POST["nombre"] == $db->get_objeto($_POST["id-object"])["nombre"]) {
 				echo json_encode(array(
@@ -151,7 +151,7 @@ else {
 				break;
 			}
 			
-			if ($db->set_objeto_minimo($_POST["id-object"], $_POST["minimo"])) {
+			if ($db->set_objeto_minimo($_POST["id-object"], $_POST["minimo"], $_POST["version"])) {
 				echo json_encode(array(
 					"STATUS" => "OK",
 					"MESSAGE" => "Mínimo actualizado"
@@ -167,21 +167,28 @@ else {
 		case 'update-object-cantidades':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
 			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
+			checkOrExit(isset($_POST["oldcantidades"]), "Es necesario enviar el anterior listado de cantidades");
 			
-			$cantidades = array();
+			$oldcantidades = json_decode($_POST["oldcantidades"]);
+			$cantidadesUnfiltered = array();
 			foreach ($_POST as $key => $value) {
 				if (preg_match('@(id_seccion|cantidad)-([0-9]+)@', $key, $matches)) {
-					$cantidades[$matches[2]][$matches[1]] = $value;
+					$cantidadesUnfiltered[$matches[2]][$matches[1]] = $value;
 				}
 			}
-			$cantidadesFiltradas = array();
-			foreach ($cantidades as $cantidad) {
+			$cantidades = array();
+			foreach ($cantidadesUnfiltered as $cantidad) {
 				if (checkOrExit(isset($cantidad["id_seccion"]) && isset($cantidad["cantidad"]), "Una de las entradas del almacen está incompleta")) {
-					$cantidadesFiltradas[] = $cantidad;
+					$cantidades[] = $cantidad;
 				}
+			}
+			
+			if (json_encode($oldcantidades) != json_encode($db->get_objeto_secciones($_POST["id-object"]))) {
+				printReload();
+				break;
 			}
 
-			if (json_encode($cantidadesFiltradas) == json_encode($db->get_objeto_secciones($_POST["id-object"]))) {
+			if (json_encode($cantidades) == json_encode($db->get_objeto_secciones($_POST["id-object"]))) {
 				echo json_encode(array(
 					"STATUS" => "SAME",
 					"MESSAGE" => $SAME_MSG
@@ -189,12 +196,10 @@ else {
 				break;
 			}
 			
-			if ($db->set_objeto_cantidades($_POST["id-object"], $cantidadesFiltradas)) {
+			if ($db->set_objeto_cantidades($_POST["id-object"], $cantidades, $oldcantidades)) {
 				echo json_encode(array(
 					"STATUS" => "OK",
-					"MESSAGE" => "Cantidades actualizadas",
-					"FIRST" => json_encode($cantidadesFiltradas),
-					"SECOND" => json_encode($db->get_objeto_secciones($_POST["id-object"])),
+					"MESSAGE" => "Cantidades actualizadas"
 				));
 				$db->add_history_spacing($_POST['action']);
 			} else {
@@ -218,7 +223,7 @@ else {
 				break;
 			}
 			
-			if ($db->set_objeto_tags($_POST["id-object"], $_POST["tags"])) {
+			if ($db->set_objeto_tags($_POST["id-object"], $_POST["tags"], $_POST["version"])) {
 				echo json_encode(array(
 					"STATUS" => "OK",
 					"MESSAGE" => "Palabras clave actualizadas"
@@ -382,8 +387,7 @@ else {
 				case DB_OK:
 					echo json_encode(array(
 						"STATUS" => "OK",
-						"MESSAGE" => "Búsquedas preparadas actualizadas",
-						"NEW_VERSION" => $db->get_busquedaspreparadas()["version"]
+						"MESSAGE" => "Búsquedas preparadas actualizadas"
 					));
 					break;
 				case DB_FAIL:

@@ -115,6 +115,7 @@ function DrawObjeto(i) {
 	
 	function UpdateListObject(objetoCallback) {
 		AJAX('php/ajax.php?action=getinventarioitem&id=' + objeto.id, null, function(msg) {
+			// Regenerate miniature in the list
 			lista.objetos[i] = objeto = fixObjetoFromJSON(JSON.parse(msg.response));
 			var aBorrar = domObjetoEnLista;
 			domObjetoEnLista.parentNode.insertBefore(GeneraDomObjeto(), aBorrar);
@@ -183,13 +184,13 @@ function GetCantidad(objeto) {
 }
 
 function edit(UpdateListObject) {
-	var cantidades;
-	var tags;
-	var forms;
-	var updaterDOM;
-	var objetoLocal;
 	var cantidadROInput;
+	var objetoLocal;
+	var updaterDOM;
+	var cantidades;
 	var popupDOM;
+	var forms;
+	var tags;
 	UpdateListObject(function(newObjetoLocal) {
 		objetoLocal = newObjetoLocal;
 		cantidad = GetCantidad(objetoLocal);
@@ -200,6 +201,7 @@ function edit(UpdateListObject) {
 				C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
 					C("div", "Nombre"),
 					C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal.nombre, "class", "form-control"])),
+					C("input", ["name", "old-nombre", "type", "hidden", "value", objetoLocal.nombre]),
 					DOMInputAction("update-object-name")
 				),
 				C("form", ["class", "ajax right_big img", "method", "post", "action", "php/ajax.php"],
@@ -284,7 +286,6 @@ function edit(UpdateListObject) {
 	function DOMInputAction(action) {
 		return C("span",
 			C("input", ["type", "hidden", "name", "id-object", "value", objetoLocal.id]),
-			C("input", ["type", "hidden", "name", "version", "value", objetoLocal.version]),
 			C("input", ["type", "hidden", "name", "action", "value", action])
 		);
 	}
@@ -378,12 +379,10 @@ function edit(UpdateListObject) {
 			var json = JSON.parse(msg.response);
 			switch (json.STATUS) {
 				case "OK":
-					target.parentNode.UpdateListObject(updateForm);
 				case "ERROR":
-					TemporalMessage(target, json.STATUS, json.MESSAGE, 10000);
-					break;
 				case "SAME":
-					TemporalMessage(target, json.STATUS, json.MESSAGE, 2500);
+					TemporalMessage(target, json.STATUS, json.MESSAGE, 10000);
+					target.parentNode.UpdateListObject(updateForm);
 					break;
 				case "RELOAD":
 					TemporalMessage(target, json.STATUS, json.MESSAGE, 5000);
@@ -402,9 +401,8 @@ function edit(UpdateListObject) {
 	
 	function updateForm(newObjetoLocal) {
 		objetoLocal = newObjetoLocal;
-		var inputs = popupDOM.querySelectorAll("input[name=version]");
-		for (var i = 0; i < inputs.length; i++) inputs[i].value = objetoLocal.version;
 		popupDOM.querySelector("img[id=img_objeto]").setAttribute("src", GetImagenObjeto(objetoLocal));
+		// Actualizar también listado de unidades del objeto por seccion
 	}
 }
 
@@ -596,12 +594,10 @@ function ListarAlmacenesSecciones() {
 }
 
 function SetupBusquedasPreparadas() {
-	AJAX('php/ajax.php?action=getbusquedaspreparadas', null, function(msg) {
+	AJAX('php/ajax.php?action=getbusquedas', null, function(msg) {
 		var response = JSON.parse(msg.response);
-		if (!response) response = {value: "[]", version: 0};
+		if (!response) response = { value: "[]" };
 		var busquedasArr = JSON.parse(response.value);
-		
-		var version = response.version;
 		
 		BTN_BUSQUEDAS_PREPARADAS.style.display = "";
 		BTN_BUSQUEDAS_PREPARADAS.onclick = popupBusquedasPreparadas;
