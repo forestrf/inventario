@@ -403,6 +403,7 @@ function edit(UpdateListObject) {
 		objetoLocal = newObjetoLocal;
 		/*var inputs = popupDOM.querySelectorAll("input[name=version]");
 		for (var i = 0; i < inputs.length; i++) inputs[i].value = objetoLocal.version;*/
+		UpdateROCantidad();
 		popupDOM.querySelector("img[id=img_objeto]").setAttribute("src", GetImagenObjeto(objetoLocal));
 	}
 }
