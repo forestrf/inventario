@@ -168,7 +168,7 @@ class DB {
 		$file_index = md5($blob);
 		$mimetype = escape($mimetype);
 		$blob = escape($blob);
-		return $this->query("INSERT INTO file (id, mimetype, bin) VALUES ('{$file_index}', '{$mimetype}', '{$blob}');");
+		$this->query("INSERT INTO file (id, mimetype, bin) VALUES ('{$file_index}', '{$mimetype}', '{$blob}');");
 	}
 	function add_empty_objeto() {
 		return $this->query("INSERT INTO objeto () VALUES ();");

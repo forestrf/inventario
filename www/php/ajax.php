@@ -87,8 +87,8 @@ else {
 			}
 			
 			$file_index = "";
-			if ($db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index)
-				&& $db->set_objeto_image($_POST["id-object"], $file_index)) {
+			$db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index);
+			if ($db->set_objeto_image($_POST["id-object"], $file_index)) {
 				echo json_encode(array(
 					"STATUS" => "OK",
 					"MESSAGE" => "Imagen actualizada"
