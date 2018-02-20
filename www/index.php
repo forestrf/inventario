@@ -247,7 +247,7 @@ function edit(UpdateListObject) {
 					DOMInputAction("update-object-cantidades")
 				),
 				C("form", ["class", "ajax right_big", "method", "post", "action", "php/ajax.php"],
-					C("div", ["class", "has-help"], "Palabras clave", C("div", ["class", "desc"], "Palabras clave para filtrar una búsqueda y encontrar este objeto")),
+					C("div", ["class", "has-help"], "Palabras clave", C("div", ["class", "desc"], "Palabras clave para filtrar una búsqueda y encontrar este objeto.")),
 					C("div", tags = C("input", ["name", "tags", "type", "text", "value", objetoLocal.tags, "class", "form-control"])),
 					DOMInputAction("update-object-tags")
 				),
@@ -362,10 +362,14 @@ function edit(UpdateListObject) {
 		return seccionesFiltradas;
 	}
 	
+	var guardarPendiente = [];
 	function guardarCambios() {
-		for (var i = 0; i < forms.length; i++) {
-			forms[i].submitter.click();
-		}
+		guardarPendiente = guardarPendiente.concat(Array.from(forms));
+		ProcesarPendiente();
+	}
+	
+	function ProcesarPendiente() {
+		if (guardarPendiente.length > 0) guardarPendiente.pop().submitter.click();
 	}
 	
 	function update(event) {
@@ -379,10 +383,9 @@ function edit(UpdateListObject) {
 				case "OK":
 					target.parentNode.UpdateListObject(updateForm);
 				case "ERROR":
-					TemporalMessage(target, json.STATUS, json.MESSAGE, 10000);
-					break;
 				case "SAME":
-					TemporalMessage(target, json.STATUS, json.MESSAGE, 2500);
+					TemporalMessage(target, json.STATUS, json.MESSAGE, 10000);
+					ProcesarPendiente();
 					break;
 				case "RELOAD":
 					TemporalMessage(target, json.STATUS, json.MESSAGE, 5000);
