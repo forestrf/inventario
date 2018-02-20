@@ -200,8 +200,7 @@ function edit(UpdateListObject) {
 			updaterDOM = C("div", ["style", "padding: 1%", "UpdateListObject", UpdateListObject],
 				C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
 					C("div", "Nombre"),
-					C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal.nombre, "class", "form-control", "SetXHRValue", function(v) { this.value = v }])),
-					C("input", ["name", "old-nombre", "type", "hidden", "value", objetoLocal.nombre]),
+					C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal.nombre, "class", "form-control"])),
 					DOMInputAction("update-object-name")
 				),
 				C("form", ["class", "ajax right_big img", "method", "post", "action", "php/ajax.php"],
@@ -210,7 +209,6 @@ function edit(UpdateListObject) {
 						C("img", ["src", GetImagenObjeto(objetoLocal), "id", "img_objeto", "class", "img-" + objetoLocal.id]),
 						C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera", "SetXHRValue", function(v) { }])
 					),
-					C("input", ["name", "old-imagen", "type", "hidden", "value", objetoLocal.imagen]),
 					DOMInputAction("update-object-image")
 				),
 				C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
@@ -221,8 +219,7 @@ function edit(UpdateListObject) {
 							C("img", ["src", "media/inputs.gif"])
 						)
 					),
-					C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal.minimo, "class", "form-control", "onchange", onPositiveNumberChange, "SetXHRValue", function(v) { this.value = v }])),
-					C("input", ["name", "old-minimo", "type", "hidden", "value", objetoLocal.minimo]),
+					C("div", C("input", ["name", "minimo", "type", "text", "value", objetoLocal.minimo, "class", "form-control", "onchange", onPositiveNumberChange])),
 					DOMInputAction("update-object-minimo")
 				),
 				C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
@@ -248,13 +245,11 @@ function edit(UpdateListObject) {
 						}], "+ Añadir a otro lugar"),
 						C("span", C("span", "Total:"), cantidadROInput)
 					)),
-					C("input", ["name", "old-secciones", "type", "hidden", "value", JSON.stringify(objetoLocal.secciones)]),
 					DOMInputAction("update-object-cantidades")
 				),
 				C("form", ["class", "ajax right_big", "method", "post", "action", "php/ajax.php"],
 					C("div", ["class", "has-help"], "Palabras clave", C("div", ["class", "desc"], "Palabras clave para filtrar una búsqueda y encontrar este objeto")),
-					C("div", tags = C("input", ["name", "tags", "type", "text", "value", objetoLocal.tags, "class", "form-control", "SetXHRValue", function(v) { this.value = v.join(",") }])),
-					C("input", ["name", "old-tags", "type", "hidden", "value", objetoLocal.tags]),
+					C("div", tags = C("input", ["name", "tags", "type", "text", "value", objetoLocal.tags.join(","), "class", "form-control"])),
 					DOMInputAction("update-object-tags")
 				),
 				C("div", ["class", "clear"])
@@ -271,7 +266,8 @@ function edit(UpdateListObject) {
 		for (var i = 0; i < forms.length; i++) {
 			C(forms[i], forms[i].submitter = C("input", ["type", "submit", "style", "display: none"]));
 			forms[i].onsubmit = update;
-		}		
+			C(forms[i], C("input", ["name", "version", "type", "hidden", "value", objetoLocal.version]));
+		}
 		
 		$(tags).tokenfield({
 			autocomplete: {
@@ -382,45 +378,32 @@ function edit(UpdateListObject) {
 		AJAX('php/ajax.php', formData, function(msg) {
 			var json = JSON.parse(msg.response);
 			switch (json.STATUS) {
-				case "OK":
-				case "ERROR":
-				case "SAME":
-					TemporalMessage(target, json.STATUS, json.MESSAGE, 10000);
-					target.parentNode.UpdateListObject(updateForm);
-					break;
 				case "RELOAD":
 					TemporalMessage(target, json.STATUS, json.MESSAGE, 5000);
-					if (confirm("No se han guardado los cambios porque se han realizado cambios más recientes. ¿Desea recargar la página para que muestre los cambios más recientes en este objeto?")) {
-						target.parentNode.UpdateListObject(function(newObjetoLocal) {
-							popups.closePopup();
-							edit(UpdateListObject);
-						});
+					if (!confirm("No se han guardado los cambios porque se han realizado cambios más recientes. ¿Desea recargar la página para que muestre los cambios más recientes en este objeto?")) break;
+					target.parentNode.UpdateListObject(function(newObjetoLocal) {
+						popups.closePopup();
+						edit(UpdateListObject);
+					});
+				case "ERROR":
+					TemporalMessage(target, json.STATUS, json.MESSAGE, 5000);
+					
+					
+					break;
+				case "OK":
+				case "SAME":
+					TemporalMessage(target, json.STATUS, json.MESSAGE, 5000);
+					if (json.VERSION) {
+						var inputsVersion = popupDOM.querySelectorAll("input[name=version]");
+						for (var i = 0; i < inputsVersion.length; i++) {
+							inputsVersion[i].value = json.VERSION;
+						}
 					}
 					break;
 			}
 		}, function(msg) {
 			alert("ERROR: " + msg.response);
 		});
-	}
-	
-	function updateForm(newObjetoLocal) {
-		objetoLocal = newObjetoLocal;
-		popupDOM.querySelector("img[id=img_objeto]").setAttribute("src", GetImagenObjeto(objetoLocal));
-		// Actualizar también listado de unidades del objeto por seccion
-		var allInputs = popupDOM.querySelectorAll("input");
-		var inputs = {};
-		for (var i = 0; i < allInputs.length; i++) {
-			inputs[allInputs[i].name] = allInputs[i];
-		}
-		for (var i in inputs) {
-			if (inputs[i].name.startsWith("old-")) {
-				var name = inputs[i].name.substr(4);
-				if (inputs[name] && inputs[name].type != "file") {
-					inputs[name].SetXHRValue(newObjetoLocal[name]);
-					inputs[name].dispatchEvent(new Event('change'));
-				}
-			}
-		}
 	}
 }
 
@@ -614,8 +597,9 @@ function ListarAlmacenesSecciones() {
 function SetupBusquedasPreparadas() {
 	AJAX('php/ajax.php?action=getbusquedas', null, function(msg) {
 		var response = JSON.parse(msg.response);
-		if (!response) response = { value: "[]" };
+		if (!response) response = { value: "[]", version: 0 };
 		var busquedasArr = JSON.parse(response.value);
+		var version = response.version;
 		
 		BTN_BUSQUEDAS_PREPARADAS.style.display = "";
 		BTN_BUSQUEDAS_PREPARADAS.onclick = popupBusquedasPreparadas;
@@ -655,7 +639,7 @@ function SetupBusquedasPreparadas() {
 					var json = JSON.parse(msg.response);
 					switch (json.STATUS) {
 						case "OK":
-							version = json.NEW_VERSION;
+							version = json.VERSION;
 							break;
 						case "RELOAD":
 							SetupBusquedasPreparadas();

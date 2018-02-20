@@ -134,16 +134,16 @@ class DB {
 	
 	
 	function get_busquedas() {
-		$busquedas = $this->query("SELECT value FROM variables WHERE name = 'busquedas_preparadas' LIMIT 1;");
+		$busquedas = $this->query("SELECT value, version FROM variables WHERE name = 'busquedas_preparadas' LIMIT 1;");
 		return count($busquedas) === 1 ? $busquedas[0] : false;
 	}
 	// $busquedas es un array que se recorrera con foreach cuyos elementos son otro array con indices nombre y busqueda
-	function set_busquedas($busquedas, $oldBusquedas) {
+	function set_busquedas($busquedas, $version) {
 		$busquedas = escape($busquedas);
-		$oldBusquedas = escape($oldBusquedas);
+		$version = escape($version);
 		if ($this->query("INSERT INTO variables (name, value) VALUES ('busquedas_preparadas', '{$busquedas}');")) {
 			return DB_OK;
-		} else if ($this->query("UPDATE variables SET value = '{$busquedas}' WHERE name = 'busquedas_preparadas' AND value = '{$oldBusquedas}';")) {
+		} else if ($this->query("UPDATE variables SET value = '{$busquedas}', version = version + 1 WHERE name = 'busquedas_preparadas' AND version = '{$version}';")) {
 			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
 		}
 		return DB_FAIL;
@@ -201,38 +201,38 @@ class DB {
 		return $this->query("DELETE FROM objeto_seccion WHERE id_objeto = '{$id_objeto}';")
 			&& $this->query("DELETE FROM objeto WHERE id = '{$id_objeto}';");
 	}
-	function set_objeto_image($id_objeto, $id_file, $oldfile) {
+	function set_objeto_image($id_objeto, $id_file, $version) {
 		$id_objeto = escape($id_objeto);
 		$id_file = escape($id_file);
-		$oldfile = escape($oldfile);
-		if ($this->query("UPDATE objeto SET imagen = '{$id_file}' WHERE id = '{$id_objeto}' AND imagen = '{$oldfile}' LIMIT 1;")) {
+		$version = escape($version);
+		if ($this->query("UPDATE objeto SET imagen = '{$id_file}', version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;")) {
 			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
 		}
 		return DB_FAIL;
 	}
-	function set_objeto_name($id_objeto, $name, $oldname) {
+	function set_objeto_name($id_objeto, $name, $version) {
 		$id_objeto = escape($id_objeto);
 		$name = escape($name);
-		$oldname = escape($oldname);
-		if ($this->query("UPDATE objeto SET nombre = '{$name}' WHERE id = '{$id_objeto}' AND nombre = '{$oldname}' LIMIT 1;")) {
+		$version = escape($version);
+		if ($this->query("UPDATE objeto SET nombre = '{$name}', version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;")) {
 			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
 		}
 		return DB_FAIL;
 	}
-	function set_objeto_minimo($id_objeto, $minimo, $oldminimo) {
+	function set_objeto_minimo($id_objeto, $minimo, $version) {
 		$id_objeto = escape($id_objeto);
 		$minimo = escape($minimo);
-		$oldminimo = escape($oldminimo);
-		if ($this->query("UPDATE objeto SET minimo = '{$minimo}' WHERE id = '{$id_objeto}' AND minimo = '{$oldminimo}' LIMIT 1;")) {
+		$version = escape($version);
+		if ($this->query("UPDATE objeto SET minimo = '{$minimo}', version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;")) {
 			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
 		}
 		return DB_FAIL;
 	}
-	function set_objeto_tags($id_objeto, $tags, $oldtags) {
+	function set_objeto_tags($id_objeto, $tags, $version) {
 		$id_objeto = escape($id_objeto);
 		$tags = escape($tags);
-		$oldtags = escape($oldtags);
-		if ($this->query("UPDATE objeto SET tags = '{$tags}' WHERE id = '{$id_objeto}' AND tags = '{$oldtags}' LIMIT 1;")) {
+		$version = escape($version);
+		if ($this->query("UPDATE objeto SET tags = '{$tags}', version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;")) {
 			return $this->AFFECTED_ROWS === 1 ? DB_OK : DB_VERSION;
 		}
 		return DB_FAIL;
