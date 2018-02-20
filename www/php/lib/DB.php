@@ -145,7 +145,8 @@ class DB {
 	}
 	function get_objeto($id) {
 		$id = escape($id);
-		return $this->query("SELECT * FROM objeto WHERE id = {$id};");
+		$response = $this->query("SELECT * FROM objeto WHERE id = {$id} LIMIT 1;");
+		return $response !== false && count($response) === 1 ? $response[0] : false;
 	}
 	function get_objeto_secciones($id_objeto) {
 		$id_objeto = escape($id_objeto);

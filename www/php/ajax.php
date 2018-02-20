@@ -31,10 +31,10 @@ if (isset($_GET['action'])) {
 		case 'getinventarioitem':
 			insert_nocache_headers();
 			if (isset($_GET["id"])) {
-				$objetos = $db->get_objeto($_GET["id"]);
-				foreach ($objetos as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
+				$objeto = $db->get_objeto($_GET["id"]);
+				$objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
 
-				echo json_encode($objetos, 1);
+				echo json_encode($objeto, 1);
 			}
 			break;
 		case 'getfile':
@@ -76,7 +76,7 @@ else {
 	switch($_POST['action']) {
 		case 'update-object-image':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
-			checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe");
+			checkOrExit(null !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
 
 			if (!(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "")) {
 				echo json_encode(array(
@@ -103,11 +103,11 @@ else {
 			break;
 		case 'update-object-name':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
-			checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe");
+			checkOrExit(null !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
 			checkOrExit(isset($_POST["nombre"]), "No se ha enviado un nombre");
 			checkOrExit(strlen($_POST["nombre"]) > 0, "El nombre es demasiado corto");
 
-			if ($_POST["nombre"] == $db->get_objeto($_POST["id-object"])[0]["nombre"]) {
+			if ($_POST["nombre"] == $db->get_objeto($_POST["id-object"])["nombre"]) {
 				echo json_encode(array(
 					"STATUS" => "SAME",
 					"MESSAGE" => $SAME_MSG
@@ -130,11 +130,11 @@ else {
 			break;
 		case 'update-object-minimo':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
-			checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe");
+			checkOrExit(null !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
 			checkOrExit(isset($_POST["minimo"]), "No se ha enviado una cantidad mínima");
 			checkOrExit(intval($_POST["minimo"]) >= 0, "El valor mínimo debe de ser un número mayor o igual que cero");
 
-			if ($_POST["minimo"] == $db->get_objeto($_POST["id-object"])[0]["minimo"]) {
+			if ($_POST["minimo"] == $db->get_objeto($_POST["id-object"])["minimo"]) {
 				echo json_encode(array(
 					"STATUS" => "SAME",
 					"MESSAGE" => $SAME_MSG
@@ -157,7 +157,7 @@ else {
 			break;
 		case 'update-object-cantidades':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
-			checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe");
+			checkOrExit(null !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
 			
 			$cantidades = array();
 			foreach ($_POST as $key => $value) {
@@ -197,10 +197,10 @@ else {
 			break;
 		case 'update-object-tags':
 			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
-			checkOrExit(count($db->get_objeto($_POST["id-object"])) === 1, "El objeto no existe");
+			checkOrExit(null !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
 			checkOrExit(isset($_POST["tags"]), "No se ha enviado una lista de tags");
 
-			if ($_POST["tags"] == $db->get_objeto($_POST["id-object"])[0]["tags"]) {
+			if ($_POST["tags"] == $db->get_objeto($_POST["id-object"])["tags"]) {
 				echo json_encode(array(
 					"STATUS" => "SAME",
 					"MESSAGE" => $SAME_MSG
