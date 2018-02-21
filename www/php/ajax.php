@@ -75,40 +75,42 @@ else {
 	// No vamos a usar relaciones con DELETE CASCADE o similar
 	switch($_POST['action']) {
 		case 'update-object-image':
-// TO DO
-			checkNoArrayOrExit("version", "No se ha enviado la versión del objeto");
-			checkNoArrayOrExit("id-object", "No se ha enviado la id del objeto");
-			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
-			
-			if (!(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "")) {
-				echo json_encode(array(
-					"STATUS" => "SAME",
-					"MESSAGE" => $SAME_MSG
-				));
-				break;
+			{
+				checkNoArrayOrExit("version", "No se ha enviado la versión del objeto");
+				checkNoArrayOrExit("id-object", "No se ha enviado la id del objeto");
+				checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
+				
+				if (!(isset($_FILES["imagen"]) && $_FILES["imagen"]["name"] != "")) {
+					echo json_encode(array(
+						"STATUS" => "SAME",
+						"MESSAGE" => $SAME_MSG
+					));
+					break;
+				}
+				
+				$file_index = "";
+				$db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index);
+				
+				switch ($db->set_objeto_image($_POST["id-object"], $file_index, $_POST["version"])) {
+					case DB_OK:
+						echo json_encode(array(
+							"STATUS" => "OK",
+							"MESSAGE" => "Imagen actualizada",
+							"VERSION" => $db->get_objeto($_POST["id-object"])["version"]
+						));
+						$db->add_history_spacing($_POST['action']);
+						break;
+					case DB_FAIL:
+						echo json_encode(array(
+							"STATUS" => "ERROR",
+							"MESSAGE" => $db->mysqli->error
+						));
+						break;
+					case DB_VERSION:
+						printReload();
+						break;
+				}
 			}
-			
-			$file_index = "";
-			$db->add_file($_FILES["imagen"]["type"], file_get_contents($_FILES["imagen"]["tmp_name"]), $file_index);
-			switch ($db->set_objeto_image($_POST["id-object"], $file_index, $_POST["version"])) {
-				case DB_OK:
-					echo json_encode(array(
-						"STATUS" => "OK",
-						"MESSAGE" => "Imagen actualizada",
-						"VERSION" => $db->get_objeto($_POST["id-object"])["version"]
-					));
-					$db->add_history_spacing($_POST['action']);
-					break;
-				case DB_FAIL:
-					echo json_encode(array(
-						"STATUS" => "ERROR",
-						"MESSAGE" => $db->mysqli->error
-					));
-					break;
-				case DB_VERSION:
-					printReload();
-					break;
-			}			
 			break;
 		case 'update-object-name':
 			{
@@ -200,11 +202,6 @@ else {
 					$cantidades[] = $cantidad;
 				}
 			}
-			
-			if (json_encode($oldcantidades) != json_encode($db->get_objeto_secciones($_POST["id-object"]))) {
-				printReload();
-				break;
-			}
 
 			if (json_encode($cantidades) == json_encode($db->get_objeto_secciones($_POST["id-object"]))) {
 				echo json_encode(array(
@@ -214,7 +211,7 @@ else {
 				break;
 			}
 			
-			switch ($db->set_objeto_cantidades($_POST["id-object"], $cantidades, $oldcantidades)) {
+			switch ($db->set_objeto_cantidades($_POST["id-object"], $cantidades, $_POST["version"])) {
 				case DB_OK:
 					echo json_encode(array(
 						"STATUS" => "OK",

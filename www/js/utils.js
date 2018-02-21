@@ -73,6 +73,8 @@ function shallowClone(variable) {
 			} else {
 				if (isElement(variable)) {
 					return variable;
+				} else if (null === variable) {
+					return null;
 				} else {
 					var clon = {};
 					for (var i in variable) {

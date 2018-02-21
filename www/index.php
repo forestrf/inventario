@@ -90,7 +90,9 @@ function DrawObjeto(i) {
 				C("div", ["class", "nombre"], objeto.nombre)
 			),
 			C("div", ["class", "img-container"],
-				C("img", ["class", "img img-" + objeto.id, "src", GetImagenObjeto(objeto)])
+				C("table", C("tr", C("td",
+					C("img", ["class", "img img-" + objeto.id, "src", GetImagenObjeto(objeto)])
+				)))
 			),
 			C("div", ["class", "info"],
 				C("div", ["class", "cantidad"], "Cantidad: ", cantidad),
@@ -207,7 +209,7 @@ function edit(UpdateListObject) {
 					C("div", "Imagen"),
 					C("div",
 						C("img", ["src", GetImagenObjeto(objetoLocal), "id", "img_objeto", "class", "img-" + objetoLocal.id]),
-						C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera", "SetXHRValue", function(v) { }])
+						C("input", ["name", "imagen", "type", "file", "accept", "image/*", "capture", "camera"])
 					),
 					DOMInputAction("update-object-image")
 				),
@@ -280,7 +282,6 @@ function edit(UpdateListObject) {
 		
 		popups.showPopup(popupDOM);
 	});
-		
 	
 	
 	function DOMInputAction(action) {
@@ -364,10 +365,14 @@ function edit(UpdateListObject) {
 		return seccionesFiltradas;
 	}
 	
+	var guardarPendiente = [];
 	function guardarCambios() {
-		for (var i = 0; i < forms.length; i++) {
-			forms[i].submitter.click();
-		}
+		guardarPendiente = guardarPendiente.concat(Array.from(forms));
+		ProcesarPendiente();
+	}
+	
+	function ProcesarPendiente() {
+		if (guardarPendiente.length > 0) guardarPendiente.pop().submitter.click();
 	}
 	
 	function update(event) {
@@ -385,25 +390,28 @@ function edit(UpdateListObject) {
 						popups.closePopup();
 						edit(UpdateListObject);
 					});
-				case "ERROR":
-					TemporalMessage(target, json.STATUS, json.MESSAGE, 5000);
-					
-					
 					break;
 				case "OK":
+					target.parentNode.UpdateListObject(updateForm);
 				case "SAME":
+				case "ERROR":
 					TemporalMessage(target, json.STATUS, json.MESSAGE, 5000);
 					if (json.VERSION) {
 						var inputsVersion = popupDOM.querySelectorAll("input[name=version]");
-						for (var i = 0; i < inputsVersion.length; i++) {
-							inputsVersion[i].value = json.VERSION;
-						}
+						for (var i = 0; i < inputsVersion.length; i++) inputsVersion[i].value = json.VERSION;
 					}
+					ProcesarPendiente();
 					break;
 			}
 		}, function(msg) {
 			alert("ERROR: " + msg.response);
 		});
+	}
+	
+	function updateForm(newObjetoLocal) {
+		objetoLocal = newObjetoLocal;
+		UpdateROCantidad();
+		popupDOM.querySelector("img[id=img_objeto]").setAttribute("src", GetImagenObjeto(objetoLocal));
 	}
 }
 

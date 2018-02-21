@@ -110,22 +110,28 @@ div.buscador .fixed {
 	display: inline-block;
 	width: 200px;
 }
+.objeto .img-container table tr,
+.objeto .img-container table td {
+	padding: 0;
+}
 .objeto .img-container {
-	background-color: #a7a7a7;
+	background-color: #aaa;
 	border-right: 1px solid #000;
 	margin-right: 8px;
 	text-align: center;
 	display: inline-block;
-	height: 128px;
-	width: 128px;
 	float: left;
 }
-
+.objeto .img-container,
+.objeto .img-container table {
+	text-align: center;
+	overflow: hidden;
+	height: 128px;
+	width: 129px;
+}
 .objeto .img-container .img {
-	vertical-align: middle;
 	max-height: 128px;
 	max-width: 128px;
-	padding: 5px;
 }
 .objeto:hover {
 	background-color: #ebc3f0;
@@ -198,7 +204,7 @@ div.buscador .fixed {
 	display: block;
 	padding: 6px;
 	border: 1px solid #ddd;
-	margin: 3px;
+	margin: 0.5%;
 	width: 49%;
 }
 
@@ -226,8 +232,8 @@ div.buscador .fixed {
 	width: 100%;
 }
 .popup > .msg form #img_objeto {
-	max-height: 128px;
-	max-width: 128px;
+	max-height: 65%;
+	max-width: 65%;
 }
 .popup > .msg form.img {
 	min-height: 180px;
