@@ -238,18 +238,28 @@ class DB {
 		return DB_FAIL;
 	}
 	// $cantidades es un array que se recorrera con foreach cuyos elementos son otro array con indices seccion y cantidad
-	function set_objeto_cantidades($id_objeto, $cantidades) {
+	function set_objeto_cantidades($id_objeto, $cantidades, $version) {
 		$id_objeto = escape($id_objeto);
+		$version = escape($version);
 		
-		if ($this->query("DELETE FROM objeto_seccion WHERE id_objeto = '{$id_objeto}' && id_seccion NOT IN (" . ToList($cantidades, function($v) { return $v["id_seccion"]; }) . ");")) {
+		if ($this->query("UPDATE objeto SET version = version + 1 WHERE id = '{$id_objeto}' AND version = '{$version}' LIMIT 1;")) {
+			if ($this->AFFECTED_ROWS !== 1) {
+				return DB_VERSION;
+			}
+		} else {
+			return DB_FAIL;
+		}
+		
+		if ($this->query("DELETE FROM objeto_seccion WHERE id_objeto = '{$id_objeto}' AND id_seccion NOT IN (" . ToList($cantidades, function($v) { return $v["id_seccion"]; }) . ");")) {
 			foreach ($cantidades as $cantidad) {
 				$id_seccion = escape($cantidad["id_seccion"]);
 				$cantidad = escape($cantidad["cantidad"]);
 				
 				if ($this->query("INSERT INTO objeto_seccion (id_objeto, id_seccion, cantidad) VALUES ('{$id_objeto}', '{$id_seccion}', '{$cantidad}');")) {
 					// Perfect
-				} else if ($this->query("UPDATE objeto_seccion SET cantidad = '{$cantidad}' WHERE id_objeto = '{$id_objeto}' AND id_seccion = '{$id_seccion}';;")) {
-					if ($this->AFFECTED_ROWS !== 1) return DB_VERSION;
+				} else if ($this->query("UPDATE objeto_seccion SET cantidad = '{$cantidad}' WHERE id_objeto = '{$id_objeto}' AND id_seccion = '{$id_seccion}';")) {
+					if ($this->AFFECTED_ROWS !== 1 && 1 !== count($this->query("SELECT * FROM objeto_seccion WHERE id_objeto = '{$id_objeto}' AND id_seccion = '{$id_seccion}';")))
+						return DB_VERSION;
 				} else {
 					return DB_FAIL;					
 				}

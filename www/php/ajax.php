@@ -187,47 +187,51 @@ else {
 			}
 			break;
 		case 'update-object-cantidades':
-			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
-			checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
-			
-			$cantidadesUnfiltered = array();
-			foreach ($_POST as $key => $value) {
-				if (preg_match('@(id_seccion|cantidad)-([0-9]+)@', $key, $matches)) {
-					$cantidadesUnfiltered[$matches[2]][$matches[1]] = $value;
+			{
+				checkNoArrayOrExit("version", "No se ha enviado la versión del objeto");
+				checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
+				checkOrExit(false !== $db->get_objeto($_POST["id-object"]), "El objeto no existe");
+				
+				$cantidadesUnfiltered = array();
+				foreach ($_POST as $key => $value) {
+					if (preg_match('@(id_seccion|cantidad)-([0-9]+)@', $key, $matches)) {
+						$cantidadesUnfiltered[$matches[2]][$matches[1]] = $value;
+					}
 				}
-			}
-			$cantidades = array();
-			foreach ($cantidadesUnfiltered as $cantidad) {
-				if (checkOrExit(isset($cantidad["id_seccion"]) && isset($cantidad["cantidad"]), "Una de las entradas del almacen está incompleta")) {
-					$cantidades[] = $cantidad;
+				$cantidades = array();
+				foreach ($cantidadesUnfiltered as $cantidad) {
+					if (checkOrExit(isset($cantidad["id_seccion"]) && isset($cantidad["cantidad"]), "Una de las entradas del almacen está incompleta")) {
+						$cantidades[] = $cantidad;
+					}
 				}
-			}
 
-			if (json_encode($cantidades) == json_encode($db->get_objeto_secciones($_POST["id-object"]))) {
-				echo json_encode(array(
-					"STATUS" => "SAME",
-					"MESSAGE" => $SAME_MSG
-				));
-				break;
-			}
-			
-			switch ($db->set_objeto_cantidades($_POST["id-object"], $cantidades, $_POST["version"])) {
-				case DB_OK:
+				if (json_encode($cantidades) == json_encode($db->get_objeto_secciones($_POST["id-object"]))) {
 					echo json_encode(array(
-						"STATUS" => "OK",
-						"MESSAGE" => "Cantidades actualizadas"
+						"STATUS" => "SAME",
+						"MESSAGE" => $SAME_MSG
 					));
-					$db->add_history_spacing($_POST['action']);				
 					break;
-				case DB_FAIL:
-					echo json_encode(array(
-						"STATUS" => "ERROR",
-						"MESSAGE" => strpos($db->mysqli->error, "Duplicate entry") !== false ? "No se pueden repetir secciones de un almacen" : $db->mysqli->error
-					));				
-					break;
-				case DB_VERSION:
-					printReload();
-					break;
+				}
+				
+				switch ($db->set_objeto_cantidades($_POST["id-object"], $cantidades, $_POST["version"])) {
+					case DB_OK:
+						echo json_encode(array(
+							"STATUS" => "OK",
+							"MESSAGE" => "Cantidades actualizadas",
+							"VERSION" => $db->get_objeto($_POST["id-object"])["version"]
+						));
+						$db->add_history_spacing($_POST['action']);				
+						break;
+					case DB_FAIL:
+						echo json_encode(array(
+							"STATUS" => "ERROR",
+							"MESSAGE" => strpos($db->mysqli->error, "Duplicate entry") !== false ? "No se pueden repetir secciones de un almacen" : $db->mysqli->error
+						));				
+						break;
+					case DB_VERSION:
+						printReload();
+						break;
+				}
 			}
 			break;
 		case 'update-object-tags':
