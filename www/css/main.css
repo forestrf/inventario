@@ -184,7 +184,6 @@ div.buscador .fixed {
 .popup > .msg > div {
 	background-color: #fff;
 	box-shadow: 0 0 40px 10px #000;
-	overflow-y: auto;
 	max-height: 100%;
 }
 .popup + .popup > .msg {
@@ -355,16 +354,24 @@ div.buscador .fixed {
 	padding: 30px;
 	color: #eee;
 }
+.popup > .msg > div > div.content {
+	padding-bottom: 70px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	height: 75%;
+}
 .popup > .msg .botonesAceptarCancelar {
 	background-color: #d7ffa4;
-	padding-bottom: 15px;
-	padding-top: 30px;
+	padding-bottom: 10px;
+	padding-top: 10px;
 	text-align: center;
-	margin-top: 10px;
 	position: relative;
+	height: 70px;
+	width: 100%;
 }
 .popup > .msg .botonesAceptarCancelar button {
 	margin: 0 5px;
+	height: 100%;
 }
 .popup > .msg .botonesAceptarCancelar button.guarda,
 .popup > .msg .botonesAceptarCancelar button.borra {

@@ -199,7 +199,7 @@ function edit(UpdateListObject) {
 		cantidadROInput = C("input", ["type", "text", "value", cantidad, "class", "form-control", "readonly", 1], cantidad);
 		
 		popupDOM = C("div",
-			updaterDOM = C("div", ["style", "padding: 1%", "UpdateListObject", UpdateListObject],
+			updaterDOM = C("div", ["class", "content", "style", "padding: 1%", "UpdateListObject", UpdateListObject],
 				C("form", ["class", "ajax left_big", "method", "post", "action", "php/ajax.php"],
 					C("div", "Nombre"),
 					C("div", C("input", ["name", "nombre", "type", "text", "value", objetoLocal.nombre, "class", "form-control"])),
@@ -617,7 +617,7 @@ function SetupBusquedasPreparadas() {
 			for (var i = 0; i < busquedasArr.length; i++) {
 				AddBusquedapreparada(busquedasArr[i].nombre, busquedasArr[i].busqueda);
 			}
-			var contenedorBusquedas = C("div", ["class", "busquedas-contenedor ajax"],
+			var contenedorBusquedas = C("div", ["class", "content busquedas-contenedor ajax"],
 				busquedas_ul,
 				C("button", ["class", "btn btn-default", "onclick", add], "Añadir búsqueda"),
 			);
@@ -682,7 +682,7 @@ function SetupBusquedasPreparadas() {
 				function edit() {
 					var nom, bus;
 					popups.showPopup(C("div",
-						C("table", ["class", "editbusqueda"],
+						C("table", ["class", "editbusqueda content"],
 							C("tr",
 								C("td", "Nombre del botón"),
 								C("td", nom = C("input", ["class", "form-control", "value", nombre]))
@@ -710,8 +710,8 @@ SetupBusquedasPreparadas();
 function MostrarHistorial() {
 	var container;
 	popups.showPopup(C("div", ["class", "historial"],
-		container = C("div", "Si se realiza un deshacer se agrupará los cambios e indicará a qué id se deshizo. La acción de deshacer también se puede deshacer, y deshacer se queda registrado en el historial como una acción. No se puede borrar una acción, por lo que deshacer no deshacer sino que repite acciones pasadas en sentido inverso, creando nuevos eventos. Por ejemplo, se cambia valor mínimo de objeto tal de esta cantidad a esta otra (que lo puedes clicar si esque existe, y abre el objeto para que lo veas).", C("br")),
-		PieGuardarCancelar("Deshacer cambios", "btn-success guarda", Deshacer, "Cancelar", popups.closePopup, false)
+		container = C("div", ["class", "content"], "Si se realiza un deshacer se agrupará los cambios e indicará a qué id se deshizo. La acción de deshacer también se puede deshacer, y deshacer se queda registrado en el historial como una acción. No se puede borrar una acción, por lo que deshacer no deshacer sino que repite acciones pasadas en sentido inverso, creando nuevos eventos. Por ejemplo, se cambia valor mínimo de objeto tal de esta cantidad a esta otra (que lo puedes clicar si esque existe, y abre el objeto para que lo veas).", C("br")),
+		PieGuardarCancelar("", "btn-success guarda", "", "Cancelar", popups.closePopup, false)
 	));
 	
 	// Obtener listado
@@ -731,7 +731,7 @@ function MostrarHistorial() {
 							C("button", ["class", "btn btn-danger deshacer has-help", "onclick", Undo],
 								"Deshacer",
 								C("div", ["class", "desc"],
-									"Clicar en este botón deshace todos los cambios realizados aquí y posteriores."
+									"Clicar en este botón deshace este y posteriores en el tiempo."
 								)
 							),
 							C("span", ["class", "id"], step.ID),
