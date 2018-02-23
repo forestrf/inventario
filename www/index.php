@@ -256,7 +256,7 @@ function edit(UpdateListObject) {
 				),
 				C("div", ["class", "clear"])
 			),
-			PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardarCambios, "Cerrar", popups.closePopup, true, "Borrar", function() { abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"), objetoLocal.onRemove) })
+			PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardarCambios, "Cerrar", popups.closePopup, "Borrar", function() { abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"), objetoLocal.onRemove) })
 		);
 		
 		for (var i = 0; i < objetoLocal.secciones.length; i++) {
@@ -454,16 +454,11 @@ function GetImagenObjeto(objeto) {
 	return objeto.imagen === null ? "http://via.placeholder.com/128x128" : "php/ajax.php?action=getfile&id=" + objeto.imagen;
 }
 
-function PieGuardarCancelar(guardarStr, guardarClass, guardarFunc, cerrarStr, cerrarFunc, mostrarBorrar, borrarStr, borrarFunc) {
-	var pie = C("div", ["class", "botonesAceptarCancelar"],
-		C("button", ["type", "button", "class", "btn " + guardarClass, "onclick", guardarFunc], guardarStr),
-		C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", cerrarFunc], cerrarStr)
-	);
-	if (mostrarBorrar) {
-		C(pie, C("div", ["class", "borra"],
-			C("button", ["type", "button", "class", "btn btn-danger borra", "onclick", borrarFunc], borrarStr)
-		));
-	}
+function PieGuardarCancelar(guardarStr, guardarClass, guardarFunc, cerrarStr, cerrarFunc, borrarStr, borrarFunc) {
+	var pie = C("div", ["class", "botonesAceptarCancelar"]);
+	if (guardarStr) C(pie, C("button", ["type", "button", "class", "btn " + guardarClass, "onclick", guardarFunc], guardarStr));
+	if (cerrarStr) C(pie, C("button", ["type", "button", "class", "btn btn-default cierra", "onclick", cerrarFunc], cerrarStr));
+	if (borrarStr) C(pie, C("div", ["class", "borra"], C("button", ["type", "button", "class", "btn btn-danger borra", "onclick", borrarFunc], borrarStr)));
 	return pie;
 }
 
@@ -472,7 +467,7 @@ function ListarAlmacenesSecciones() {
 	popups.showPopup(C("div", ["class", "lista-almacenes-secciones"],
 		arbolContainer = C("div"),
 		C("div", ["class", "addAlmacenContainer"], C("button", ["class", "btn btn-primary", "onclick", AddAlmacen], "Añadir Almacén")),
-		PieGuardarCancelar("Guardar cambios", "btn-success guarda", Guardar, "Cancelar", popups.closePopup, false)
+		PieGuardarCancelar("Guardar cambios", "btn-success guarda", Guardar, "Cancelar", popups.closePopup)
 	));
 	
 	var almacenes = JSON.parse(JSON.stringify(lista.almacenes));
@@ -623,7 +618,7 @@ function SetupBusquedasPreparadas() {
 			);
 			popups.showPopup(C("div",
 				contenedorBusquedas,
-				PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardar, "Cerrar", popups.closePopup, false)
+				PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardar, "Cerrar", popups.closePopup)
 			));
 			
 			var sortable = Sortable.create(busquedas_ul, {
@@ -692,7 +687,7 @@ function SetupBusquedasPreparadas() {
 								C("td", bus = C("input", ["class", "form-control", "value", busqueda]))
 							)
 						),
-						PieGuardarCancelar("Aceptar", "btn-success guarda", aceptar, "Cancelar", popups.closePopup, false)
+						PieGuardarCancelar("Aceptar", "btn-success guarda", aceptar, "Cancelar", popups.closePopup)
 					));
 					
 					function aceptar() {
@@ -710,8 +705,8 @@ SetupBusquedasPreparadas();
 function MostrarHistorial() {
 	var container;
 	popups.showPopup(C("div", ["class", "historial"],
-		container = C("div", ["class", "content"], "Si se realiza un deshacer se agrupará los cambios e indicará a qué id se deshizo. La acción de deshacer también se puede deshacer, y deshacer se queda registrado en el historial como una acción. No se puede borrar una acción, por lo que deshacer no deshacer sino que repite acciones pasadas en sentido inverso, creando nuevos eventos. Por ejemplo, se cambia valor mínimo de objeto tal de esta cantidad a esta otra (que lo puedes clicar si esque existe, y abre el objeto para que lo veas).", C("br")),
-		PieGuardarCancelar("", "btn-success guarda", "", "Cancelar", popups.closePopup, false)
+		container = C("div", ["class", "content ajax"], C("br")),
+		PieGuardarCancelar(null, null, null, "Cancelar", popups.closePopup)
 	));
 	
 	// Obtener listado
@@ -830,8 +825,10 @@ function MostrarHistorial() {
 				function Undo() {
 					//console.log(step);
 					AJAX('php/ajax.php', 'action=rollback-history&step=' + step.ID, function(msg) {
-						console.log(msg);
+						var json = JSON.parse(msg.response);
+						console.log(json);
 						// Reload page
+						TemporalMessage(container, json.STATUS, json.MESSAGE, 10000);
 					}, console.log);
 				}
 			})(i);

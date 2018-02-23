@@ -17,6 +17,8 @@ if (isset($_GET['action'])) {
 	switch($_GET['action']) {
 		case 'getinventario':
 			insert_nocache_headers();
+			$almacenes = array();
+			$secciones = array();
 			$objetos = $db->get_objetos();
 			foreach ($objetos as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
 			foreach ($db->get_almacenes() as &$almacen) $almacenes[$almacen["id"]] = &$almacen;
@@ -442,7 +444,7 @@ else {
 				checkNoArrayOrExit("step", "No se ha enviado la id del historial que se debe deshacer");
 				
 				$history = $db->get_history_by_ids($_POST["step"]);
-				if (count($history) > 0) {
+				if (0 < count($history)) {
 					// Ejecutar deshacer
 					foreach ($history as &$step) {
 						var_dump($step["ACCION"]);
