@@ -451,7 +451,7 @@ function addObjeto() {
 }
 
 function GetImagenObjeto(objeto) {
-	return objeto.imagen === null ? "http://via.placeholder.com/128x128" : "php/ajax.php?action=getfile&id=" + objeto.imagen;
+	return (objeto.imagen === null || 0 === objeto.imagen.length) ? "http://via.placeholder.com/128x128" : "php/ajax.php?action=getfile&id=" + objeto.imagen;
 }
 
 function PieGuardarCancelar(guardarStr, guardarClass, guardarFunc, cerrarStr, cerrarFunc, borrarStr, borrarFunc) {
@@ -465,7 +465,7 @@ function PieGuardarCancelar(guardarStr, guardarClass, guardarFunc, cerrarStr, ce
 function ListarAlmacenesSecciones() {
 	var arbolContainer;
 	popups.showPopup(C("div", ["class", "lista-almacenes-secciones"],
-		arbolContainer = C("div"),
+		arbolContainer = C("div", ["class", "content"]),
 		C("div", ["class", "addAlmacenContainer"], C("button", ["class", "btn btn-primary", "onclick", AddAlmacen], "Añadir Almacén")),
 		PieGuardarCancelar("Guardar cambios", "btn-success guarda", Guardar, "Cancelar", popups.closePopup)
 	));

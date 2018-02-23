@@ -122,11 +122,8 @@ CREATE TABLE `historico` (
   `B2` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Toda acción INSERT, DELETE y UPDATE deben de crear una entrada en esta tabla con la consulta realizada y una consulta que desharía el cambio. Ninguna fila debe de borrarse';
 
---
--- RELACIONES PARA LA TABLA `historico`:
---
-
--- --------------------------------------------------------
+-- Needed for update to wotk with the very first entry
+INSERT INTO `historico` (ACCION) VALUES ('SPACING');
 
 --
 -- Estructura de tabla para la tabla `objeto`

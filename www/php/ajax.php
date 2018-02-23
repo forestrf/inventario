@@ -306,8 +306,11 @@ else {
 			checkOrExit(isset($_POST["almacenes"]), "No se ha enviado el listado de almacenes");
 			checkOrExit(isset($_POST["secciones"]), "No se ha enviado el listado de secciones");
 			
-			$new_alm = json_decode($_POST["almacenes"], 1);
-			$new_sec = json_decode($_POST["secciones"], 1);
+			function valid_almacen($v) { return is_array($v) && array_key_exists("id", $v) && array_key_exists("nombre", $v); }
+			function valid_seccion($v) { return is_array($v) && array_key_exists("id", $v) && array_key_exists("nombre", $v) && array_key_exists("id_almacen", $v); }
+			
+			$new_alm = array_filter(json_decode($_POST["almacenes"], true), "valid_almacen");
+			$new_sec = array_filter(json_decode($_POST["secciones"], true), "valid_seccion");
 
 			// Obtener información de los objetos, almacenes y secciones actuales
 			$old_obj = $db->get_objetos();
@@ -447,7 +450,6 @@ else {
 				if (0 < count($history)) {
 					// Ejecutar deshacer
 					foreach ($history as &$step) {
-						var_dump($step["ACCION"]);
 						switch ($step["ACCION"]) {
 							case "DELETE ALMACEN":
 								$db->add_or_update_almacen($step["I1"], $step["T1"]);
@@ -472,7 +474,7 @@ else {
 								$db->remove_objeto($step["I1"]);
 								break;
 							case "UPDATE OBJETO":
-								var_dump($db->add_or_update_objeto($step["I1"], $step["T1"], $step["I2"], $step["T3"], $step["T5"]));
+								$db->add_or_update_objeto($step["I1"], $step["T1"], $step["I2"], $step["T3"], $step["T5"]);
 								break;
 							case "DELETE OBJETO_SECCION":
 								$db->add_or_update_objeto_cantidades($step["I1"], $step["I2"], $step["I3"]);
