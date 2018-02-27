@@ -52,7 +52,7 @@ class DB {
 	// Make a SQL query. Returns false if there is an error, and throws an exception.
 	// Queries are only done here. This way a connection can be opened if necessary
 	// $this->LAST_MYSQL_ID stores the ID of the last insert query
-	private function query($query) {
+	public function query($query) {
 		if ($this->opened_connection === false) {
 			if (!$this->Open()) {
 				if($this->d) $this->debug('Can\'t open the database');
@@ -116,22 +116,7 @@ class DB {
 		return strlen($query) > $this->d_queryLength ? substr($query, 0, $this->d_queryLength) : $query;
 	}
 	
-	
-	
-	// Not the best option
-	function create_tables(&$content) {
-		//remove comments
-		$instructions = preg_replace('/--.*?[\r\n]/', '', $content);
-		$instructions = preg_replace('|/\*.*?\*/|', '', $instructions);
-		$instructions = str_replace("\n", '', $instructions);
-		$instructions = str_replace("\r", '', $instructions);
-		$instructions = explode(";", $instructions);
-		foreach ($instructions as $instruction)
-			if ($instruction !== '')
-				$this->query($instruction);
-	}
-	
-	
+	// -------------------------------------------------------------
 	
 	function get_busquedas() {
 		$busquedas = $this->query("SELECT value, version FROM variables WHERE name = 'busquedas_preparadas' LIMIT 1;");
