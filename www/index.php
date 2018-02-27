@@ -31,7 +31,6 @@
 
 <button onclick="addObjeto()" class="btn btn-primary">Añadir nuevo objeto</button>
 <button onclick="ListarAlmacenesSecciones()" class="btn btn-primary">Editar Almacenes y secciones</button>
-<button onclick="MostrarHistorial()" class="btn btn-primary">Historial</button>
 
 
 <div id="inventario"></div>
@@ -256,7 +255,7 @@ function edit(UpdateListObject) {
 				),
 				C("div", ["class", "clear"])
 			),
-			PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardarCambios, "Cerrar", popups.closePopup, "Borrar", function() { abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", "¿Seguro que quiere borrar este objeto?", C("br"), "Esta acción se puede deshacer (por hacer) desde el historial de acciones pasadas"), objetoLocal.onRemove) })
+			PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardarCambios, "Cerrar", popups.closePopup, "Borrar", function() { abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", "¿Seguro que quiere borrar este objeto?", C("br")), objetoLocal.onRemove) })
 		);
 		
 		for (var i = 0; i < objetoLocal.secciones.length; i++) {
@@ -701,144 +700,6 @@ function SetupBusquedasPreparadas() {
 	}, console.log);
 }
 SetupBusquedasPreparadas();
-
-function MostrarHistorial() {
-	var container;
-	popups.showPopup(C("div", ["class", "historial"],
-		container = C("div", ["class", "content ajax"], C("br")),
-		PieGuardarCancelar(null, null, null, "Cancelar", popups.closePopup)
-	));
-	
-	// Obtener listado
-	AJAX('php/ajax.php?action=gethistory', null, function(msg) {
-		var listado = JSON.parse(msg.response);
-		listado = listado.reverse();
-		
-		var transaccion = C("div");
-		
-		for (var i = 0; i < listado.length; i++) {
-			(function(i) {
-				var step = listado[i];
-				if (step.ACCION === "SPACING") {
-					transaccion = C("div");
-					C(container,
-						C("div", ["class", "accion"],
-							C("button", ["class", "btn btn-danger deshacer has-help", "onclick", Undo],
-								"Deshacer",
-								C("div", ["class", "desc"],
-									"Clicar en este botón deshace este y posteriores en el tiempo."
-								)
-							),
-							C("span", ["class", "id"], step.ID),
-							C("span", ["class", "nombre"], step.T1),
-							C("span", ["class", "fecha"], step.Fecha),
-							C("br"),
-							transaccion
-						),
-						C("br")
-					);
-				} else {
-					var entradaWrapp = C("div", ["class", "entrada"]);			
-					C(entradaWrapp, C("div", ["class", "nombre"], step.ACCION));
-					var entrada = C("div", ["class", "contenido"]);
-					C(entradaWrapp, entrada);
-					
-					switch (step.ACCION) {
-						case "DELETE ALMACEN":
-							C(entrada, C("div", "Id almacén: " + step.I1));
-							C(entrada, C("div", "Nombre: " + step.T1));
-							break;
-						case "INSERT ALMACEN":
-							C(entrada, C("div", "Id almacén: " + step.I1));
-							C(entrada, C("div", "Nombre: " + step.T1));
-							break;
-						case "UPDATE ALMACEN":
-							C(entrada, C("div", "Id almacén: " + step.I1));
-							CambioDescription(entrada, "Nombre", step.T1, step.T2);
-							break;
-						case "DELETE FILE":
-							C(entrada, C("div", "Id file: " + step.I1));
-							C(entrada, C("div", "Binario: " + step.B1));
-							C(entrada, C("div", "Mimetype: " + step.T1));
-							break;
-						case "INSERT FILE":
-							C(entrada, C("div", "Id file: " + step.I1));
-							C(entrada, C("div", "Binario: " + step.B1));
-							C(entrada, C("div", "Mimetype: " + step.T1));
-							break;
-						case "DELETE OBJETO":
-							C(entrada, C("div", "Id objeto: " + step.I1));
-							C(entrada, C("div", "Nombre: " + step.T1));
-							C(entrada, C("div", "Mínimo: " + step.I2));
-							C(entrada, C("div", "Imagen: " + step.T2));
-							C(entrada, C("div", "Tags: " + step.T3));
-							break;
-						case "INSERT OBJETO":
-							C(entrada, C("div", "Id objeto: " + step.I1));
-							C(entrada, C("div", "Nombre: " + step.T1));
-							C(entrada, C("div", "Mínimo: " + step.I2));
-							C(entrada, C("div", "Imagen: " + step.T2));
-							C(entrada, C("div", "Tags: " + step.T3));
-							break;
-						case "UPDATE OBJETO":
-							C(entrada, C("div", "Id objeto: " + step.I1));
-							CambioDescription(entrada, "Nombre", step.T1, step.T2);
-							CambioDescription(entrada, "Mínimo", step.I2, step.I3);
-							CambioDescription(entrada, "Id imagen", step.T3, step.T4);
-							CambioDescription(entrada, "Tags", step.T5, step.T6);
-							break;
-						case "DELETE OBJETO_SECCION":
-							C(entrada, C("div", "Id objeto: " + step.I1));
-							C(entrada, C("div", "Id sección: " + step.I2));
-							CambioDescription(entrada, "Cantidad", step.I3, "---");
-							break;
-						case "INSERT OBJETO_SECCION":
-							C(entrada, C("div", "Id objeto: " + step.I1));
-							C(entrada, C("div", "Id sección: " + step.I2));
-							CambioDescription(entrada, "Cantidad", "---", step.I3);
-							break;
-						case "UPDATE OBJETO_SECCION":
-							C(entrada, C("div", "Id objeto: " + step.I1));
-							C(entrada, C("div", "Id sección: " + step.I2));
-							CambioDescription(entrada, "Cantidad", step.I3, step.I4);
-							break;
-						case "DELETE SECCION":
-							C(entrada, C("div", "Id sección: " + step.I1));
-							C(entrada, C("div", "Nombre: " + step.T1));
-							C(entrada, C("div", "Id almacén: " + step.I2));
-							break;
-						case "INSERT SECCION":
-							C(entrada, C("div", "Id sección: " + step.I1));
-							C(entrada, C("div", "Nombre: " + step.T1));
-							C(entrada, C("div", "Id almacén: " + step.I2));
-							break;
-						case "UPDATE SECCION":
-							C(entrada, C("div", "Id sección: " + step.I1));
-							CambioDescription(entrada, "Nombre", step.T1, step.T2);
-							CambioDescription(entrada, "Id almacén", step.I2, step.I3);
-							break;
-					}
-					
-					C(transaccion, entradaWrapp);
-				}
-				
-				function Undo() {
-					//console.log(step);
-					AJAX('php/ajax.php', 'action=rollback-history&step=' + step.ID, function(msg) {
-						var json = JSON.parse(msg.response);
-						console.log(json);
-						// Reload page
-						TemporalMessage(container, json.STATUS, json.MESSAGE, 10000);
-					}, console.log);
-				}
-			})(i);
-		}
-	}, console.log);
-	
-	function CambioDescription(parentNode, txt, valueBefore, valueAfter) {
-		if (valueBefore != valueAfter) C(parentNode, C("div", txt + ": " + valueBefore + " => " + valueAfter));
-	}
-}
 
 DrawObjectList();
 </script>
