@@ -166,7 +166,7 @@ function DrawObjectList() {
 		function TestCustomKeyword(keyword, object) {
 			switch (keyword) {
 				case "minimo":
-					return object.minimo > GetCantidad(object);
+					return object.minimo < GetCantidad(object);
 			}
 		}
 		
