@@ -613,7 +613,7 @@ function SetupBusquedasPreparadas() {
 			}
 			var contenedorBusquedas = C("div", ["class", "content busquedas-contenedor ajax"],
 				busquedas_ul,
-				C("button", ["class", "btn btn-default", "onclick", add], "Añadir búsqueda"),
+				C("button", ["class", "btn btn-default", "onclick", add], "Añadir búsqueda")
 			);
 			popups.showPopup(C("div",
 				contenedorBusquedas,
