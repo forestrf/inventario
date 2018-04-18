@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 28-03-2018 a las 13:55:42
+-- Tiempo de generación: 18-04-2018 a las 14:42:11
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -81,7 +81,8 @@ CREATE TABLE `variables` (
 -- Indices de la tabla `almacen`
 --
 ALTER TABLE `almacen`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_padre` (`padre`);
 
 --
 -- Indices de la tabla `file`
@@ -111,10 +112,20 @@ ALTER TABLE `variables`
 --
 ALTER TABLE `objeto`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+ALTER TABLE `almacen`
+  ADD CONSTRAINT `id_padre` FOREIGN KEY (`padre`) REFERENCES `almacen` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 
 --
 -- Metadatos
 --
 USE `phpmyadmin`;
+
+--
+-- Volcado de datos para la tabla `pma__column_info`
+--
+
+INSERT INTO `pma__column_info` (`db_name`, `table_name`, `column_name`, `comment`, `mimetype`, `transformation`, `transformation_options`, `input_transformation`, `input_transformation_options`) VALUES
+('almacen', 'file', 'bin', '', 'image_jpeg', '', '', '', '');
 
 COMMIT;
