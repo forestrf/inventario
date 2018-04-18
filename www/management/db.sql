@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 27-02-2018 a las 12:07:55
+-- Tiempo de generación: 28-03-2018 a las 13:55:42
 -- Versión del servidor: 10.1.25-MariaDB
 -- Versión de PHP: 7.1.7
 
@@ -24,6 +24,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `almacen` (
   `id` int(11) NOT NULL,
+  `padre` int(11) DEFAULT NULL,
   `nombre` text COLLATE utf8_bin NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
@@ -60,27 +61,9 @@ CREATE TABLE `objeto` (
   `version` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
--- --------------------------------------------------------
-
 --
--- Estructura de tabla para la tabla `objeto_seccion`
+-- RELACIONES PARA LA TABLA `objeto`:
 --
-
-CREATE TABLE `objeto_seccion` (
-  `id_objeto` int(11) NOT NULL,
-  `id_seccion` int(11) NOT NULL,
-  `cantidad` int(11) UNSIGNED NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
---
--- Estructura de tabla para la tabla `seccion`
---
-
-CREATE TABLE `seccion` (
-  `id` int(11) NOT NULL,
-  `nombre` text COLLATE utf8_bin NOT NULL,
-  `id_almacen` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -114,24 +97,20 @@ ALTER TABLE `objeto`
   ADD KEY `imagen` (`imagen`);
 
 --
--- Indices de la tabla `objeto_seccion`
---
-ALTER TABLE `objeto_seccion`
-  ADD PRIMARY KEY (`id_objeto`,`id_seccion`),
-  ADD KEY `id_seccion_almacen` (`id_seccion`);
-
---
--- Indices de la tabla `seccion`
---
-ALTER TABLE `seccion`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `id_almacen` (`id_almacen`);
-
---
 -- Indices de la tabla `variables`
 --
 ALTER TABLE `variables`
   ADD PRIMARY KEY (`name`);
+
+--
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla `objeto`
+--
+ALTER TABLE `objeto`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Metadatos

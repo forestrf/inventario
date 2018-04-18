@@ -18,15 +18,12 @@ if (isset($_GET['action'])) {
 		case 'getinventario':
 			insert_nocache_headers();
 			$almacenes = array();
-			$secciones = array();
 			$objetos = $db->get_objetos();
-			foreach ($objetos as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
+			foreach ($objetos as &$objeto) $objeto["almacenes"] = $db->get_objeto_almacenes($objeto["id"]);
 			foreach ($db->get_almacenes() as &$almacen) $almacenes[$almacen["id"]] = &$almacen;
-			foreach ($db->get_secciones() as &$seccion) $secciones[$seccion["id"]] = &$seccion;
 
 			echo json_encode(array(
 				"almacenes" => $almacenes,
-				"secciones" => $secciones,
 				"objetos" => $objetos
 			), 1);
 			break;
@@ -34,7 +31,7 @@ if (isset($_GET['action'])) {
 			insert_nocache_headers();
 			if (isset($_GET["id"])) {
 				$objeto = $db->get_objeto($_GET["id"]);
-				$objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
+				$objeto["almacenes"] = $db->get_objeto_almacenes($objeto["id"]);
 
 				echo json_encode($objeto, 1);
 			}
@@ -66,10 +63,6 @@ if (isset($_GET['action'])) {
 			$busquedas = $db->get_busquedas();
 			echo json_encode($busquedas);
 			break;
-		case 'gethistory':
-			insert_nocache_headers();
-			echo json_encode($db->get_historico(), 1);
-			break;
 	}
 }
 else {
@@ -100,7 +93,6 @@ else {
 							"MESSAGE" => "Imagen actualizada",
 							"VERSION" => $db->get_objeto($_POST["id-object"])["version"]
 						));
-						$db->add_history_spacing($_POST['action']);
 						break;
 					case DB_FAIL:
 						echo json_encode(array(
@@ -137,7 +129,6 @@ else {
 							"MESSAGE" => "Nombre actualizado",
 							"VERSION" => $db->get_objeto($_POST["id-object"])["version"]
 						));
-						$db->add_history_spacing($_POST['action']);
 						break;
 					case DB_FAIL:
 						echo json_encode(array(
@@ -174,7 +165,6 @@ else {
 							"MESSAGE" => "Mínimo actualizado",
 							"VERSION" => $db->get_objeto($_POST["id-object"])["version"]
 						));
-						$db->add_history_spacing($_POST['action']);
 						break;
 					case DB_FAIL:
 						echo json_encode(array(
@@ -196,18 +186,18 @@ else {
 				
 				$cantidadesUnfiltered = array();
 				foreach ($_POST as $key => $value) {
-					if (preg_match('@(id_seccion|cantidad)-([0-9]+)@', $key, $matches)) {
+					if (preg_match('@(id_almacen|cantidad)-([0-9]+)@', $key, $matches)) {
 						$cantidadesUnfiltered[$matches[2]][$matches[1]] = $value;
 					}
 				}
 				$cantidades = array();
 				foreach ($cantidadesUnfiltered as $cantidad) {
-					if (checkOrExit(isset($cantidad["id_seccion"]) && isset($cantidad["cantidad"]), "Una de las entradas del almacen está incompleta")) {
+					if (checkOrExit(isset($cantidad["id_almacen"]) && isset($cantidad["cantidad"]), "Una de las entradas del almacen está incompleta")) {
 						$cantidades[] = $cantidad;
 					}
 				}
 
-				if (json_encode($cantidades) == json_encode($db->get_objeto_secciones($_POST["id-object"]))) {
+				if (json_encode($cantidades) == json_encode($db->get_objeto_almacenes($_POST["id-object"]))) {
 					echo json_encode(array(
 						"STATUS" => "SAME",
 						"MESSAGE" => $SAME_MSG
@@ -221,13 +211,12 @@ else {
 							"STATUS" => "OK",
 							"MESSAGE" => "Cantidades actualizadas",
 							"VERSION" => $db->get_objeto($_POST["id-object"])["version"]
-						));
-						$db->add_history_spacing($_POST['action']);				
+						));			
 						break;
 					case DB_FAIL:
 						echo json_encode(array(
 							"STATUS" => "ERROR",
-							"MESSAGE" => strpos($db->mysqli->error, "Duplicate entry") !== false ? "No se pueden repetir secciones de un almacen" : $db->mysqli->error
+							"MESSAGE" => strpos($db->mysqli->error, "Duplicate entry") !== false ? "No se pueden repetir almacen" : $db->mysqli->error
 						));				
 						break;
 					case DB_VERSION:
@@ -258,7 +247,6 @@ else {
 							"MESSAGE" => "Palabras clave actualizadas",
 							"VERSION" => $db->get_objeto($_POST["id-object"])["version"]
 						));
-						$db->add_history_spacing($_POST['action']);
 						break;
 					case DB_FAIL:
 						echo json_encode(array(
@@ -273,134 +261,133 @@ else {
 			}
 			break;
 		case 'create-empty-object':
-			if ($db->add_empty_objeto()) {
-				echo json_encode(array(
-					"STATUS" => "OK",
-					"MESSAGE" => $db->LAST_MYSQL_ID
-				));
-				$db->add_history_spacing($_POST['action']);
-			} else {
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => $db->mysqli->error
-				));
+			{
+				if ($db->add_empty_objeto()) {
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => $db->LAST_MYSQL_ID
+					));
+				} else {
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
+					));
+				}
 			}
 			break;
 		case 'remove-object':
-			checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
-			
-			if ($db->remove_objeto($_POST["id-object"])) {
-				echo json_encode(array(
-					"STATUS" => "OK",
-					"MESSAGE" => "Objeto borrado"
-				));
-				$db->add_history_spacing($_POST['action']);
-			} else {
-				echo json_encode(array(
-					"STATUS" => "ERROR",
-					"MESSAGE" => $db->mysqli->error
-				));
+			{
+				checkOrExit(isset($_POST["id-object"]), "No se ha enviado la id del objeto");
+				
+				if ($db->remove_objeto($_POST["id-object"])) {
+					echo json_encode(array(
+						"STATUS" => "OK",
+						"MESSAGE" => "Objeto borrado"
+					));
+				} else {
+					echo json_encode(array(
+						"STATUS" => "ERROR",
+						"MESSAGE" => $db->mysqli->error
+					));
+				}
 			}
 			break;
-		case 'update-almacenes-secciones':
+		case 'update-almacenes':
 			checkOrExit(isset($_POST["almacenes"]), "No se ha enviado el listado de almacenes");
-			checkOrExit(isset($_POST["secciones"]), "No se ha enviado el listado de secciones");
 			
-			function valid_almacen($v) { return is_array($v) && array_key_exists("id", $v) && array_key_exists("nombre", $v); }
-			function valid_seccion($v) { return is_array($v) && array_key_exists("id", $v) && array_key_exists("nombre", $v) && array_key_exists("id_almacen", $v); }
+			function valid_almacen($v) { return is_array($v) && array_key_exists("id", $v) && array_key_exists("nombre", $v) && array_key_exists("padre", $v); }
 			
-			$new_alm = array_filter(json_decode($_POST["almacenes"], true), "valid_almacen");
-			$new_sec = array_filter(json_decode($_POST["secciones"], true), "valid_seccion");
+			$new_alm_arr = array_filter(json_decode($_POST["almacenes"], true), "valid_almacen");
+			$old_alm = $db->get_almacenes();
 
-			// Obtener información de los objetos, almacenes y secciones actuales
+			// Obtener información de los objetos y almacenes actuales
 			$old_obj = $db->get_objetos();
-			foreach ($old_obj as &$objeto) $objeto["secciones"] = $db->get_objeto_secciones($objeto["id"]);
-			foreach ($db->get_almacenes() as &$almacen) $old_alm[$almacen["id"]] = &$almacen;
-			foreach ($db->get_secciones() as &$seccion) $old_sec[$seccion["id"]] = &$seccion;
+			foreach ($old_obj as &$objeto) $objeto["almacenes"] = $db->get_objeto_almacenes($objeto["id"]);
+			foreach ($old_alm as &$almacen) $old_alm[$almacen["id"]] = &$almacen;
+			$new_alm = [];
+			foreach ($new_alm_arr as &$new_alm_elem) $new_alm[$new_alm_elem["id"]] = &$new_alm_elem;
+			
+			// Buscar referencia circular. Si se encuentra una, dar error
+			foreach ($new_alm as $alm_cr) {
+				$elem = $alm_cr;
+				$apariciones = array();
+				while ($elem["padre"] != null) {
+					$elem = $new_alm[$elem["padre"]];
+					if (!isset($apariciones[$elem["padre"]])) {
+						$apariciones[$elem["padre"]] = 1;
+					} else {
+						echo json_encode(array(
+							"STATUS" => "ERROR",
+							"MESSAGE" => "Referencia circular detectada"
+						));
+						//var_dump($new_alm);
+						exit;
+					}
+				}
+			}
 
 			if (!isset($_POST["forzar"]) || $_POST["forzar"] !== "OK") {
-				// Comprobar si alguno de los objetos usa una sección que ya no existe
-				$obj_sec_borradas = array();
-				foreach ($old_obj as &$obj) {
-					foreach ($obj["secciones"] as &$obj_sec) {
-						$encontrada = intval($obj_sec["cantidad"]) == 0;
-						if (!$encontrada) {
-							foreach ($new_sec as $sec_id => &$sec_content) {
-								if ($obj_sec["id_seccion"] == $sec_id) {
-									$encontrada = true;
-									break;
-								}
-							}
+				// Comprobar si alguno de los objetos usa un almacén que ya no existe
+				$alm_borrados = [];
+				foreach ($old_alm as &$old) {
+					$encontrado = false;
+					foreach ($new_alm as &$new) {
+						if ($new == $old) {
+							$encontrado = true;
+							break;
 						}
-
-						if (!$encontrada) {
-							if (!isset($obj_sec_borradas[$obj["id"]])) $obj_sec_borradas[$obj["id"]] = [];
-							$obj_sec_borradas[$obj["id"]][] = $obj_sec;
+					}
+					if (!$encontrado) {
+						$alm_borrados[] = $old["id"];
+					}
+				}
+				
+				$obj_alm_borrados = array();
+				foreach ($old_obj as &$obj) {
+					foreach ($obj["almacenes"] as &$obj_alm) {
+						if (intval($obj_alm["cantidad"]) != 0) {
+							if (in_array($obj_alm["id_almacen"], $alm_borrados)) {
+								if (!isset($obj_alm_borrados[$obj["id"]])) $obj_alm_borrados[$obj["id"]] = [];
+								$obj_alm_borrados[$obj["id"]][] = $obj_alm;
+							}
 						}
 					}
 				}
 
-				if (count($obj_sec_borradas) > 0) {
+				if (count($obj_alm_borrados) > 0) {
 					echo json_encode(array(
 						"STATUS" => "ASK",
-						"MESSAGE" => $obj_sec_borradas
+						"MESSAGE" => $obj_alm_borrados
 					));
 					exit;
 				}
 			}
 
-			// Borrar secciones
-			$new_sec_plain = array();
-			foreach ($new_sec as $sec_id => &$_) $new_sec_plain[] = $sec_id;
-			if ($db->remove_secciones_not_in($new_sec_plain)) {
+			// Borrar almacenes
+			$new_alm_plain = array();
+			foreach ($new_alm as $alm_id => &$_) $new_alm_plain[] = $alm_id;
+			if ($db->remove_almacenes_not_in($new_alm_plain)) {
 
-				// Borrar almacenes
-				$new_alm_plain = array();
-				foreach ($new_alm as $alm_id => &$_) $new_alm_plain[] = $alm_id;
-				if ($db->remove_almacenes_not_in($new_alm_plain)) {
+				$error = false;
 
-					$error = false;
-
-					// Actualizar nombre almacenes + insertar nuevos almacenes
-					foreach ($new_alm as &$alm) {
-						if (!$db->add_or_update_almacen($alm["id"], $alm["nombre"])) {
-							$error = true;
-							break;
-						}
+				// Actualizar nombre almacenes + insertar nuevos almacenes
+				foreach ($new_alm as &$alm) {
+					if (!$db->add_or_update_almacen($alm["id"], $alm["nombre"], $alm["padre"])) {
+						$error = true;
+						break;
 					}
-					if ($error) {
-						echo json_encode(array(
-							"STATUS" => "FAIL",
-							"MESSAGE" => "Ha surgido un fallo al actualizar e instertar los nuevos almacenes: " . $db->mysqli->error
-						));
-						exit;
-					}
-
-					// Actualizar nombre secciones + insertar nuevas secciones
-					foreach ($new_sec as &$sec) {
-						if (!$db->add_or_update_seccion($sec["id"], $sec["nombre"], $sec["id_almacen"])) {
-							$error = true;
-							break;
-						}
-					}
-					if ($error) {
-						echo json_encode(array(
-							"STATUS" => "FAIL",
-							"MESSAGE" => "Ha surgido un fallo al actualizar e instertar las nuevas secciones: " . $db->mysqli->error
-						));
-						exit;
-					}
-				} else {
+				}
+				if ($error) {
 					echo json_encode(array(
 						"STATUS" => "FAIL",
-						"MESSAGE" => "Ha surgido un fallo al borrar almacenes: " . $db->mysqli->error
+						"MESSAGE" => "Ha surgido un fallo al actualizar e instertar los nuevos almacenes: " . $db->mysqli->error
 					));
 					exit;
 				}
 			} else {
 				echo json_encode(array(
 					"STATUS" => "FAIL",
-					"MESSAGE" => "Ha surgido un fallo al borrar secciones: " . $db->mysqli->error
+					"MESSAGE" => "Ha surgido un fallo al borrar almacenes: " . $db->mysqli->error
 				));
 				exit;
 			}
@@ -409,7 +396,6 @@ else {
 				"STATUS" => "OK",
 				"MESSAGE" => "Actualizado con éxito."
 			));
-			$db->add_history_spacing($_POST['action']);
 			break;
 		case 'update-busquedas':
 			{
@@ -439,69 +425,6 @@ else {
 					case DB_VERSION:
 						printReload();
 						break;
-				}
-			}
-			break;
-		case 'rollback-history':
-			{
-				checkNoArrayOrExit("step", "No se ha enviado la id del historial que se debe deshacer");
-				
-				$history = $db->get_history_by_ids($_POST["step"]);
-				if (0 < count($history)) {
-					// Ejecutar deshacer
-					foreach ($history as &$step) {
-						switch ($step["ACCION"]) {
-							case "DELETE ALMACEN":
-								$db->add_or_update_almacen($step["I1"], $step["T1"]);
-								break;
-							case "INSERT ALMACEN":
-								$db->remove_seccion($step["I1"]);
-								break;
-							case "UPDATE ALMACEN":
-								$db->add_or_update_almacen($step["I1"], $step["T1"]);
-								break;
-							case "DELETE FILE":
-								$file_index = 0;
-								$db->add_file($step["T1"], $step["B1"], $file_index);
-								break;
-							case "INSERT FILE":
-								$db->remove_file($step["I1"]);
-								break;
-							case "DELETE OBJETO":
-								$db->add_or_update_objeto($step["I1"], $step["T1"], $step["I2"], $step["T2"], $step["T3"]);
-								break;
-							case "INSERT OBJETO":
-								$db->remove_objeto($step["I1"]);
-								break;
-							case "UPDATE OBJETO":
-								$db->add_or_update_objeto($step["I1"], $step["T1"], $step["I2"], $step["T3"], $step["T5"]);
-								break;
-							case "DELETE OBJETO_SECCION":
-								$db->add_or_update_objeto_cantidades($step["I1"], $step["I2"], $step["I3"]);
-								break;
-							case "INSERT OBJETO_SECCION":
-								$db->remove_objeto_cantidades($step["I1"], $step["I2"]);
-								break;
-							case "UPDATE OBJETO_SECCION":
-								$db->add_or_update_objeto_cantidades($step["I1"], $step["I2"], $step["I3"]);
-								break;
-							case "DELETE SECCION":
-								$db->add_or_update_seccion($step["I1"], $step["T1"], $step["I2"]);
-								break;
-							case "INSERT SECCION":
-								$db->remove_seccion($step["I1"]);
-								break;
-							case "UPDATE SECCION":
-								$db->add_or_update_seccion($step["I1"], $step["T1"], $step["I2"]);
-								break;
-						}
-					}
-					// Terminar con un spacing the tipo deshacer
-					$db->add_history_spacing_id($_POST['action'], $_POST['step']);
-					echo json_encode(array(
-						"STATUS" => "OK",
-						"MESSAGE" => "Se han deshecho los cambios con éxito."
-					));
 				}
 			}
 			break;

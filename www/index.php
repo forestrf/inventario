@@ -30,7 +30,7 @@
 </div>
 
 <button onclick="addObjeto()" class="btn btn-primary">Añadir nuevo objeto</button>
-<button onclick="ListarAlmacenesSecciones()" class="btn btn-primary">Editar Almacenes y secciones</button>
+<button onclick="ListarAlmacenes()" class="btn btn-primary">Editar Almacenes</button>
 
 
 <div id="inventario"></div>
@@ -178,10 +178,18 @@ function DrawObjectList() {
 }
 	
 function GetCantidad(objeto) {
-	if (objeto.secciones.length == 0) return 0;
-	return objeto.secciones.reduce(function(prev, cur) {
+	if (objeto.almacenes.length == 0) return 0;
+	return objeto.almacenes.reduce(function(prev, cur) {
 		return { cantidad: parseInt(prev.cantidad) + parseInt(cur.cantidad) };
 	})["cantidad"];
+}
+		
+function almacenNombreCompleto(elementos, i) {
+	if (elementos[i].padre == null) {
+		return elementos[i].nombre;
+	} else {
+		return almacenNombreCompleto(elementos, elementos[i].padre) + " / " + elementos[i].nombre;
+	}
 }
 
 function edit(UpdateListObject) {
@@ -235,14 +243,13 @@ function edit(UpdateListObject) {
 							C("div", ["class", "cantidad-block"],
 								C("div", ["class", "contenido"],
 									C("span", "Almacen"),
-									C("span", "Sección"),
 									C("span", "Cantidad")
 								)
 							)
 						),
 						C("div", ["class", "btn btn-primary add", "onclick", function() {
-							objetoLocal.secciones[objetoLocal.secciones.length] = {cantidad: 0, id_seccion: Object.keys(lista.secciones)[0]};
-							C(cantidades, DrawCantidadInput(objetoLocal.secciones[objetoLocal.secciones.length - 1]));
+							objetoLocal.almacenes[objetoLocal.almacenes.length] = {cantidad: 0, id_almacen: Object.keys(lista.almacenes)[0]};
+							C(cantidades, DrawCantidadInput(objetoLocal.almacenes[objetoLocal.almacenes.length - 1]));
 						}], "+ Añadir a otro lugar"),
 						C("span", C("span", "Total:"), cantidadROInput)
 					)),
@@ -258,8 +265,8 @@ function edit(UpdateListObject) {
 			PieGuardarCancelar("Guardar cambios", "btn-success guarda", guardarCambios, "Cerrar", popups.closePopup, "Borrar", function() { abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", "¿Seguro que quiere borrar este objeto?", C("br")), objetoLocal.onRemove) })
 		);
 		
-		for (var i = 0; i < objetoLocal.secciones.length; i++) {
-			C(cantidades, DrawCantidadInput(objetoLocal.secciones[i]));
+		for (var i = 0; i < objetoLocal.almacenes.length; i++) {
+			C(cantidades, DrawCantidadInput(objetoLocal.almacenes[i]));
 		}
 		
 		forms = popupDOM.querySelectorAll("form");
@@ -296,44 +303,37 @@ function edit(UpdateListObject) {
 		ev.target.value = isNaN(numeroFinal) || numeroFinal < 0 ? 0 : numeroFinal; // Hacer positivo
 	}
 	
-	function DrawCantidadInput(seccionObjeto) {
-		var seccion = lista.secciones[seccionObjeto.id_seccion];
-		var almacen = lista.almacenes[seccion.id_almacen];
+	function DrawCantidadInput(almacenObjeto) {
+		var almacen = lista.almacenes[almacenObjeto.id_almacen];
 		var rId = id_generator();
-		var seccionesSelect, almacenesSelect, cantidadInput;
+		var almacenesSelect, cantidadInput;
 		var cantidadBlock = C("div", ["class", "cantidad-block"],
 			C("div", ["class", "contenido c1"],
-				almacenesSelect = C("select", ["name", "almacen-" + rId]),
-				seccionesSelect = C("select", ["name", "id_seccion-" + rId]),
-				cantidadInput = C("input", ["name", "cantidad-" + rId, "type", "text", "value", seccionObjeto.cantidad, "class", "form-control", "onchange", function(ev) {
+				almacenesSelect = C("select", ["name", "id_almacen-" + rId]),
+				cantidadInput = C("input", ["name", "cantidad-" + rId, "type", "text", "value", almacenObjeto.cantidad, "class", "form-control", "onchange", function(ev) {
 					onPositiveNumberChange(ev);
-					seccionObjeto.cantidad = ev.target.value;
+					almacenObjeto.cantidad = ev.target.value;
 					UpdateROCantidad();
 				}])
 			),
 			C("div", ["class", "borrar"],
 				C("div", ["class", "btn btn-danger", "onclick", function() {
-					objetoLocal.secciones.splice(Array.prototype.indexOf.call(cantidadBlock.parentNode.childNodes, cantidadBlock) - 1, 1); // Indice 0 ocupado por la cabecera de la tabla
+					objetoLocal.almacenes.splice(Array.prototype.indexOf.call(cantidadBlock.parentNode.childNodes, cantidadBlock) - 1, 1); // Indice 0 ocupado por la cabecera de la tabla
 					cantidadBlock.parentNode.removeChild(cantidadBlock);
 					UpdateROCantidad();
 				}], "X")
 			)
 		);
 		ToOptions(almacenesSelect, lista.almacenes, almacen);
-		ToOptions(seccionesSelect, filterSecciones(almacen), seccion);
 		almacenesSelect.onchange = function(ev) {
 			almacen = lista.almacenes[ev.target.value];
-			var seccionesDisponibles = filterSecciones(almacen);
-			ToOptions(seccionesSelect, seccionesDisponibles, seccion);
-			cantidadInput.disabled = Object.keys(seccionesDisponibles).length == 0;
+			cantidadInput.disabled = Object.keys(lista.almacenes).length == 0;
 			if (cantidadInput.disabled) cantidadInput.value = "0";
 			
 			var event = new Event('change');
-			seccionesSelect.dispatchEvent(event);
-		}
-		seccionesSelect.onchange = function(ev) {
-			seccionObjeto.id_seccion = parseInt(ev.target.value);
-			seccion = lista.secciones[seccionObjeto.id_seccion];
+			
+			almacenObjeto.id_almacen = parseInt(ev.target.value);
+			almacen = lista.almacenes[almacenObjeto.id_almacen];
 		}
 		
 		return cantidadBlock;
@@ -348,20 +348,11 @@ function edit(UpdateListObject) {
 			parentElement.removeChild(parentElement.childNodes[i]);
 		}
 		for (var i in elementos) {
-			var option = C("option", ["value", elementos[i].id], elementos[i].nombre);
-			if (typeof selected !== "undefined" && selected.id === elementos[i].id) option.setAttribute("selected", 1);
+			var option = C("option", ["value", elementos[i].id], almacenNombreCompleto(elementos, i));
+			if (typeof selected !== "undefined" && selected.id === elementos[i].id)
+				option.setAttribute("selected", 1);
 			C(parentElement, option);
 		}
-	}
-	
-	function filterSecciones(almacen) {
-		var seccionesFiltradas = {};
-		for (var i in lista.secciones) {
-			if (lista.secciones[i].id_almacen === almacen.id) {
-				seccionesFiltradas[i] = lista.secciones[i];
-			}
-		}
-		return seccionesFiltradas;
 	}
 	
 	var guardarPendiente = [];
@@ -461,29 +452,107 @@ function PieGuardarCancelar(guardarStr, guardarClass, guardarFunc, cerrarStr, ce
 	return pie;
 }
 
-function ListarAlmacenesSecciones() {
+function ListarAlmacenes() {
+	var almacenes = shallowClone(lista.almacenes);
 	var arbolContainer;
-	popups.showPopup(C("div", ["class", "lista-almacenes-secciones"],
+	popups.showPopup(C("div", ["class", "lista-almacenes"],
 		arbolContainer = C("div", ["class", "content"]),
-		C("div", ["class", "addAlmacenContainer"], C("button", ["class", "btn btn-primary", "onclick", AddAlmacen], "Añadir Almacén")),
 		PieGuardarCancelar("Guardar cambios", "btn-success guarda", Guardar, "Cancelar", popups.closePopup)
 	));
 	
-	var almacenes = JSON.parse(JSON.stringify(lista.almacenes));
-	var secciones = JSON.parse(JSON.stringify(lista.secciones));
+	var u = C("ul");
+	C(arbolContainer, u);
+	C(arbolContainer, C("button", ["class", "btn btn-primary", "onclick", function() { AddAlmacen("", u); }], "Añadir Almacén"));
+	CreateSortable(u);
 	
 	// No queremos crear secciones iguales a secciones borradas justo ahora para evitar mover cantidades en lugar de borrarlas.
-	var almacenesUsados = GetObjectKeysSorted(almacenes);
-	var seccionesUsados = GetObjectKeysSorted(secciones);
+	var almacenesUsados = GetObjectKeysSorted(lista.almacenes);
 	
-	for (var i in almacenes) {
-		DrawAlmacen(almacenes[i]);
+	
+	var almacenesCopia = shallowClone(almacenes);
+	var almacenesEscritos = {};
+	while (Object.keys(almacenesCopia).length > 0) {
+		var key = Object.keys(almacenesCopia)[0];
+		var alm = almacenesCopia[key];
+		delete almacenesCopia[key];
+		if (alm.padre == null) {
+			almacenesEscritos[alm.id] = DrawAlmacen(alm.id, alm.nombre, u);
+		} else {
+			if (undefined !== almacenesEscritos[alm.padre]) {
+				almacenesEscritos[alm.id] = DrawAlmacen(alm.id, alm.nombre, almacenesEscritos[alm.padre].interior);
+			} else {
+				almacenesCopia.push(alm);
+			}
+		}
+	}
+	
+	
+
+	function DrawAlmacen(id, nombre, donde) {
+		var input = C("input", ["type", "text", "class", "form-control", "value", nombre/*, "onchange", OnChangeAlmacen, "onkeyup", OnChangeAlmacen*/]);
+		var li = C("li", ["class", "almacen", "id", id],
+			C("span", ["class", "btn btn-info handle"], "⬍"),
+			"ID: ", id, " - ",
+			"Nombre: ", // Tmbn podemos poner aquí un Handle, podría quedar mejor
+			input
+		);
+		
+		var ul = C("ul");
+		CreateSortable(ul);
+		C(li, C("button", ["class", "btn btn-primary boton", "onclick", function() { AddAlmacen("", ul); }], "+"));
+		C(li, C("button", ["class", "btn btn-danger boton", "onclick", function() { RemoveAlmacenRecursivo(li); }], "X"));
+		C(li, ul);
+		
+		C(donde, li);
+		
+		return { element: li, interior: ul, input: input };
+		
+		
+		function RemoveAlmacenRecursivo(li) {
+			var ul = li.querySelector("ul");
+			var children = ul.querySelectorAll(".almacen");
+			for (var i = 0; i < children.length; i++) {
+				var child = children[i];
+				RemoveAlmacen(child);
+			}
+			RemoveAlmacen(li);
+		}
+		
+		function RemoveAlmacen(li) {
+			var id = li.getAttribute("id");
+			li.parentNode.removeChild(li)
+			delete almacenesEscritos[id];
+		}
+	}
+	
+	function AddAlmacen(nombre, where) {
+		var keys = GetObjectKeysSorted(almacenesEscritos).concat(almacenesUsados).filter(onlyUnique);
+		var id = GetFirstFreeID(keys);
+		
+		almacenesEscritos[id] = DrawAlmacen(id, nombre, where);
+	}
+	
+	function CreateSortable(ul) {
+		Sortable.create(ul, {
+			group: "almacenes",
+			handle: ".handle"
+		});
 	}
 	
 	
 	
 	function Guardar(forzar) {
-		var post = 'action=update-almacenes-secciones&almacenes=' + JSON.stringify(almacenes) + "&secciones=" + JSON.stringify(secciones);
+		var almacenesAGuardar = [];
+		for (var i in almacenesEscritos) {
+			var padre = almacenesEscritos[i].element.parentElement.parentElement;
+			almacenesAGuardar.push({
+				id: almacenesEscritos[i].element.getAttribute("id"),
+				padre: padre.nodeName === "LI" ? padre.getAttribute("id") : null,
+				nombre: almacenesEscritos[i].input.value
+			});
+		}
+		// sacar DOM a lista para enviar
+		var post = 'action=update-almacenes&almacenes=' + JSON.stringify(almacenesAGuardar);
 		if (typeof forzar !== undefined) post += "&forzar=" + (true === forzar ? "OK" : "NO");
 		AJAX('php/ajax.php', post, function(msg) {
 			var json = JSON.parse(msg.response);
@@ -492,14 +561,13 @@ function ListarAlmacenesSecciones() {
 				for (var i in json.MESSAGE) {
 					C(contenedor, C("div", ["class", "aBorrarNombre"], "Objeto: ", C("span", ["class", "var"], lista.objetos[i].nombre)));
 					for (var j in json.MESSAGE[i]) {
-						console.log(json.MESSAGE[i][j]);
-						C(contenedor, C("div", ["class", "aBorrarSeccionCantidad"],
-							"Sección: ", C("span", ["class", "var"], lista.secciones[json.MESSAGE[i][j].id_seccion].nombre),
+						C(contenedor, C("div", ["class", "aBorrarAlmacenCantidad"],
+							"Almacén: ", C("span", ["class", "var"], almacenNombreCompleto(lista.almacenes, json.MESSAGE[i][j].id_almacen)),
 							", Stock: ", C("span", ["class", "var"], json.MESSAGE[i][j].cantidad)
 						));
 					}
 				}
-				abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", C("div", "Se van a borrar secciones que contienen objetos. El Stock de los siguientes objetos se borrará:"), contenedor), function() { popups.closePopup(); Guardar(true); });
+				abrirBorrarVentana("confirmBorrar", "btn-danger", C("div", C("div", "Se van a borrar almacenes que contienen objetos. El Stock de los siguientes objetos se borrará:"), contenedor), function() { popups.closePopup(); Guardar(true); });
 			} else {
 				// Redibujar listado completo de objetos y actualizar listado de almacenes
 				popups.closePopup();
@@ -512,87 +580,6 @@ function ListarAlmacenesSecciones() {
 				));
 			}
 		}, console.log);
-	}
-	
-	function AddAlmacen() {
-		var keys = GetObjectKeysSorted(almacenes).concat(almacenesUsados).filter(onlyUnique);
-		var id = GetFirstFreeID(keys);
-		almacenes[id] = {
-			id: id,
-			nombre: "Almacen " + id
-		};
-		DrawAlmacen(almacenes[id]);
-	}
-	
-	function DrawAlmacen(almacen) {
-		var contenedor;
-		var seccionesContainer;
-		C(arbolContainer,
-			contenedor = C("div", ["class", "almacen"],
-				C("div", ["class", "header first"], "Almacén"),
-				C("input", ["type", "text", "class", "form-control", "value", almacen.nombre, "onchange", OnChangeAlmacen, "onkeyup", OnChangeAlmacen]),
-				C("div", ["class", "header"], "Secciones"),
-				seccionesContainer = C("div"),
-				C("div", ["class", "btn addseccion btn-primary", "onclick", addSeccion], "Añadir Sección"),
-				C("div", ["class", "btn btn-danger borraalmacen", "onclick", borrarAlmacen], "Borrar Almacen")
-			)
-		);
-		
-		RedibujarSecciones();
-		
-		
-		
-		function OnChangeAlmacen(ev) {
-			almacen.nombre = ev.target.value;
-		}
-		
-		function addSeccion() {
-			var keys = GetObjectKeysSorted(secciones).concat(seccionesUsados).filter(onlyUnique);
-			var id = GetFirstFreeID(keys);
-			secciones[id] = {
-				id: id,
-				id_almacen: almacen.id,
-				nombre: "Sección " + id
-			};
-			
-			RedibujarSecciones();
-		}
-		
-		function borrarAlmacen() {
-			delete almacenes[almacen.id];
-			var seccionesToDelete = [];
-			for (var i in secciones)
-				if (secciones[i].id_almacen == almacen.id)
-					seccionesToDelete.push(i);
-			for (var i = 0; i < seccionesToDelete.length; i++)
-				delete secciones[seccionesToDelete[i]];
-			arbolContainer.removeChild(contenedor);
-		}
-		
-		function RedibujarSecciones() {
-			seccionesContainer.innerHTML = "";
-			
-			for (var j in secciones) {
-				if (secciones[j].id_almacen == almacen.id) {
-					(function (seccion) {
-						C(seccionesContainer,
-							C("div", ["class", "seccion"],
-								C("input", ["type", "text", "class", "form-control", "value", seccion.nombre, "onchange", OnChangeSeccion, "onkeyup", OnChangeSeccion]),
-								C("div", ["class", "btn btn-danger", "onclick", OnRemoveSeccion], "X")
-							)
-						);
-						
-						function OnChangeSeccion(ev) {
-							seccion.nombre = ev.target.value;
-						}
-						function OnRemoveSeccion() {
-							delete secciones[seccion.id];
-							RedibujarSecciones();
-						}
-					})(secciones[j]);
-				}
-			}
-		}
 	}
 }
 

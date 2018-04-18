@@ -32,7 +32,8 @@ div.buscador .fixed {
 .busquedas li {
 	list-style: none;
 }
-.busquedas .handle {
+.busquedas .handle,
+.lista-almacenes .handle {
 	vertical-align: top;
 	border-radius: 5px;
 	margin-bottom: 5px;
@@ -48,11 +49,13 @@ div.buscador .fixed {
 	color: #999;
 	width: 20px;
 }
-.busquedas .handle:active {
+.busquedas .handle:active,
+.lista-almacenes .handle:active {
 	cursor: -webkit-grabbing;
 	cursor: grabbing;
 }
-.busquedas .boton {
+.busquedas .boton,
+.lista-almacenes .boton {
 	line-height: 34px;
 	margin-left: 5px;
 	text-align: center;
@@ -62,7 +65,9 @@ div.buscador .fixed {
 	width: 34px;
 }
 .busquedas .handle ,
-.busquedas .boton {
+.busquedas .boton,
+.lista-almacenes .handle ,
+.lista-almacenes .boton {
 	background-color: #ddd;
 	border-color: #ccc;
 	color: #fff;
@@ -285,13 +290,12 @@ div.buscador .fixed {
 	height: 30px;
 }
 .popup > .msg form .cantidad-block select,
-.popup > .msg form .tabla span:nth-child(1),
-.popup > .msg form .tabla span:nth-child(2) {
-	width: 41%;
+.popup > .msg form .tabla span:nth-child(1) {
+	width: 80%;
 }
 .popup > .msg form .cantidad-block input,
-.popup > .msg form .tabla span:nth-child(3) {
-	width: 18%;
+.popup > .msg form .tabla span:nth-child(2) {
+	width: 20%;
 }
 .popup > .msg form .cantidad-block input {
 	margin-top: -2px;
@@ -394,76 +398,32 @@ div.buscador .fixed {
 	margin: 0;
 	width: 100%;
 }
-.popup > .msg .lista-almacenes-secciones .almacen {
-	background-color: #eee;
-	vertical-align: top;
-	box-shadow: 2px 2px 2px #bbb;
-	position: relative;
+.lista-almacenes ul {
+	background-color: rgba(0, 0, 0, 0.1);
+	padding-bottom: 1em;
+	margin-bottom: 1em;
+	min-height: 2em;
+	border: 1px dashed #999;
+}
+.lista-almacenes .sortable-ghost {
+	box-shadow: 0 0 10px #444;
 	overflow: hidden;
 	display: inline-block;
-	padding: 5px;
-	border: 1px solid #000;
-	margin: 5px;
+	padding: .15em 1em;
+	border: 1px dotted #fff;
+	cursor: grabbing;
+}
+.lista-almacenes .sortable-ghost * {
+	display: none;
+}
+.lista-almacenes .form-control {
+	display: inline;
 	width: auto;
-}
-.popup > .msg .lista-almacenes-secciones .form-control {
-	margin-bottom: 3px;
-	display: inline-block;
-}
-.popup > .msg .lista-almacenes-secciones .form-control,
-.popup > .msg .lista-almacenes-secciones .btn.addseccion {
-	width: 250px;
-}
-.popup > .msg .lista-almacenes-secciones .btn.addseccion {
-	margin-bottom: 15px;
-}
-.popup > .msg .lista-almacenes-secciones .header {
-	border-bottom: 1px solid #989898;
-	margin-bottom: 7px;
-	padding-left: 25px;
-	margin-right: 80px;
-	font-weight: bold;
-	margin-left: -5px;
-	margin-top: 15px;
-	box-shadow: 120px 0 60px -60px #e2c961 inset;
-	padding: 7px 0 2px 25px;
-	display: block;
-}
-.popup > .msg .lista-almacenes-secciones .header.first {
-	margin-top: 0;
-}
-.popup > .msg .lista-almacenes-secciones .seccion .btn {
-	line-height: 20px;
-	font-weight: bold;
-	margin-left: 5px;
-	font-size: 12px;
-	padding: 0;
-	height: 20px;
-	width: 20px;
-}
-.popup > .msg .lista-almacenes-secciones .btn.borraalmacen {
-	border-radius: 0px 0px 0 20px;
-	position: absolute;
-	padding: 0 4px 0 10px;
-	display: block;
-	border: 1px solid #000;
-	border-right: 0;
-	border-top: 0;
-	right: 0;
-	top: 0;
-}
-.popup > .msg .lista-almacenes-secciones .addAlmacenContainer {
-	background-color: #f7f7f7;
-	margin-bottom: -10px;
-	text-align: center;
-	margin-top: 10px;
-	padding: 10px;
-	border: 2px dashed #eaeaea;
 }
 
 .has-help {
 	position: relative;
-    cursor: help;
+	cursor: help;
 }
 .has-help .desc {
 	display: none;
@@ -494,14 +454,14 @@ div.buscador .fixed {
 	font-size: .8em;
 	border: 1px solid #fff;
 }
-.aBorrarSeccionCantidad {
+.aBorrarAlmacenCantidad {
 	background-color: #555;
 	border-top: 0;
 	font-size: .8em;
 	border: 1px solid #fff;
 }
 .aBorrarNombre .var,
-.aBorrarSeccionCantidad .var {
+.aBorrarAlmacenCantidad .var {
 	font-family: verdana;
 	font-size: .8em;
 }
