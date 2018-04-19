@@ -63,6 +63,11 @@ CREATE TABLE `objeto` (
 
 --
 -- RELACIONES PARA LA TABLA `objeto`:
+CREATE TABLE `objeto_almacen` (
+  `id_objeto` int(11) NOT NULL,
+  `id_almacen` int(11) NOT NULL,
+  `cantidad` int(11) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 --
 
 -- --------------------------------------------------------
@@ -98,6 +103,9 @@ ALTER TABLE `objeto`
   ADD KEY `imagen` (`imagen`);
 
 --
+ALTER TABLE `objeto_almacen`
+  ADD PRIMARY KEY (`id_objeto`,`id_almacen`),
+  ADD KEY `id_seccion_almacen` (`id_almacen`);
 -- Indices de la tabla `variables`
 --
 ALTER TABLE `variables`
@@ -112,14 +120,10 @@ ALTER TABLE `variables`
 --
 ALTER TABLE `objeto`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-ALTER TABLE `almacen`
-  ADD CONSTRAINT `id_padre` FOREIGN KEY (`padre`) REFERENCES `almacen` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
 
 --
 -- Metadatos
 --
-USE `phpmyadmin`;
 
 --
 -- Volcado de datos para la tabla `pma__column_info`
@@ -128,4 +132,6 @@ USE `phpmyadmin`;
 INSERT INTO `pma__column_info` (`db_name`, `table_name`, `column_name`, `comment`, `mimetype`, `transformation`, `transformation_options`, `input_transformation`, `input_transformation_options`) VALUES
 ('almacen', 'file', 'bin', '', 'image_jpeg', '', '', '', '');
 
+ALTER TABLE `almacen`
+  ADD CONSTRAINT `id_padre` FOREIGN KEY (`padre`) REFERENCES `almacen` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
